@@ -264,7 +264,7 @@
 
         <!-- Kolom Tanda Tangan Diperluas & Dinamis -->
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1.5">Kolom Tanda Tangan Kehadiran:</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Kolom Tanda Tangan Kehadiran (Wajib Tanda Tangan Baru):</label>
           <div id="signature-pads-container" class="space-y-3 p-2.5 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar max-h-72 overflow-y-auto">
             <p class="text-[11px] text-slate-500 italic text-center py-2">Silakan pilih petugas di atas terlebih dahulu.</p>
           </div>
@@ -418,7 +418,7 @@
     let activeWeeksPerKeg = {};
     let currentUploadedPhotosBase64 = [];
     
-    // Objek penyimpan tanda tangan per petugas: { "NamaPetugas": "base64..." }
+    // Objek penyimpan tanda tangan per petugas khusus untuk sesi aktif: { "NamaPetugas": "base64..." }
     let currentSignaturesObj = {};
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -543,7 +543,7 @@
     }
 
     // ---------------------------------------------------------
-    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS
+    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS (FRESH / BARU)
     // ---------------------------------------------------------
     function toggleStaffDropdown(e) {
       if (e) e.stopPropagation();
@@ -604,7 +604,7 @@
       const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
       const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
 
-      // Simpan tanda tangan sementara yang sedang digambar
+      // Simpan tanda tangan sementara jika sedang diedit
       container.querySelectorAll('.sig-canvas').forEach(canvas => {
         const memberName = canvas.dataset.member;
         if (canvas.width > 0 && canvas.height > 0) {
@@ -622,7 +622,7 @@
         container.innerHTML += `
           <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-3 space-y-2 shadow-inner">
             <div class="flex justify-between items-center">
-              <span class="text-xs font-extrabold text-orange-400">✍️ Tanda Tangan: ${member}</span>
+              <span class="text-xs font-extrabold text-orange-400">✍️ Tanda Tangan Terbaru: ${member}</span>
               <button type="button" onclick="clearSpecificSignature('${member}')" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline cursor-pointer">Hapus / Ulang</button>
             </div>
             <div class="bg-slate-950 border border-slate-700 rounded-xl p-1.5 relative">
@@ -792,7 +792,7 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR KONVERSI KE EXCEL (KOLOM PROGRAM & REALISASI KERJA)
+    // FITUR KONVERSI KE EXCEL (CATATAN & TTD DI KOLOM RENCANA KERJA)
     // ---------------------------------------------------------
     function exportToExcel() {
       let dataRows = [];
@@ -802,18 +802,26 @@
         let sessions = state[keg.id] || [];
         sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
         sessions.forEach(sess => {
-          let membersStr = sess.members ? sess.members.join(', ') : '-';
-          let notePart = sess.note ? sess.note : 'Sesi terlaksana';
+          let membersList = sess.members || [];
+          let membersStr = membersList.join(', ');
+          let notePart = sess.note ? sess.note : '';
           
-          let fullKeteranganText = `Catatan: ${notePart} | Peserta: ${membersStr}`;
-          
+          // Memindahkan catatan dan daftar petugas yang bertanda tangan ke kolom Rencana Kerja
+          let rencanaKerjaText = keg.title;
+          if (notePart) {
+            rencanaKerjaText += `\nCatatan: ${notePart}`;
+          }
+          if (membersList.length > 0) {
+            rencanaKerjaText += `\nPetugas TTD: ${membersList.join(', ')}`;
+          }
+
           dataRows.push({
             no: noCounter++,
             date: sess.date || '',
-            rencana: keg.title,
+            rencana: rencanaKerjaText,
             realisasi_ya: '✓',
             realisasi_tidak: '',
-            keterangan: fullKeteranganText
+            keterangan: `Sesi terlaksana (${membersList.length} Petugas)`
           });
         });
       });
@@ -851,7 +859,7 @@
         ws_data.push([
           { v: row.no, t: "n", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
           { v: row.date, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
-          { v: row.rencana, t: "s", s: { alignment: { horizontal: "left", vertical: "center" }, border: getBorder() } },
+          { v: row.rencana, t: "s", s: { alignment: { horizontal: "left", vertical: "center", wrapText: true }, border: getBorder() } },
           { v: row.realisasi_ya, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
           { v: row.realisasi_tidak, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
           { v: row.keterangan, t: "s", s: { alignment: { horizontal: "left", vertical: "center" }, border: getBorder() } }
@@ -868,10 +876,10 @@
       ws['!cols'] = [
         { wch: 6 },  // NO
         { wch: 16 }, // HARI/TANGGAL
-        { wch: 32 }, // RENCANA KERJA
+        { wch: 45 }, // RENCANA KERJA (Diperlebar untuk menampung Catatan & TTD)
         { wch: 10 }, // YA
         { wch: 10 }, // TIDAK
-        { wch: 60 }  // KETERANGAN
+        { wch: 30 }  // KETERANGAN
       ];
 
       let wb = XLSX.utils.book_new();
@@ -1002,6 +1010,7 @@
         activeKegId = kegId;
         editSessionId = null;
         currentUploadedPhotosBase64 = [];
+        // Pastikan objek tanda tangan selalu dikosongkan (fresh) agar tidak membawa TTD lama
         currentSignaturesObj = {};
         
         document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
