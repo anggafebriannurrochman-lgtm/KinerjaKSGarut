@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Monitoring SO SDM Daop 2 Bandung - Stasiun Garut</title>
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <!-- Library html2pdf untuk Export & Download PDF langsung -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
@@ -229,25 +229,52 @@
     </div>
   </footer>
 
-  <!-- MODAL PREVIEW & DOWNLOAD PDF -->
+  <!-- MODAL PREVIEW & DOWNLOAD PDF DENGAN FILTER -->
   <div id="pdf-report-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-    <div class="bg-white text-slate-900 rounded-3xl shadow-2xl w-full max-w-5xl p-6 sm:p-8 space-y-6 my-auto">
-      <div class="flex justify-between items-center border-b pb-4">
-        <h3 class="font-extrabold text-lg text-slate-900">Dokumen Laporan Resmi PDF</h3>
+    <div class="bg-white text-slate-900 rounded-3xl shadow-2xl w-full max-w-5xl p-5 sm:p-7 space-y-4 my-auto">
+      <div class="flex justify-between items-center border-b pb-3">
+        <div>
+          <span class="text-[10px] text-blue-600 font-bold tracking-widest uppercase">Dokumen Resmi</span>
+          <h3 class="font-extrabold text-base sm:text-lg text-slate-900">Filter & Preview Laporan PDF</h3>
+        </div>
         <div class="flex gap-2">
-          <button onclick="downloadPdfFile()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5">
+          <button onclick="downloadPdfFile()" class="px-3.5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5 shadow-md">
             <span>📥</span> <span>Download PDF</span>
           </button>
-          <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5">
-            <span>🖨️</span> <span>Cetak Langsung</span>
+          <button onclick="window.print()" class="px-3.5 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5 shadow-md">
+            <span>🖨️</span> <span>Cetak</span>
           </button>
-          <button onclick="closePdfReportModal()" class="px-3 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition cursor-pointer">✕</button>
+          <button onclick="closePdfReportModal()" class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs flex items-center justify-center transition cursor-pointer">✕</button>
+        </div>
+      </div>
+
+      <!-- Panel Filter Laporan PDF -->
+      <div class="bg-slate-100 p-3.5 rounded-2xl border border-slate-200 space-y-3">
+        <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide flex items-center gap-1.5"><span>🔍</span> Filter Parameter Cetak PDF</h4>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div>
+            <label class="block text-[11px] font-bold text-slate-700 mb-1">Rentang Tanggal (Kosongkan jika ingin semua):</label>
+            <div class="flex items-center gap-2">
+              <input type="date" id="pdf-start-date" onchange="renderPdfPreview()" class="text-xs p-2 bg-white border border-slate-300 rounded-xl text-slate-800 font-bold w-full outline-none focus:border-blue-500">
+              <span class="text-xs text-slate-500 font-bold">s/d</span>
+              <input type="date" id="pdf-end-date" onchange="renderPdfPreview()" class="text-xs p-2 bg-white border border-slate-300 rounded-xl text-slate-800 font-bold w-full outline-none focus:border-blue-500">
+            </div>
+          </div>
+          <div>
+            <div class="flex justify-between items-center mb-1">
+              <label class="text-[11px] font-bold text-slate-700">Pilih Jenis Kegiatan:</label>
+              <button type="button" onclick="toggleAllPdfActivities(true)" class="text-[10px] text-blue-600 hover:underline font-bold">Pilih Semua</button>
+            </div>
+            <div id="pdf-activity-checkboxes" class="max-h-24 overflow-y-auto bg-white p-2 border border-slate-300 rounded-xl space-y-1 text-xs custom-scrollbar">
+              <!-- Checkbox kegiatan dimuat dinamis -->
+            </div>
+          </div>
         </div>
       </div>
 
       <!-- Area Dokumen Resmi untuk PDF Export (A5 Landscape) -->
-      <div class="max-h-[70vh] overflow-y-auto border border-slate-300 p-2 rounded-2xl bg-slate-50 flex justify-center">
-        <div id="pdf-export-container" class="space-y-4 font-sans bg-white shadow-sm" style="width: 210mm;">
+      <div class="max-h-[55vh] overflow-y-auto border border-slate-300 p-2 rounded-2xl bg-slate-100 flex justify-center custom-scrollbar">
+        <div id="pdf-export-container" class="space-y-4 font-sans bg-white shadow-md" style="width: 210mm;">
           <!-- Diisi secara dinamis -->
         </div>
       </div>
@@ -855,79 +882,136 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR LAPORAN & DOWNLOAD PDF RESMI
+    // FITUR LAPORAN & DOWNLOAD PDF (HANYA MUNCULKAN KELAS YANG ADA ISINYA)
     // ---------------------------------------------------------
-    async function openPdfReportModal() {
+    function openPdfReportModal() {
+      const cbContainer = document.getElementById('pdf-activity-checkboxes');
+      cbContainer.innerHTML = '';
+      kegiatanList.forEach(k => {
+        cbContainer.innerHTML += `
+          <label class="flex items-center gap-2 p-1 hover:bg-slate-50 rounded cursor-pointer font-medium text-slate-700">
+            <input type="checkbox" value="${k.id}" checked onchange="renderPdfPreview()" class="pdf-keg-cb w-3.5 h-3.5 text-blue-600 rounded border-slate-300">
+            <span class="truncate">${k.title}</span>
+          </label>
+        `;
+      });
+
+      document.getElementById('pdf-start-date').value = '';
+      document.getElementById('pdf-end-date').value = '';
+
+      renderPdfPreview();
+      document.getElementById('pdf-report-modal').classList.remove('hidden');
+    }
+
+    function toggleAllPdfActivities(status) {
+      document.querySelectorAll('.pdf-keg-cb').forEach(cb => cb.checked = status);
+      renderPdfPreview();
+    }
+
+    async function renderPdfPreview() {
       const container = document.getElementById('pdf-export-container');
       container.innerHTML = `<div class="text-center p-6 text-slate-500 italic">Memproses laporan & tanda tangan...</div>`;
-      document.getElementById('pdf-report-modal').classList.remove('hidden');
+
+      const startDate = document.getElementById('pdf-start-date').value;
+      const endDate = document.getElementById('pdf-end-date').value;
+      const selectedKegIds = Array.from(document.querySelectorAll('.pdf-keg-cb:checked')).map(cb => cb.value);
+
+      let filteredKegList = kegiatanList.filter(k => selectedKegIds.includes(k.id));
+      
+      // Kumpulkan hanya kegiatan yang memiliki sesi sesuai filter tanggal
+      let validActivities = [];
+      for (let keg of filteredKegList) {
+        let sessions = [...(state[keg.id] || [])];
+
+        sessions = sessions.filter(sess => {
+          if (!sess.date) return false;
+          if (startDate && sess.date < startDate) return false;
+          if (endDate && sess.date > endDate) return false;
+          return true;
+        });
+
+        if (sessions.length > 0) {
+          // Urutkan kronologis tanggal & waktu input
+          sessions.sort((a, b) => {
+            let dateA = new Date(a.date || '1970-01-01');
+            let dateB = new Date(b.date || '1970-01-01');
+            if (dateA.getTime() !== dateB.getTime()) {
+              return dateA - dateB;
+            }
+            let timeA = a.createdAt || 0;
+            let timeB = b.createdAt || 0;
+            return timeA - timeB;
+          });
+          validActivities.push({ keg, sessions });
+        }
+      }
+
+      if (validActivities.length === 0) {
+        container.innerHTML = `<div class="text-center p-8 text-slate-500 italic bg-white rounded shadow text-xs">Tidak ada data kegiatan yang tercatat atau sesuai dengan filter tanggal/pilihan tersebut.</div>`;
+        return;
+      }
 
       let allActivitiesHtml = '';
 
-      for (let i = 0; i < kegiatanList.length; i++) {
-        let keg = kegiatanList[i];
-        let sessions = state[keg.id] || [];
-        sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+      for (let i = 0; i < validActivities.length; i++) {
+        let item = validActivities[i];
+        let keg = item.keg;
+        let sessions = item.sessions;
 
         let rowsHtml = '';
-        if (sessions.length > 0) {
-          let sessNo = 1;
-          for (let sess of sessions) {
-            let membersList = sess.members || [];
-            let notePart = sess.note ? sess.note : '';
-            let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
-            let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
+        let sessNo = 1;
+        for (let sess of sessions) {
+          let membersList = sess.members || [];
+          let notePart = sess.note ? sess.note : '';
+          let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
+          let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
 
-            let rencanaHtml = `<div class="font-bold text-black text-xs">${keg.title}</div>`;
-            if (notePart) rencanaHtml += `<div class="text-slate-700 text-[10px] mt-0.5">Catatan: ${notePart}</div>`;
-            if (membersList.length > 0) rencanaHtml += `<div class="text-slate-800 text-[10px] font-semibold mt-0.5">Petugas: ${membersList.join(', ')}</div>`;
+          let rencanaHtml = `<div class="font-bold text-black text-xs">${keg.title}</div>`;
+          if (notePart) rencanaHtml += `<div class="text-slate-700 text-[10px] mt-0.5">Catatan: ${notePart}</div>`;
+          if (membersList.length > 0) rencanaHtml += `<div class="text-slate-800 text-[10px] font-semibold mt-0.5">Petugas: ${membersList.join(', ')}</div>`;
 
-            let sigHtmlItems = '';
-            for (let [mName, sSrc] of Object.entries(sigsData)) {
-              let processedSig = await processSignatureBase64(sSrc);
-              sigHtmlItems += `
-                <div class="inline-block mr-2 mb-1 text-center bg-white p-1 rounded border border-slate-300 shadow-sm">
-                  <span class="text-[8px] font-bold text-black block">${mName}:</span>
-                  <img src="${processedSig}" class="h-10 w-24 object-contain bg-white">
-                </div>
-              `;
-            }
-            if (sigHtmlItems) {
-              rencanaHtml += `<div class="mt-1 pt-1 border-t border-slate-300"><span class="text-[8px] font-bold text-slate-600 block mb-0.5">Tanda Tangan:</span>${sigHtmlItems}</div>`;
-            }
-
-            let ketHtml = `<div class="text-[10px] text-black font-medium">Sesi terlaksana (${membersList.length} Petugas)</div>`;
-            let photoHtmlItems = '';
-            photosList.forEach(pSrc => {
-              photoHtmlItems += `<img src="${pSrc}" class="w-20 h-20 object-cover rounded border border-slate-400">`;
-            });
-            if (photoHtmlItems) {
-              ketHtml += `<div class="mt-1"><span class="text-[9px] font-bold text-slate-700 block mb-0.5">Foto:</span><div class="flex flex-wrap gap-1">${photoHtmlItems}</div></div>`;
-            }
-
-            rowsHtml += `
-              <tr class="border-b border-black">
-                <td class="border border-black p-1.5 text-center font-bold align-top text-[10px]">${sessNo++}</td>
-                <td class="border border-black p-1.5 text-center font-semibold align-top text-[10px]">${sess.date || ''}</td>
-                <td class="border border-black p-2 align-top text-[10px]">${rencanaHtml}</td>
-                <td class="border border-black p-1.5 text-center font-bold text-sm align-top">✓</td>
-                <td class="border border-black p-1.5 text-center align-top"></td>
-                <td class="border border-black p-2 align-top text-[10px]">${ketHtml}</td>
-              </tr>
+          let sigHtmlItems = '';
+          for (let [mName, sSrc] of Object.entries(sigsData)) {
+            let processedSig = await processSignatureBase64(sSrc);
+            sigHtmlItems += `
+              <div class="inline-block mr-2 mb-1 text-center bg-white p-1 rounded border border-slate-300 shadow-sm">
+                <span class="text-[8px] font-bold text-black block">${mName}:</span>
+                <img src="${processedSig}" class="h-10 w-24 object-contain bg-white">
+              </div>
             `;
           }
-        } else {
-          rowsHtml = `<tr><td colspan="6" class="text-center p-3 text-slate-500 italic border border-black text-[10px]">Belum ada data sesi untuk kegiatan ini.</td></tr>`;
+          if (sigHtmlItems) {
+            rencanaHtml += `<div class="mt-1 pt-1 border-t border-slate-300"><span class="text-[8px] font-bold text-slate-600 block mb-0.5">Tanda Tangan:</span>${sigHtmlItems}</div>`;
+          }
+
+          let ketHtml = `<div class="text-[10px] text-black font-medium">Sesi terlaksana (${membersList.length} Petugas)</div>`;
+          let photoHtmlItems = '';
+          photosList.forEach(pSrc => {
+            photoHtmlItems += `<img src="${pSrc}" class="w-20 h-20 object-cover rounded border border-slate-400">`;
+          });
+          if (photoHtmlItems) {
+            ketHtml += `<div class="mt-1"><span class="text-[9px] font-bold text-slate-700 block mb-0.5">Foto:</span><div class="flex flex-wrap gap-1">${photoHtmlItems}</div></div>`;
+          }
+
+          rowsHtml += `
+            <tr class="border-b border-black">
+              <td class="border border-black p-1.5 text-center font-bold align-top text-[10px]">${sessNo++}</td>
+              <td class="border border-black p-1.5 text-center font-semibold align-top text-[10px]">${sess.date || ''}</td>
+              <td class="border border-black p-2 align-top text-[10px]">${rencanaHtml}</td>
+              <td class="border border-black p-1.5 text-center font-bold text-sm align-top">✓</td>
+              <td class="border border-black p-1.5 text-center align-top"></td>
+              <td class="border border-black p-2 align-top text-[10px]">${ketHtml}</td>
+            </tr>
+          `;
         }
 
-        let pageBreakStyle = (i === kegiatanList.length - 1) ? '' : 'page-break-after: always; break-after: page;';
+        let pageBreakStyle = (i === validActivities.length - 1) ? '' : 'page-break-after: always; break-after: page;';
 
         allActivitiesHtml += `
           <div style="box-sizing: border-box; padding: 10mm; width: 210mm; min-height: 148mm; background: #ffffff; ${pageBreakStyle}">
             <div class="text-center space-y-1 pb-3 border-b-2 border-black">
               <h1 class="text-sm font-black uppercase tracking-wider text-black">PROGRAM DAN REALISASI KERJA KEPALA STASIUN</h1>
               <h2 class="text-xs font-bold text-slate-800 uppercase">${stationName}</h2>
-              <div class="inline-block bg-black text-white text-[10px] font-bold px-3 py-0.5 rounded mt-1 uppercase">KEGIATAN: ${keg.title}</div>
             </div>
             
             <div class="mt-3">
@@ -998,11 +1082,11 @@
 
       kegiatanList.forEach((keg, index) => {
         let sessions = state[keg.id] || [];
-        sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+        let sessionsForCard = [...sessions].reverse();
 
         let sessionsHtml = '';
-        if (sessions.length > 0) {
-          sessions.forEach((sess, sIndex) => {
+        if (sessionsForCard.length > 0) {
+          sessionsForCard.forEach((sess, sIndex) => {
             const currentSessionId = sess.id || sIndex;
             const badges = sess.members.map(mName => 
               `<span class="bg-orange-500/10 text-orange-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg border border-orange-500/20">${mName}</span>`
@@ -1179,6 +1263,7 @@
       } else {
         state[activeKegId].push({
           id: '_' + Math.random().toString(36).substr(2, 9),
+          createdAt: Date.now(),
           date: selectedDate,
           note: sessionNote,
           members: selectedMembers,
@@ -1187,7 +1272,6 @@
         });
       }
 
-      state[activeKegId].sort((a, b) => new Date(b.date) - new Date(a.date));
       localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
       closeModal();
       initView();
