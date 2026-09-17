@@ -248,21 +248,17 @@
           <textarea id="modal-input-note" placeholder="Contoh: Pemeriksaan berkas dan laporan..." rows="2" class="w-full text-xs p-3 bg-slate-950 border border-slate-700/80 rounded-2xl outline-none focus:border-orange-500 text-slate-200 font-medium transition resize-none"></textarea>
         </div>
 
-        <!-- Input Foto Dokumentasi -->
-        <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi (Opsional):</label>
-          <input type="file" id="modal-input-photo" accept="image/*" onchange="previewImage(event)" class="w-full text-xs p-2 bg-slate-950 border border-slate-700/80 rounded-2xl text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-orange-600 file:text-white hover:file:bg-orange-500 cursor-pointer">
-          <div id="modal-photo-preview-box" class="mt-2 hidden">
-            <div class="relative inline-block">
-              <img id="modal-photo-preview" class="w-20 h-20 object-cover rounded-xl border border-slate-700 shadow-md" src="" alt="Preview">
-              <button type="button" onclick="removePreviewPhoto()" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow hover:bg-rose-500 cursor-pointer">✕</button>
-            </div>
-          </div>
-        </div>
-
+        <!-- Urutan Ditukar: Pilih Petugas Terlebih Dahulu -->
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1.5">Pilih Petugas Terlibat:</label>
           <div id="modal-checkboxes-orang" class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar"></div>
+        </div>
+
+        <!-- Foto Dokumentasi (Multiple/Lebih dari 1 Foto) -->
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi (Bisa pilih lebih dari 1 foto):</label>
+          <input type="file" id="modal-input-photo" accept="image/*" multiple onchange="previewImages(event)" class="w-full text-xs p-2 bg-slate-950 border border-slate-700/80 rounded-2xl text-slate-400 file:mr-3 file:py-1.5 file:px-3 file:rounded-xl file:border-0 file:text-[11px] file:font-bold file:bg-orange-600 file:text-white hover:file:bg-orange-500 cursor-pointer">
+          <div id="modal-photo-preview-box" class="mt-2 hidden flex flex-wrap gap-2"></div>
         </div>
       </div>
 
@@ -412,7 +408,7 @@
     let editSessionId = null;
     let isSystemUnlocked = false;
     let activeWeeksPerKeg = {};
-    let currentUploadedPhotoBase64 = null;
+    let currentUploadedPhotosBase64 = [];
 
     window.addEventListener('DOMContentLoaded', () => {
       const now = new Date();
@@ -536,54 +532,72 @@
     }
 
     // ---------------------------------------------------------
-    // KOMPRESI & PREVIEW FOTO
+    // KOMPRESI & PREVIEW MULTI FOTO
     // ---------------------------------------------------------
-    function previewImage(event) {
-      const file = event.target.files[0];
-      if (!file) return;
+    function previewImages(event) {
+      const files = event.target.files;
+      if (!files || files.length === 0) return;
 
-      const reader = new FileReader();
-      reader.onload = function(e) {
-        const img = new Image();
-        img.onload = function() {
-          const canvas = document.createElement('canvas');
-          const MAX_WIDTH = 600;
-          const MAX_HEIGHT = 600;
-          let width = img.width;
-          let height = img.height;
+      Array.from(files).forEach(file => {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          const img = new Image();
+          img.onload = function() {
+            const canvas = document.createElement('canvas');
+            const MAX_WIDTH = 600;
+            const MAX_HEIGHT = 600;
+            let width = img.width;
+            let height = img.height;
 
-          if (width > height) {
-            if (width > MAX_WIDTH) {
-              height *= MAX_WIDTH / width;
-              width = MAX_WIDTH;
+            if (width > height) {
+              if (width > MAX_WIDTH) {
+                height *= MAX_WIDTH / width;
+                width = MAX_WIDTH;
+              }
+            } else {
+              if (height > MAX_HEIGHT) {
+                width *= MAX_HEIGHT / height;
+                height = MAX_HEIGHT;
+              }
             }
-          } else {
-            if (height > MAX_HEIGHT) {
-              width *= MAX_HEIGHT / height;
-              height = MAX_HEIGHT;
-            }
-          }
 
-          canvas.width = width;
-          canvas.height = height;
-          const ctx = canvas.getContext('2d');
-          ctx.drawImage(img, 0, 0, width, height);
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
 
-          currentUploadedPhotoBase64 = canvas.toDataURL('image/jpeg', 0.7);
-          
-          document.getElementById('modal-photo-preview').src = currentUploadedPhotoBase64;
-          document.getElementById('modal-photo-preview-box').classList.remove('hidden');
+            const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
+            currentUploadedPhotosBase64.push(compressedBase64);
+            renderPhotoPreviews();
+          };
+          img.src = e.target.result;
         };
-        img.src = e.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsDataURL(file);
+      });
+      event.target.value = ''; // Reset input file
     }
 
-    function removePreviewPhoto() {
-      currentUploadedPhotoBase64 = null;
-      document.getElementById('modal-input-photo').value = '';
-      document.getElementById('modal-photo-preview').src = '';
-      document.getElementById('modal-photo-preview-box').classList.add('hidden');
+    function renderPhotoPreviews() {
+      const previewBox = document.getElementById('modal-photo-preview-box');
+      previewBox.innerHTML = '';
+      if (currentUploadedPhotosBase64.length === 0) {
+        previewBox.classList.add('hidden');
+        return;
+      }
+      previewBox.classList.remove('hidden');
+      currentUploadedPhotosBase64.forEach((photoSrc, idx) => {
+        previewBox.innerHTML += `
+          <div class="relative inline-block">
+            <img src="${photoSrc}" class="w-16 h-16 object-cover rounded-xl border border-slate-700 shadow-md">
+            <button type="button" onclick="removePreviewPhoto(${idx})" class="absolute -top-2 -right-2 bg-rose-600 text-white rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold shadow hover:bg-rose-500 cursor-pointer">✕</button>
+          </div>
+        `;
+      });
+    }
+
+    function removePreviewPhoto(index) {
+      currentUploadedPhotosBase64.splice(index, 1);
+      renderPhotoPreviews();
     }
 
     function openLightbox(imgSrc) {
@@ -618,12 +632,19 @@
 
             let noteSection = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic bg-slate-900/80 px-2 py-1 rounded-xl border border-slate-800">📝 "${sess.note}"</p>` : '';
             
-            let photoSection = sess.photo ? `
-              <div class="mt-1">
-                <span class="text-[9px] text-slate-400 font-bold block mb-1">Dokumentasi:</span>
-                <img src="${sess.photo}" onclick="openLightbox('${sess.photo}')" class="w-14 h-14 object-cover rounded-xl border border-slate-700 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar foto">
-              </div>
-            ` : '';
+            let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
+            let photoSection = '';
+            if (photosList.length > 0) {
+              let thumbs = photosList.map(pSrc => `
+                <img src="${pSrc}" onclick="openLightbox('${pSrc}')" class="w-14 h-14 object-cover rounded-xl border border-slate-700 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar foto">
+              `).join('');
+              photoSection = `
+                <div class="mt-1">
+                  <span class="text-[9px] text-slate-400 font-bold block mb-1">Dokumentasi (${photosList.length} Foto):</span>
+                  <div class="flex flex-wrap gap-1.5">${thumbs}</div>
+                </div>
+              `;
+            }
 
             let actionButtonsHtml = `
               <button onclick="openEditModal('${keg.id}', '${currentSessionId}')" class="px-2 py-0.5 rounded-lg bg-slate-800/60 text-slate-400 hover:bg-slate-700 hover:text-white font-bold text-[10px] transition border border-slate-700 cursor-pointer" title="Ubah sesi ini (Perlu PIN)">Edit</button>
@@ -681,13 +702,12 @@
       checkLockAndRun(() => {
         activeKegId = kegId;
         editSessionId = null;
-        currentUploadedPhotoBase64 = null;
+        currentUploadedPhotosBase64 = [];
         document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
         document.getElementById('modal-title').innerText = kegTitle;
         document.getElementById('modal-save-btn').innerText = "+ Simpan Sesi";
         document.getElementById('modal-input-photo').value = '';
-        document.getElementById('modal-photo-preview').src = '';
-        document.getElementById('modal-photo-preview-box').classList.add('hidden');
+        renderPhotoPreviews();
         renderCheckboxes([], kegId);
         const now = new Date();
         document.getElementById('modal-input-date').value = now.toISOString().split('T')[0];
@@ -700,7 +720,7 @@
       checkLockAndRun(() => {
         activeKegId = kegId;
         editSessionId = sessionId;
-        currentUploadedPhotoBase64 = null;
+        currentUploadedPhotosBase64 = [];
         const kegData = kegiatanList.find(k => k.id === kegId);
         document.getElementById('modal-subtitle').innerText = "Edit Pelaksanaan";
         document.getElementById('modal-title').innerText = kegData ? kegData.title : "Ubah Sesi";
@@ -713,15 +733,9 @@
           document.getElementById('modal-input-date').value = targetSession.date || '';
           document.getElementById('modal-input-note').value = targetSession.note || '';
           
-          if (targetSession.photo) {
-            currentUploadedPhotoBase64 = targetSession.photo;
-            document.getElementById('modal-photo-preview').src = targetSession.photo;
-            document.getElementById('modal-photo-preview-box').classList.remove('hidden');
-          } else {
-            document.getElementById('modal-input-photo').value = '';
-            document.getElementById('modal-photo-preview').src = '';
-            document.getElementById('modal-photo-preview-box').classList.add('hidden');
-          }
+          currentUploadedPhotosBase64 = targetSession.photos || (targetSession.photo ? [targetSession.photo] : []);
+          document.getElementById('modal-input-photo').value = '';
+          renderPhotoPreviews();
 
           renderCheckboxes(targetSession.members || [], kegId);
         }
@@ -749,7 +763,7 @@
       document.getElementById('input-modal').classList.add('hidden');
       activeKegId = null;
       editSessionId = null;
-      currentUploadedPhotoBase64 = null;
+      currentUploadedPhotosBase64 = [];
     }
 
     function saveNewSession() {
@@ -772,7 +786,8 @@
           state[activeKegId][indexToEdit].date = selectedDate;
           state[activeKegId][indexToEdit].note = sessionNote;
           state[activeKegId][indexToEdit].members = selectedMembers;
-          state[activeKegId][indexToEdit].photo = currentUploadedPhotoBase64;
+          state[activeKegId][indexToEdit].photos = currentUploadedPhotosBase64;
+          delete state[activeKegId][indexToEdit].photo; // cleanup legacy format if any
         }
       } else {
         state[activeKegId].push({
@@ -780,7 +795,7 @@
           date: selectedDate,
           note: sessionNote,
           members: selectedMembers,
-          photo: currentUploadedPhotoBase64
+          photos: currentUploadedPhotosBase64
         });
       }
 
