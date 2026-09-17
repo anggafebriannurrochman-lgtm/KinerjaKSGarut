@@ -22,6 +22,13 @@
       print-color-adjust: exact !important;
     }
 
+    /* Memaksa seluruh teks di preview PDF menjadi hitam pekat dan tebal saat dicetak */
+    #pdf-export-container, #pdf-export-container * {
+      color: #000 !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
     /* Pengaturan Otomatis Ukuran Kertas A5 Lanskap pada Window Print */
     @page {
       size: A5 landscape;
@@ -1057,8 +1064,8 @@
           let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
 
           let rencanaHtml = `<div class="font-bold text-black text-xs">${keg.title}</div>`;
-          if (notePart) rencanaHtml += `<div class="text-slate-700 text-[10px] mt-0.5">Catatan: ${notePart}</div>`;
-          if (membersList.length > 0) rencanaHtml += `<div class="text-slate-800 text-[10px] font-semibold mt-0.5">Petugas: ${membersList.join(', ')}</div>`;
+          if (notePart) rencanaHtml += `<div class="text-black font-semibold text-[10px] mt-0.5">Catatan: ${notePart}</div>`;
+          if (membersList.length > 0) rencanaHtml += `<div class="text-black font-bold text-[10px] mt-0.5">Petugas: ${membersList.join(', ')}</div>`;
 
           let sigHtmlItems = '';
           for (let [mName, sSrc] of Object.entries(sigsData)) {
@@ -1073,29 +1080,29 @@
           if (sigHtmlItems) {
             rencanaHtml += `
               <div class="mt-1 pt-1 border-t border-slate-300">
-                <span class="text-[8px] font-bold text-slate-600 block mb-0.5">Tanda Tangan:</span>
+                <span class="text-[8px] font-bold text-black block mb-0.5">Tanda Tangan:</span>
                 <div style="display: flex; flex-wrap: wrap; gap: 4px;">${sigHtmlItems}</div>
               </div>
             `;
           }
 
-          let ketHtml = `<div class="text-[10px] text-black font-medium">Sesi terlaksana (${membersList.length} Petugas)</div>`;
+          let ketHtml = `<div class="text-[10px] text-black font-bold">Sesi terlaksana (${membersList.length} Petugas)</div>`;
           let photoHtmlItems = '';
           photosList.forEach(pSrc => {
             photoHtmlItems += `<img src="${pSrc}" class="w-16 h-16 object-cover rounded border border-slate-400">`;
           });
           if (photoHtmlItems) {
-            ketHtml += `<div class="mt-1"><span class="text-[9px] font-bold text-slate-700 block mb-0.5">Foto:</span><div class="flex flex-wrap gap-1">${photoHtmlItems}</div></div>`;
+            ketHtml += `<div class="mt-1"><span class="text-[9px] font-bold text-black block mb-0.5">Foto:</span><div class="flex flex-wrap gap-1">${photoHtmlItems}</div></div>`;
           }
 
           rowsHtml += `
             <tr class="border-b border-black">
-              <td class="border border-black p-1.5 text-center font-bold align-top text-[10px]">${sessNo++}</td>
-              <td class="border border-black p-1.5 text-center font-semibold align-top text-[10px]">${sess.date || ''}</td>
-              <td class="border border-black p-2 align-top text-[10px]">${rencanaHtml}</td>
-              <td class="border border-black p-1.5 text-center font-bold text-sm align-top">✓</td>
+              <td class="border border-black p-1.5 text-center font-bold text-black align-top text-[10px]">${sessNo++}</td>
+              <td class="border border-black p-1.5 text-center font-bold text-black align-top text-[10px]">${sess.date || ''}</td>
+              <td class="border border-black p-2 align-top text-[10px] text-black">${rencanaHtml}</td>
+              <td class="border border-black p-1.5 text-center font-extrabold text-black text-sm align-top">✓</td>
               <td class="border border-black p-1.5 text-center align-top"></td>
-              <td class="border border-black p-2 align-top text-[10px]">${ketHtml}</td>
+              <td class="border border-black p-2 align-top text-[10px] text-black">${ketHtml}</td>
             </tr>
           `;
         }
@@ -1106,7 +1113,7 @@
           <div style="box-sizing: border-box; padding: 10mm; width: 210mm; min-height: 148mm; background: #ffffff; ${pageBreakStyle}">
             <div class="text-center space-y-1 pb-3 border-b-2 border-black">
               <h1 class="text-sm font-black uppercase tracking-wider text-black">PROGRAM DAN REALISASI KERJA KEPALA STASIUN</h1>
-              <h2 class="text-xs font-bold text-slate-800 uppercase">${stationName}</h2>
+              <h2 class="text-xs font-bold text-black uppercase">${stationName}</h2>
             </div>
             
             <div class="mt-3">
