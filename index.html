@@ -7,8 +7,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Library untuk Export Excel dengan Styling -->
-  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
+  <!-- Library ExcelJS untuk Export Excel dengan Gambar & Styling Lengkap -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -789,119 +789,150 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR KONVERSI KE EXCEL (CATATAN, PETUGAS, & TTD DI RENCANA KERJA | FOTO DI KETERANGAN)
+    // EXPORT EXCEL MENGGUNAKAN EXCELJS (MENYEMATKAN GAMBAR TTD & FOTO)
     // ---------------------------------------------------------
-    function exportToExcel() {
-      let dataRows = [];
+    async function exportToExcel() {
+      const workbook = new ExcelJS.Workbook();
+      const worksheet = workbook.addWorksheet('Realisasi Kerja KS');
+
+      // 1. Judul Utama
+      worksheet.mergeCells('A1:F1');
+      const titleCell = worksheet.getCell('A1');
+      titleCell.value = "PROGRAM DAN REALISASI KERJA KS";
+      titleCell.font = { bold: true, size: 14 };
+      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+      worksheet.getRow(1).height = 30;
+
+      // 2. Header Baris 1
+      worksheet.addRow(['NO', 'HARI/TANGGAL', 'RENCANA KERJA', 'REALISASI', '', 'KETERANGAN']);
+      worksheet.mergeCells('D2:E2');
+      worksheet.getRow(2).height = 25;
+
+      // 3. Header Baris 2
+      worksheet.addRow(['', '', '', 'YA', 'TIDAK', '6']);
+      worksheet.getRow(3).height = 22;
+
+      // Styling Header (Background Hijau, Bold, Border)
+      for (let r = 2; r <= 3; r++) {
+        const row = worksheet.getRow(r);
+        row.eachCell((cell) => {
+          cell.font = { bold: true, color: { argb: '000000' } };
+          cell.alignment = { horizontal: 'center', vertical: 'middle' };
+          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '00FF00' } };
+          cell.border = {
+            top: { style: 'thin', color: { argb: '000000' } },
+            bottom: { style: 'thin', color: { argb: '000000' } },
+            left: { style: 'thin', color: { argb: '000000' } },
+            right: { style: 'thin', color: { argb: '000000' } }
+          };
+        });
+      }
+
+      let currentRowIdx = 4;
       let noCounter = 1;
 
       kegiatanList.forEach(keg => {
         let sessions = state[keg.id] || [];
         sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+        
         sessions.forEach(sess => {
           let membersList = sess.members || [];
           let notePart = sess.note ? sess.note : '';
           let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
           let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
-          let sigNames = Object.keys(sigsData);
-          
-          // Kolom Rencana Kerja: Nama Kegiatan + Catatan + Petugas + Keterangan TTD
-          let rencanaKerjaText = keg.title;
-          if (notePart) {
-            rencanaKerjaText += `\nCatatan: ${notePart}`;
-          }
-          if (membersList.length > 0) {
-            rencanaKerjaText += `\nPetugas TTD: ${membersList.join(', ')}`;
-          }
-          if (sigNames.length > 0) {
-            rencanaKerjaText += `\n[Gambar Tanda Tangan Petugas: ${sigNames.join(', ')}]`;
-          }
 
-          // Kolom Keterangan: Sesi terlaksana + Info Foto Dokumentasi
+          // Rencana Kerja (Nama Kegiatan + Catatan + Petugas)
+          let rencanaText = keg.title;
+          if (notePart) rencanaText += `\nCatatan: ${notePart}`;
+          if (membersList.length > 0) rencanaText += `\nPetugas TTD: ${membersList.join(', ')}`;
+
+          // Keterangan
           let ketText = `Sesi terlaksana (${membersList.length} Petugas)`;
-          if (photosList.length > 0) {
-            ketText += `\n[Foto Dokumentasi: ${photosList.length} File terlampir]`;
+
+          const row = worksheet.addRow([
+            noCounter++,
+            sess.date || '',
+            rencanaText,
+            '✓',
+            '',
+            ketText
+          ]);
+
+          // Tentukan tinggi baris agar muat teks dan gambar
+          let rowHeight = 45;
+          let sigCount = Object.keys(sigsData).length;
+          let photoCount = photosList.length;
+          if (sigCount > 0 || photoCount > 0) {
+            rowHeight = Math.max(rowHeight, 85 + Math.max(sigCount, photoCount) * 20);
+          }
+          row.height = rowHeight;
+
+          // Border dan Alignment untuk setiap sel pada baris data
+          for (let c = 1; c <= 6; c++) {
+            const cell = row.getCell(c);
+            cell.border = {
+              top: { style: 'thin', color: { argb: '000000' } },
+              bottom: { style: 'thin', color: { argb: '000000' } },
+              left: { style: 'thin', color: { argb: '000000' } },
+              right: { style: 'thin', color: { argb: '000000' } }
+            };
+            if (c === 1 || c === 2 || c === 4 || c === 5) {
+              cell.alignment = { horizontal: 'center', vertical: 'middle' };
+            } else {
+              cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
+            }
           }
 
-          dataRows.push({
-            no: noCounter++,
-            date: sess.date || '',
-            rencana: rencanaKerjaText,
-            realisasi_ya: '✓',
-            realisasi_tidak: '',
-            keterangan: ketText
-          });
+          // Sematkan Gambar Tanda Tangan ke Kolom Rencana Kerja (Kolom C / Index 2)
+          let sigEntries = Object.entries(sigsData);
+          if (sigEntries.length > 0) {
+            sigEntries.forEach(([mName, sBase64], sIdx) => {
+              try {
+                let cleanBase64 = sBase64.includes(',') ? sBase64.split(',')[1] : sBase64;
+                const imageId = workbook.addImage({ base64: cleanBase64, extension: 'png' });
+                worksheet.addImage(imageId, {
+                  tl: { col: 2.2 + (sIdx * 0.45), row: currentRowIdx - 0.35 },
+                  ext: { width: 65, height: 30 }
+                });
+              } catch(err) { console.error("Gagal menyematkan TTD", err); }
+            });
+          }
+
+          // Sematkan Foto Dokumentasi ke Kolom Keterangan (Kolom F / Index 5)
+          if (photosList.length > 0) {
+            photosList.forEach((pBase64, pIdx) => {
+              try {
+                let cleanBase64 = pBase64.includes(',') ? pBase64.split(',')[1] : pBase64;
+                const imageId = workbook.addImage({ base64: cleanBase64, extension: 'jpeg' });
+                worksheet.addImage(imageId, {
+                  tl: { col: 5.1 + (pIdx * 0.4), row: currentRowIdx - 0.7 },
+                  ext: { width: 45, height: 45 }
+                });
+              } catch(err) { console.error("Gagal menyematkan Foto", err); }
+            });
+          }
+
+          currentRowIdx++;
         });
       });
 
-      let ws_data = [];
+      // Atur Lebar Kolom
+      worksheet.getColumn(1).width = 6;  // NO
+      worksheet.getColumn(2).width = 16; // HARI/TANGGAL
+      worksheet.getColumn(3).width = 45; // RENCANA KERJA
+      worksheet.getColumn(4).width = 10; // YA
+      worksheet.getColumn(5).width = 10; // TIDAK
+      worksheet.getColumn(6).width = 30; // KETERANGAN
 
-      ws_data.push([
-        { v: "PROGRAM DAN REALISASI KERJA KS", t: "s", s: { font: { bold: true, sz: 14, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "FFFFFF" } } } },
-        "", "", "", "", ""
-      ]);
-
-      ws_data.push([
-        { v: "NO", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "HARI/TANGGAL", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "RENCANA KERJA", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "REALISASI", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "REALISASI", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "KETERANGAN", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } }
-      ]);
-
-      ws_data.push([
-        { v: "1", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "2", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "3", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "YA", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "TIDAK", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
-        { v: "6", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } }
-      ]);
-
-      if (dataRows.length === 0) {
-        dataRows.push({ no: 1, date: "-", rencana: "Belum ada data sesi kegiatan", realisasi_ya: "", realisasi_tidak: "", keterangan: "-" });
-      }
-
-      dataRows.forEach(row => {
-        ws_data.push([
-          { v: row.no, t: "n", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
-          { v: row.date, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
-          { v: row.rencana, t: "s", s: { alignment: { horizontal: "left", vertical: "center", wrapText: true }, border: getBorder() } },
-          { v: row.realisasi_ya, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
-          { v: row.realisasi_tidak, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
-          { v: row.keterangan, t: "s", s: { alignment: { horizontal: "left", vertical: "center", wrapText: true }, border: getBorder() } }
-        ]);
-      });
-
-      let ws = XLSX.utils.aoa_to_sheet(ws_data);
-
-      ws['!merges'] = [
-        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
-        { s: { r: 1, c: 3 }, e: { r: 1, c: 4 } }
-      ];
-
-      ws['!cols'] = [
-        { wch: 6 },  // NO
-        { wch: 16 }, // HARI/TANGGAL
-        { wch: 45 }, // RENCANA KERJA
-        { wch: 10 }, // YA
-        { wch: 10 }, // TIDAK
-        { wch: 30 }  // KETERANGAN
-      ];
-
-      let wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, "Realisasi Kerja KS");
-      XLSX.writeFile(wb, `Program_Dan_Realisasi_Kerja_${stationName}.xlsx`);
-    }
-
-    function getBorder() {
-      return {
-        top: { style: "thin", color: { rgb: "000000" } },
-        bottom: { style: "thin", color: { rgb: "000000" } },
-        left: { style: "thin", color: { rgb: "000000" } },
-        right: { style: "thin", color: { rgb: "000000" } }
-      };
+      // Unduh File Excel
+      const buffer = await workbook.xlsx.writeBuffer();
+      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Program_Dan_Realisasi_Kerja_${stationName}.xlsx`;
+      a.click();
+      window.URL.revokeObjectURL(url);
     }
 
     // ---------------------------------------------------------
@@ -925,7 +956,6 @@
               `<span class="bg-orange-500/10 text-orange-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg border border-orange-500/20">${mName}</span>`
             ).join(' ');
 
-            // Catatan & Foto Dokumentasi pada Kartu Histori
             let noteText = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic">📝 "${sess.note}"</p>` : '';
             let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
             let photoThumbs = photosList.length > 0 ? `
