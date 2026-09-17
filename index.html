@@ -7,14 +7,20 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Library ExcelJS untuk Export Excel dengan Gambar & Styling Lengkap -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+  <!-- Library html2pdf untuk Export & Download PDF langsung -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    @media print {
+      body { background: white !important; color: black !important; }
+      header, nav, button, footer, .no-print { display: none !important; }
+      .print-container { width: 100% !important; padding: 0 !important; margin: 0 !important; }
+    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-orange-500 selection:text-white" onclick="closeDropdownOnClickOutside(event)">
@@ -24,15 +30,13 @@
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-20">
       <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 h-full">
         
-        <!-- Baris Atas di HP (Sejajar Kiri & Kanan), Sisi Kiri di Desktop -->
+        <!-- Baris Atas di HP -->
         <div class="flex justify-between items-center w-full sm:w-auto">
-          <!-- Kiri: Judul Sistem -->
           <div>
             <span class="text-[9px] sm:text-[10px] text-orange-400 font-extrabold tracking-widest uppercase">Monitoring SO SDM</span>
             <h1 class="font-bold text-slate-300 text-[11px] sm:text-xs">Daop 2 Bandung</h1>
           </div>
 
-          <!-- Kanan HP (Versi Ringkas, Sejajar dengan Monitoring SO SDM) -->
           <div class="flex sm:hidden items-center bg-slate-950/80 border border-slate-800 px-2.5 py-1.5 rounded-xl shadow-inner gap-2">
             <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-[10px] shadow-md flex-shrink-0">
               AF
@@ -50,7 +54,7 @@
           <h2 id="header-station-title" class="text-sm sm:text-2xl font-black text-white tracking-widest bg-gradient-to-r from-white via-slate-100 to-orange-400 bg-clip-text text-transparent drop-shadow-sm">STASIUN GARUT</h2>
         </div>
 
-        <!-- Kanan: Versi Lengkap untuk Desktop (sm ke atas) -->
+        <!-- Kanan Desktop -->
         <div class="hidden sm:flex items-center gap-4">
           <div class="flex items-center bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-xl shadow-inner gap-3">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-xs shadow-md">
@@ -70,7 +74,7 @@
   <!-- Container Utama -->
   <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex-1 w-full space-y-5">
     
-    <!-- Navigation Tabs & Tombol Kunci -->
+    <!-- Navigation Tabs & Tombol Aksi -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
       <div class="flex bg-slate-900 p-1.5 rounded-2xl w-full sm:w-fit border border-slate-800/80 shadow-inner justify-center gap-1">
         <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-all text-center cursor-pointer">
@@ -79,8 +83,8 @@
         <button onclick="switchTab('kegiatan')" id="tab-kegiatan" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all text-center cursor-pointer">
           ⚡ Daftar Kegiatan
         </button>
-        <button onclick="exportToExcel()" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all text-center cursor-pointer flex items-center justify-center gap-1.5">
-          <span>📊</span> <span>Export Excel</span>
+        <button onclick="openPdfReportModal()" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all text-center cursor-pointer flex items-center justify-center gap-1.5">
+          <span>📄</span> <span>Laporan & Download PDF</span>
         </button>
       </div>
 
@@ -225,6 +229,62 @@
     </div>
   </footer>
 
+  <!-- MODAL LAPORAN & DOWNLOAD PDF -->
+  <div id="pdf-report-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+    <div class="bg-white text-slate-900 rounded-3xl shadow-2xl w-full max-w-5xl p-6 sm:p-8 space-y-6 my-auto">
+      <div class="flex justify-between items-center border-b pb-4">
+        <div>
+          <h3 class="font-extrabold text-lg text-slate-900">Preview Dokumen Laporan Resmi (Format Tabel Asli)</h3>
+          <p class="text-xs text-slate-500">Tanda tangan petugas dan foto dokumentasi besar termuat sempurna dalam tabel</p>
+        </div>
+        <div class="flex gap-2">
+          <button onclick="downloadPdfFile()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5">
+            <span>📥</span> <span>Download PDF</span>
+          </button>
+          <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5">
+            <span>🖨️</span> <span>Cetak Langsung</span>
+          </button>
+          <button onclick="closePdfReportModal()" class="px-3 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition cursor-pointer">✕</button>
+        </div>
+      </div>
+
+      <!-- Area Dokumen Resmi untuk PDF Export -->
+      <div class="max-h-[70vh] overflow-y-auto border border-slate-300 p-2 rounded-2xl bg-slate-50">
+        <div id="pdf-export-container" class="space-y-4 font-sans bg-white p-6 rounded-xl shadow-sm">
+          <div class="text-center space-y-1 pb-4 border-b-2 border-black">
+            <h1 class="text-base sm:text-lg font-black uppercase tracking-wider text-black">PROGRAM DAN REALISASI KERJA KEPALA STASIUN</h1>
+            <h2 id="pdf-station-subtitle" class="text-sm font-bold text-slate-800 uppercase">STASIUN GARUT</h2>
+          </div>
+          
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse border border-black text-[11px]" style="table-layout: fixed;">
+              <thead>
+                <tr class="bg-[#00FF00] text-black text-center font-bold">
+                  <th class="border border-black p-2 w-[8%]">NO</th>
+                  <th class="border border-black p-2 w-[15%]">HARI/TANGGAL</th>
+                  <th class="border border-black p-2 w-[34%]">RENCANA KERJA</th>
+                  <th class="border border-black p-2 w-[7%]">YA</th>
+                  <th class="border border-black p-2 w-[7%]">TIDAK</th>
+                  <th class="border border-black p-2 w-[29%]">KETERANGAN</th>
+                </tr>
+                <tr class="bg-[#00FF00] text-black text-center font-bold text-[10px]">
+                  <th class="border border-black p-1">1</th>
+                  <th class="border border-black p-1">2</th>
+                  <th class="border border-black p-1">3</th>
+                  <th class="border border-black p-1" colspan="2">REALISASI</th>
+                  <th class="border border-black p-1">6</th>
+                </tr>
+              </thead>
+              <tbody id="pdf-table-body">
+                <!-- Diisi secara dinamis -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- POP-UP MODAL (Tambah & Edit Sesi Kegiatan) -->
   <div id="input-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-md p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in duration-150">
@@ -247,7 +307,6 @@
           <textarea id="modal-input-note" placeholder="Contoh: Pemeriksaan berkas dan laporan..." rows="2" class="w-full text-xs p-3 bg-slate-950 border border-slate-700/80 rounded-2xl outline-none focus:border-orange-500 text-slate-200 font-medium transition resize-none"></textarea>
         </div>
 
-        <!-- Dropdown Kompak Pemilihan Petugas Terlibat -->
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1">Pilih Petugas Terlibat:</label>
           <div class="relative">
@@ -255,14 +314,11 @@
               <span id="staff-dropdown-label">Pilih petugas...</span>
               <span class="text-[10px] text-orange-400">▼</span>
             </button>
-            <div id="staff-dropdown-panel" class="hidden absolute left-0 right-0 top-full mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-40 p-2 max-h-40 overflow-y-auto custom-scrollbar space-y-1">
-              <!-- Checkboxes diinject secara dinamis -->
-            </div>
+            <div id="staff-dropdown-panel" class="hidden absolute left-0 right-0 top-full mt-1 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-40 p-2 max-h-40 overflow-y-auto custom-scrollbar space-y-1"></div>
           </div>
           <div id="selected-staff-badges" class="flex flex-wrap gap-1 mt-1.5"></div>
         </div>
 
-        <!-- Kolom Tanda Tangan Diperluas & Dinamis -->
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1.5">Kolom Tanda Tangan Kehadiran (Wajib Tanda Tangan Baru):</label>
           <div id="signature-pads-container" class="space-y-3 p-2.5 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar max-h-72 overflow-y-auto">
@@ -270,7 +326,6 @@
           </div>
         </div>
 
-        <!-- Foto Dokumentasi -->
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi (Bisa pilih lebih dari 1 foto):</label>
           <div class="flex items-center bg-slate-950 border border-slate-700/80 rounded-2xl p-2 gap-3 relative overflow-hidden">
@@ -789,150 +844,90 @@
     }
 
     // ---------------------------------------------------------
-    // EXPORT EXCEL MENGGUNAKAN EXCELJS (MENYEMATKAN GAMBAR TTD & FOTO)
+    // FITUR LAPORAN & DOWNLOAD PDF RESMI
     // ---------------------------------------------------------
-    async function exportToExcel() {
-      const workbook = new ExcelJS.Workbook();
-      const worksheet = workbook.addWorksheet('Realisasi Kerja KS');
+    function openPdfReportModal() {
+      const tbody = document.getElementById('pdf-table-body');
+      tbody.innerHTML = '';
+      document.getElementById('pdf-station-subtitle').innerText = stationName;
 
-      // 1. Judul Utama
-      worksheet.mergeCells('A1:F1');
-      const titleCell = worksheet.getCell('A1');
-      titleCell.value = "PROGRAM DAN REALISASI KERJA KS";
-      titleCell.font = { bold: true, size: 14 };
-      titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
-      worksheet.getRow(1).height = 30;
-
-      // 2. Header Baris 1
-      worksheet.addRow(['NO', 'HARI/TANGGAL', 'RENCANA KERJA', 'REALISASI', '', 'KETERANGAN']);
-      worksheet.mergeCells('D2:E2');
-      worksheet.getRow(2).height = 25;
-
-      // 3. Header Baris 2
-      worksheet.addRow(['', '', '', 'YA', 'TIDAK', '6']);
-      worksheet.getRow(3).height = 22;
-
-      // Styling Header (Background Hijau, Bold, Border)
-      for (let r = 2; r <= 3; r++) {
-        const row = worksheet.getRow(r);
-        row.eachCell((cell) => {
-          cell.font = { bold: true, color: { argb: '000000' } };
-          cell.alignment = { horizontal: 'center', vertical: 'middle' };
-          cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: '00FF00' } };
-          cell.border = {
-            top: { style: 'thin', color: { argb: '000000' } },
-            bottom: { style: 'thin', color: { argb: '000000' } },
-            left: { style: 'thin', color: { argb: '000000' } },
-            right: { style: 'thin', color: { argb: '000000' } }
-          };
-        });
-      }
-
-      let currentRowIdx = 4;
       let noCounter = 1;
+      let hasData = false;
 
       kegiatanList.forEach(keg => {
         let sessions = state[keg.id] || [];
         sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
         
         sessions.forEach(sess => {
+          hasData = true;
           let membersList = sess.members || [];
           let notePart = sess.note ? sess.note : '';
           let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
           let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
 
-          // Rencana Kerja (Nama Kegiatan + Catatan + Petugas)
-          let rencanaText = keg.title;
-          if (notePart) rencanaText += `\nCatatan: ${notePart}`;
-          if (membersList.length > 0) rencanaText += `\nPetugas TTD: ${membersList.join(', ')}`;
+          // Rencana Kerja (Nama Kegiatan + Catatan + Petugas + Tanda Tangan)
+          let rencanaHtml = `<div class="font-bold text-black text-xs">${keg.title}</div>`;
+          if (notePart) rencanaHtml += `<div class="text-slate-700 text-[11px] mt-0.5">Catatan: ${notePart}</div>`;
+          if (membersList.length > 0) rencanaHtml += `<div class="text-slate-800 text-[11px] font-semibold mt-0.5">Petugas: ${membersList.join(', ')}</div>`;
 
-          // Keterangan
-          let ketText = `Sesi terlaksana (${membersList.length} Petugas)`;
-
-          const row = worksheet.addRow([
-            noCounter++,
-            sess.date || '',
-            rencanaText,
-            '✓',
-            '',
-            ketText
-          ]);
-
-          // Tentukan tinggi baris agar muat teks dan gambar
-          let rowHeight = 45;
-          let sigCount = Object.keys(sigsData).length;
-          let photoCount = photosList.length;
-          if (sigCount > 0 || photoCount > 0) {
-            rowHeight = Math.max(rowHeight, 85 + Math.max(sigCount, photoCount) * 20);
-          }
-          row.height = rowHeight;
-
-          // Border dan Alignment untuk setiap sel pada baris data
-          for (let c = 1; c <= 6; c++) {
-            const cell = row.getCell(c);
-            cell.border = {
-              top: { style: 'thin', color: { argb: '000000' } },
-              bottom: { style: 'thin', color: { argb: '000000' } },
-              left: { style: 'thin', color: { argb: '000000' } },
-              right: { style: 'thin', color: { argb: '000000' } }
-            };
-            if (c === 1 || c === 2 || c === 4 || c === 5) {
-              cell.alignment = { horizontal: 'center', vertical: 'middle' };
-            } else {
-              cell.alignment = { horizontal: 'left', vertical: 'middle', wrapText: true };
-            }
+          let sigHtmlItems = '';
+          Object.entries(sigsData).forEach(([mName, sSrc]) => {
+            sigHtmlItems += `
+              <div class="inline-block mr-2 mb-1 text-center bg-slate-50 p-1 rounded border border-slate-300">
+                <span class="text-[9px] font-bold text-black block">${mName}:</span>
+                <img src="${sSrc}" class="h-10 w-24 object-contain bg-white">
+              </div>
+            `;
+          });
+          if (sigHtmlItems) {
+            rencanaHtml += `<div class="mt-1.5 pt-1 border-t border-slate-300"><span class="text-[9px] font-bold text-slate-600 block mb-0.5">Tanda Tangan Petugas:</span>${sigHtmlItems}</div>`;
           }
 
-          // Sematkan Gambar Tanda Tangan ke Kolom Rencana Kerja (Kolom C / Index 2)
-          let sigEntries = Object.entries(sigsData);
-          if (sigEntries.length > 0) {
-            sigEntries.forEach(([mName, sBase64], sIdx) => {
-              try {
-                let cleanBase64 = sBase64.includes(',') ? sBase64.split(',')[1] : sBase64;
-                const imageId = workbook.addImage({ base64: cleanBase64, extension: 'png' });
-                worksheet.addImage(imageId, {
-                  tl: { col: 2.2 + (sIdx * 0.45), row: currentRowIdx - 0.35 },
-                  ext: { width: 65, height: 30 }
-                });
-              } catch(err) { console.error("Gagal menyematkan TTD", err); }
-            });
+          // Keterangan & Foto Dokumentasi Ukuran Besar
+          let ketHtml = `<div class="text-xs text-black font-medium">Sesi terlaksana (${membersList.length} Petugas)</div>`;
+          let photoHtmlItems = '';
+          photosList.forEach(pSrc => {
+            photoHtmlItems += `<img src="${pSrc}" class="w-28 h-28 object-cover rounded-lg border border-slate-400 shadow-sm">`;
+          });
+          if (photoHtmlItems) {
+            ketHtml += `<div class="mt-2"><span class="text-[10px] font-bold text-slate-700 block mb-1">Foto Dokumentasi:</span><div class="flex flex-wrap gap-2">${photoHtmlItems}</div></div>`;
           }
 
-          // Sematkan Foto Dokumentasi ke Kolom Keterangan (Kolom F / Index 5)
-          if (photosList.length > 0) {
-            photosList.forEach((pBase64, pIdx) => {
-              try {
-                let cleanBase64 = pBase64.includes(',') ? pBase64.split(',')[1] : pBase64;
-                const imageId = workbook.addImage({ base64: cleanBase64, extension: 'jpeg' });
-                worksheet.addImage(imageId, {
-                  tl: { col: 5.1 + (pIdx * 0.4), row: currentRowIdx - 0.7 },
-                  ext: { width: 45, height: 45 }
-                });
-              } catch(err) { console.error("Gagal menyematkan Foto", err); }
-            });
-          }
-
-          currentRowIdx++;
+          tbody.innerHTML += `
+            <tr class="border-b border-black">
+              <td class="border border-black p-2 text-center font-bold align-top">${noCounter++}</td>
+              <td class="border border-black p-2 text-center font-semibold align-top">${sess.date || ''}</td>
+              <td class="border border-black p-2.5 align-top">${rencanaHtml}</td>
+              <td class="border border-black p-2 text-center font-bold text-base align-top">✓</td>
+              <td class="border border-black p-2 text-center align-top"></td>
+              <td class="border border-black p-2.5 align-top">${ketHtml}</td>
+            </tr>
+          `;
         });
       });
 
-      // Atur Lebar Kolom
-      worksheet.getColumn(1).width = 6;  // NO
-      worksheet.getColumn(2).width = 16; // HARI/TANGGAL
-      worksheet.getColumn(3).width = 45; // RENCANA KERJA
-      worksheet.getColumn(4).width = 10; // YA
-      worksheet.getColumn(5).width = 10; // TIDAK
-      worksheet.getColumn(6).width = 30; // KETERANGAN
+      if (!hasData) {
+        tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-slate-500 italic border border-black">Belum ada data sesi kegiatan.</td></tr>`;
+      }
 
-      // Unduh File Excel
-      const buffer = await workbook.xlsx.writeBuffer();
-      const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Program_Dan_Realisasi_Kerja_${stationName}.xlsx`;
-      a.click();
-      window.URL.revokeObjectURL(url);
+      document.getElementById('pdf-report-modal').classList.remove('hidden');
+    }
+
+    function closePdfReportModal() {
+      document.getElementById('pdf-report-modal').classList.add('hidden');
+    }
+
+    function downloadPdfFile() {
+      const element = document.getElementById('pdf-export-container');
+      const opt = {
+        margin:       0.5,
+        filename:     `Program_Dan_Realisasi_Kerja_${stationName}.pdf`,
+        image:        { type: 'jpeg', quality: 0.98 },
+        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
+        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
+      };
+
+      html2pdf().from(element).set(opt).save();
     }
 
     // ---------------------------------------------------------
