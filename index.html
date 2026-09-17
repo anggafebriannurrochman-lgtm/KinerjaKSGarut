@@ -183,21 +183,6 @@
           <!-- Diisi secara dinamis melalui JavaScript -->
         </div>
       </div>
-
-      <!-- Tombol Pengaturan Bagian Bawah Dashboard (Logo Gear) -->
-      <div class="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
-        <div class="flex items-center gap-3 w-full sm:w-auto">
-          <div class="w-10 h-10 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 flex-shrink-0 text-lg">⚙️</div>
-          <div>
-            <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">Pengaturan Master Sistem & Keamanan</h3>
-            <p class="text-[10px] sm:text-[11px] text-slate-400">Kelola kegiatan, anggota, ubah PIN keamanan, dan reset data</p>
-          </div>
-        </div>
-        <button onclick="openSettingsModal()" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 cursor-pointer">
-          <span class="text-sm">⚙️</span>
-          <span>Buka Pengaturan (Gear)</span>
-        </button>
-      </div>
     </section>
 
     <!-- VIEW 2: DAFTAR KEGIATAN -->
@@ -209,7 +194,12 @@
 
   </main>
 
-  <!-- Footer Bagian Bawah (Bersih tanpa tombol reset) -->
+  <!-- Tombol Pengaturan Mengambang (Floating Gear) di Pojok Kiri Bawah -->
+  <button onclick="openSettingsModal()" class="fixed bottom-6 left-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-800 shadow-2xl flex items-center justify-center text-xl sm:text-2xl hover:bg-orange-600 hover:border-orange-500 transition-all group cursor-pointer" title="Buka Pengaturan">
+    <span class="group-hover:rotate-90 transition-transform duration-300">⚙️</span>
+  </button>
+
+  <!-- Footer Bagian Bawah -->
   <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
       <div>
@@ -217,7 +207,7 @@
         <p class="text-[10px] text-slate-500">Pusat kontrol dan rekapitulasi kepatuhan kegiatan operasional.</p>
       </div>
       <div>
-        <span class="text-[11px] font-bold text-slate-400">Akses Pengaturan & Keamanan via Logo Gear (⚙️) di Atas</span>
+        <span class="text-[11px] font-bold text-slate-400">Gunakan Logo Gear (⚙️) di Pojok Kiri Bawah untuk Pengaturan</span>
       </div>
     </div>
   </footer>
@@ -338,10 +328,8 @@
     // INISIALISASI VARIABEL & STATE APLIKASI
     // ---------------------------------------------------------
 
-    // Master Data PIN Keamanan
     let currentPin = localStorage.getItem('garut_app_pin_v6') || "1789";
 
-    // Master Data Kegiatan default & dinamis
     const defaultKegiatanList = [
       { id: "keg_0", title: "Safety Talk", desc: "Briefing keselamatan kerja materi IBPR." },
       { id: "keg_1", title: "Diskusi Studi Kasus", desc: "Pembedahan kasus operasional." },
@@ -354,7 +342,6 @@
     ];
     let kegiatanList = JSON.parse(localStorage.getItem('garut_kegiatan_list_v6')) || defaultKegiatanList;
 
-    // Master Data Anggota default & dinamis
     const defaultOrang = ["Hadi", "Fikri", "Supri", "Ujang", "Dina", "Ade", "Ramadhan"];
     let orang = JSON.parse(localStorage.getItem('garut_orang_list_v6')) || defaultOrang;
     
@@ -694,7 +681,6 @@
     }
 
     function renderSettingsData() {
-      // Render List Kegiatan
       const kegContainer = document.getElementById('settings-kegiatan-list');
       let kegHtml = '';
       kegiatanList.forEach(k => {
@@ -713,7 +699,6 @@
       });
       kegContainer.innerHTML = kegHtml || '<p class="text-[11px] text-slate-500 italic p-2">Belum ada kegiatan terdaftar.</p>';
 
-      // Render List Anggota
       const orangContainer = document.getElementById('settings-orang-list');
       let orangHtml = '';
       orang.forEach(o => {
@@ -734,7 +719,6 @@
       orangContainer.innerHTML = orangHtml || '<p class="text-[11px] text-slate-500 italic p-2 col-span-2">Belum ada anggota terdaftar.</p>';
     }
 
-    // Aksi Kegiatan
     function addNewActivity() {
       const title = document.getElementById('new-keg-title').value.trim();
       const desc = document.getElementById('new-keg-desc').value.trim();
@@ -782,7 +766,6 @@
       }
     }
 
-    // Aksi Anggota
     function addNewMember() {
       const shortName = document.getElementById('new-member-name').value.trim();
       const fullName = document.getElementById('new-member-fullname').value.trim();
