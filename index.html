@@ -7,6 +7,8 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <!-- Library untuk Export Excel dengan Styling -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx-js-style@1.2.0/dist/xlsx.bundle.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -70,16 +72,19 @@
     
     <!-- Navigation Tabs & Tombol Kunci -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
-      <div class="flex bg-slate-900 p-1.5 rounded-2xl w-full sm:w-fit border border-slate-800/80 shadow-inner justify-center">
+      <div class="flex bg-slate-900 p-1.5 rounded-2xl w-full sm:w-fit border border-slate-800/80 shadow-inner justify-center gap-1">
         <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-all text-center cursor-pointer">
           📊 Dashboard
         </button>
         <button onclick="switchTab('kegiatan')" id="tab-kegiatan" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all text-center cursor-pointer">
           ⚡ Daftar Kegiatan
         </button>
+        <button onclick="exportToExcel()" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white shadow-lg shadow-emerald-600/30 transition-all text-center cursor-pointer flex items-center justify-center gap-1.5">
+          <span>📊</span> <span>Export Excel</span>
+        </button>
       </div>
 
-      <!-- Tombol Kunci & Status di Atas Status Kunci -->
+      <!-- Tombol Kunci & Status -->
       <div class="flex flex-col items-center sm:items-end gap-1 px-1 w-full sm:w-auto">
         <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer">
           <span>🔒</span> <span id="system-lock-label">Sistem Terkunci</span>
@@ -160,7 +165,6 @@
           <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 shadow-inner flex-shrink-0 text-sm">⚡</div>
         </div>
         
-        <!-- Card Total Petugas -->
         <div class="bg-slate-900/90 p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center justify-between">
           <div>
             <p class="text-[11px] sm:text-xs font-semibold text-slate-400">Total Petugas</p>
@@ -185,7 +189,7 @@
         </div>
       </div>
 
-      <!-- Mini Modern Charts Grid Per Petugas (4 Pekan & Presentase Kegiatan) -->
+      <!-- Mini Modern Charts Grid Per Petugas -->
       <div class="bg-slate-900/90 rounded-2xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -195,28 +199,23 @@
           <span class="text-[10px] text-emerald-400 bg-emerald-950/50 border border-emerald-800/50 px-2.5 py-1 rounded-full font-bold">Modern Compact View</span>
         </div>
         
-        <!-- Grid Mini Charts -->
-        <div id="petugas-charts-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pt-1">
-          <!-- Diisi secara dinamis melalui JavaScript -->
-        </div>
+        <div id="petugas-charts-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pt-1"></div>
       </div>
     </section>
 
     <!-- VIEW 2: DAFTAR KEGIATAN -->
     <section id="view-kegiatan" class="hidden space-y-4">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5" id="cards-container">
-        <!-- Kartu kegiatan dirender secara dinamis -->
-      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5" id="cards-container"></div>
     </section>
 
   </main>
 
-  <!-- Tombol Pengaturan Mengambang (Floating Gear) di Pojok Kanan Bawah -->
+  <!-- Tombol Pengaturan Mengambang -->
   <button onclick="openSettingsModal()" class="fixed bottom-6 right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-800 shadow-2xl flex items-center justify-center text-xl sm:text-2xl hover:bg-orange-600 hover:border-orange-500 transition-all group cursor-pointer" title="Buka Pengaturan">
     <span class="group-hover:rotate-90 transition-transform duration-300">⚙️</span>
   </button>
 
-  <!-- Footer Bagian Bawah (Diposisikan di Tengah) -->
+  <!-- Footer -->
   <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex justify-center">
       <div class="text-center space-y-0.5">
@@ -248,13 +247,24 @@
           <textarea id="modal-input-note" placeholder="Contoh: Pemeriksaan berkas dan laporan..." rows="2" class="w-full text-xs p-3 bg-slate-950 border border-slate-700/80 rounded-2xl outline-none focus:border-orange-500 text-slate-200 font-medium transition resize-none"></textarea>
         </div>
 
-        <!-- Pilih Petugas Terlebih Dahulu -->
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1.5">Pilih Petugas Terlibat:</label>
           <div id="modal-checkboxes-orang" class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar"></div>
         </div>
 
-        <!-- Foto Dokumentasi dengan Custom File Picker -->
+        <!-- Fitur Tanda Tangan Digital (Optimasi Touch/Stylus HP) -->
+        <div>
+          <div class="flex justify-between items-center mb-1">
+            <label class="text-xs font-bold text-slate-300">Tanda Tangan Petugas / Kehadiran:</label>
+            <button type="button" onclick="clearSignature()" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline cursor-pointer">Hapus / Ulang TTD</button>
+          </div>
+          <div class="bg-slate-950 border border-slate-700/80 rounded-2xl p-2 relative">
+            <canvas id="signature-canvas" class="w-full h-32 bg-slate-900 rounded-xl cursor-crosshair touch-none border border-slate-800/80"></canvas>
+            <p class="text-[9px] text-slate-500 text-center mt-1">Tulis tanda tangan menggunakan jari atau stylus/pen HP di kotak atas</p>
+          </div>
+        </div>
+
+        <!-- Foto Dokumentasi -->
         <div>
           <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi (Bisa pilih lebih dari 1 foto):</label>
           <div class="flex items-center bg-slate-950 border border-slate-700/80 rounded-2xl p-2 gap-3 relative overflow-hidden">
@@ -275,15 +285,15 @@
     </div>
   </div>
 
-  <!-- MODAL FULLSCREEN ZOOM FOTO -->
+  <!-- MODAL FULLSCREEN ZOOM FOTO / TTD -->
   <div id="photo-lightbox" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
     <div class="relative max-w-4xl max-h-[90vh]">
-      <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-slate-800 shadow-2xl" src="" alt="Zoom Foto">
+      <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-slate-800 shadow-2xl" src="" alt="Zoom Gambar">
       <p class="text-center text-xs text-slate-400 mt-2 font-bold">Klik di mana saja untuk menutup</p>
     </div>
   </div>
 
-  <!-- POP-UP MODAL PENGATURAN (Gear Settings) -->
+  <!-- POP-UP MODAL PENGATURAN -->
   <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-2xl p-5 sm:p-6 space-y-5 animate-in fade-in zoom-in duration-150">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -297,44 +307,33 @@
         <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition cursor-pointer">✕</button>
       </div>
 
-      <!-- Scrollable Area for Settings -->
       <div class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
-        
-        <!-- Bagian 1: Kelola Kegiatan -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
             <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>1️⃣</span> Master Kegiatan</h4>
             <p class="text-[10px] text-slate-400 mt-1">Tambah, Edit, atau Hapus kegiatan.</p>
           </div>
-          
           <div class="flex flex-col sm:flex-row gap-2">
             <input type="text" id="new-keg-title" placeholder="Nama Kegiatan Baru" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
             <input type="text" id="new-keg-desc" placeholder="Deskripsi Singkat" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 transition">
             <button onclick="addNewActivity()" class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">+ Tambah</button>
           </div>
-
-          <!-- List Kegiatan -->
           <div class="mt-2 space-y-2" id="settings-kegiatan-list"></div>
         </div>
 
-        <!-- Bagian 2: Kelola Anggota -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
             <h4 class="font-extrabold text-xs text-emerald-400 uppercase tracking-wider flex items-center gap-1.5"><span>2️⃣</span> Master Anggota / Petugas</h4>
             <p class="text-[10px] text-slate-400 mt-1">Kelola data petugas.</p>
           </div>
-          
           <div class="flex flex-col sm:flex-row gap-2">
             <input type="text" id="new-member-name" placeholder="Panggilan (Contoh: Budi)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200 font-bold transition">
             <input type="text" id="new-member-fullname" placeholder="Nama Lengkap (Contoh: BUDI S)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200 transition">
             <button onclick="addNewMember()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">+ Tambah</button>
           </div>
-
-          <!-- List Anggota -->
           <div class="mt-2 space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2" id="settings-orang-list"></div>
         </div>
 
-        <!-- Bagian 3: Identitas Stasiun -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
           <div>
             <h4 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5"><span>3️⃣</span> Identitas Stasiun</h4>
@@ -346,23 +345,20 @@
           </div>
         </div>
 
-        <!-- Bagian 4: Keamanan & Reset Data -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
             <h4 class="font-extrabold text-xs text-rose-400 uppercase tracking-wider flex items-center gap-1.5"><span>4️⃣</span> Keamanan & Reset Data</h4>
             <p class="text-[10px] text-slate-400 mt-1">Ubah PIN keamanan universal atau lakukan reset seluruh sesi kegiatan.</p>
           </div>
-
           <div class="flex flex-col sm:flex-row gap-2.5">
             <button onclick="changePinCode()" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
-              <span>🔑 Ubah PIN Keamanan (Aplikasi & Reset)</span>
+              <span>🔑 Ubah PIN Keamanan</span>
             </button>
             <button onclick="resetData()" class="flex-1 py-3 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-800/80 font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
               <span>🗑️ Reset Seluruh Data Sesi</span>
             </button>
           </div>
         </div>
-
       </div>
 
       <div class="pt-2 border-t border-slate-800 flex justify-end">
@@ -415,6 +411,10 @@
     let isSystemUnlocked = false;
     let activeWeeksPerKeg = {};
     let currentUploadedPhotosBase64 = [];
+    
+    // Variabel Tanda Tangan Canvas
+    let sigCanvas, sigCtx, isDrawing = false, lastX = 0, lastY = 0;
+    let currentSignatureBase64 = null;
 
     window.addEventListener('DOMContentLoaded', () => {
       const now = new Date();
@@ -538,7 +538,86 @@
     }
 
     // ---------------------------------------------------------
-    // KOMPRESI & PREVIEW MULTI FOTO & DINAMIS FILE TEXT
+    // INISIALISASI & PENGELOLAAN SIGNATURE PAD (TOUCH/STYLUS OPTIMIZED)
+    // ---------------------------------------------------------
+    function initSignaturePad() {
+      sigCanvas = document.getElementById('signature-canvas');
+      if (!sigCanvas) return;
+      sigCtx = sigCanvas.getContext('2d');
+
+      // Set explicit internal resolution vs CSS display size
+      sigCanvas.width = sigCanvas.clientWidth || 340;
+      sigCanvas.height = 128;
+
+      sigCtx.strokeStyle = '#ffffff';
+      sigCtx.lineWidth = 2.5;
+      sigCtx.lineCap = 'round';
+      sigCtx.lineJoin = 'round';
+
+      if (currentSignatureBase64) {
+        let img = new Image();
+        img.onload = () => { sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height); };
+        img.src = currentSignatureBase64;
+      } else {
+        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      }
+
+      function getCoords(e) {
+        const rect = sigCanvas.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        return {
+          x: (clientX - rect.left) * (sigCanvas.width / rect.width),
+          y: (clientY - rect.top) * (sigCanvas.height / rect.height)
+        };
+      }
+
+      sigCanvas.onmousedown = (e) => {
+        isDrawing = true;
+        const pos = getCoords(e);
+        [lastX, lastY] = [pos.x, pos.y];
+      };
+      sigCanvas.onmousemove = (e) => {
+        if (!isDrawing) return;
+        const pos = getCoords(e);
+        sigCtx.beginPath();
+        sigCtx.moveTo(lastX, lastY);
+        sigCtx.lineTo(pos.x, pos.y);
+        sigCtx.stroke();
+        [lastX, lastY] = [pos.x, pos.y];
+        currentSignatureBase64 = sigCanvas.toDataURL('image/png');
+      };
+      sigCanvas.onmouseup = () => isDrawing = false;
+      sigCanvas.onmouseout = () => isDrawing = false;
+
+      sigCanvas.ontouchstart = (e) => {
+        e.preventDefault();
+        isDrawing = true;
+        const pos = getCoords(e);
+        [lastX, lastY] = [pos.x, pos.y];
+      };
+      sigCanvas.ontouchmove = (e) => {
+        e.preventDefault();
+        if (!isDrawing) return;
+        const pos = getCoords(e);
+        sigCtx.beginPath();
+        sigCtx.moveTo(lastX, lastY);
+        sigCtx.lineTo(pos.x, pos.y);
+        sigCtx.stroke();
+        [lastX, lastY] = [pos.x, pos.y];
+        currentSignatureBase64 = sigCanvas.toDataURL('image/png');
+      };
+      sigCanvas.ontouchend = () => isDrawing = false;
+    }
+
+    function clearSignature() {
+      if (!sigCanvas || !sigCtx) return;
+      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      currentSignatureBase64 = null;
+    }
+
+    // ---------------------------------------------------------
+    // KOMPRESI & PREVIEW FOTO
     // ---------------------------------------------------------
     function previewImages(event) {
       const files = event.target.files;
@@ -556,15 +635,9 @@
             let height = img.height;
 
             if (width > height) {
-              if (width > MAX_WIDTH) {
-                height *= MAX_WIDTH / width;
-                width = MAX_WIDTH;
-              }
+              if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
             } else {
-              if (height > MAX_HEIGHT) {
-                width *= MAX_HEIGHT / height;
-                height = MAX_HEIGHT;
-              }
+              if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
             }
 
             canvas.width = width;
@@ -580,7 +653,7 @@
         };
         reader.readAsDataURL(file);
       });
-      event.target.value = ''; // Reset input file
+      event.target.value = '';
     }
 
     function renderPhotoPreviews() {
@@ -590,11 +663,7 @@
       const textEl = document.getElementById('file-chosen-text');
       const count = currentUploadedPhotosBase64.length;
       if (textEl) {
-        if (count === 0) {
-          textEl.innerText = "Tidak ada file yang dipilih";
-        } else {
-          textEl.innerText = `${count} file`;
-        }
+        textEl.innerText = (count === 0) ? "Tidak ada file yang dipilih" : `${count} file`;
       }
 
       if (count === 0) {
@@ -627,6 +696,107 @@
     }
 
     // ---------------------------------------------------------
+    // FITUR KONVERSI KE EXCEL (KOLOM PROGRAM & REALISASI KERJA)
+    // ---------------------------------------------------------
+    function exportToExcel() {
+      let dataRows = [];
+      let noCounter = 1;
+
+      kegiatanList.forEach(keg => {
+        let sessions = state[keg.id] || [];
+        sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+        sessions.forEach(sess => {
+          let membersStr = sess.members ? sess.members.join(', ') : '-';
+          let notePart = sess.note ? sess.note : 'Sesi terlaksana';
+          
+          // Pemetaan Catatan Kegiatan, Nama Program (Kegiatan) & Peserta pada Kolom Excel
+          let fullKeteranganText = `Catatan: ${notePart} | Peserta: ${membersStr}`;
+          
+          dataRows.push({
+            no: noCounter++,
+            date: sess.date || '',
+            rencana: keg.title,
+            realisasi_ya: '✓',
+            realisasi_tidak: '',
+            keterangan: fullKeteranganText
+          });
+        });
+      });
+
+      let ws_data = [];
+
+      // Baris 1: Judul Utama
+      ws_data.push([
+        { v: "PROGRAM DAN REALISASI KERJA KS", t: "s", s: { font: { bold: true, sz: 14, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "FFFFFF" } } } },
+        "", "", "", "", ""
+      ]);
+
+      // Baris 2: Header Utama (Warna Hijau & Border Hitam)
+      ws_data.push([
+        { v: "NO", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "HARI/TANGGAL", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "RENCANA KERJA", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "REALISASI", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "REALISASI", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "KETERANGAN", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } }
+      ]);
+
+      // Baris 3: Sub-header (1, 2, 3, YA, TIDAK, 6)
+      ws_data.push([
+        { v: "1", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "2", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "3", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "YA", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "TIDAK", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
+        { v: "6", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } }
+      ]);
+
+      if (dataRows.length === 0) {
+        dataRows.push({ no: 1, date: "-", rencana: "Belum ada data sesi kegiatan", realisasi_ya: "", realisasi_tidak: "", keterangan: "-" });
+      }
+
+      dataRows.forEach(row => {
+        ws_data.push([
+          { v: row.no, t: "n", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
+          { v: row.date, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
+          { v: row.rencana, t: "s", s: { alignment: { horizontal: "left", vertical: "center" }, border: getBorder() } },
+          { v: row.realisasi_ya, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
+          { v: row.realisasi_tidak, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
+          { v: row.keterangan, t: "s", s: { alignment: { horizontal: "left", vertical: "center" }, border: getBorder() } }
+        ]);
+      });
+
+      let ws = XLSX.utils.aoa_to_sheet(ws_data);
+
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 5 } },
+        { s: { r: 1, c: 3 }, e: { r: 1, c: 4 } }
+      ];
+
+      ws['!cols'] = [
+        { wch: 6 },  // NO
+        { wch: 16 }, // HARI/TANGGAL
+        { wch: 32 }, // RENCANA KERJA (Program)
+        { wch: 10 }, // YA
+        { wch: 10 }, // TIDAK
+        { wch: 60 }  // KETERANGAN (Catatan & Peserta)
+      ];
+
+      let wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Realisasi Kerja KS");
+      XLSX.writeFile(wb, `Program_Dan_Realisasi_Kerja_${stationName}.xlsx`);
+    }
+
+    function getBorder() {
+      return {
+        top: { style: "thin", color: { rgb: "000000" } },
+        bottom: { style: "thin", color: { rgb: "000000" } },
+        left: { style: "thin", color: { rgb: "000000" } },
+        right: { style: "thin", color: { rgb: "000000" } }
+      };
+    }
+
+    // ---------------------------------------------------------
     // RENDER UTAMA & SESI
     // ---------------------------------------------------------
     function initView() {
@@ -649,6 +819,7 @@
 
             let noteSection = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic bg-slate-900/80 px-2 py-1 rounded-xl border border-slate-800">📝 "${sess.note}"</p>` : '';
             
+            // Foto Dokumentasi
             let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
             let photoSection = '';
             if (photosList.length > 0) {
@@ -659,6 +830,17 @@
                 <div class="mt-1">
                   <span class="text-[9px] text-slate-400 font-bold block mb-1">Dokumentasi (${photosList.length} Foto):</span>
                   <div class="flex flex-wrap gap-1.5">${thumbs}</div>
+                </div>
+              `;
+            }
+
+            // Tanda Tangan
+            let sigSection = '';
+            if (sess.signature) {
+              sigSection = `
+                <div class="mt-1.5 bg-slate-950 p-2 rounded-xl border border-slate-800 inline-block">
+                  <span class="text-[9px] text-slate-400 font-bold block mb-1">Tanda Tangan Kehadiran:</span>
+                  <img src="${sess.signature}" onclick="openLightbox('${sess.signature}')" class="h-10 object-contain bg-slate-900 px-2 py-1 rounded border border-slate-800 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar TTD">
                 </div>
               `;
             }
@@ -680,7 +862,8 @@
                 </div>
                 ${noteSection}
                 ${photoSection}
-                <div class="flex flex-wrap gap-1">${badges}</div>
+                ${sigSection}
+                <div class="flex flex-wrap gap-1 pt-1">${badges}</div>
               </div>
             `;
           });
@@ -702,7 +885,6 @@
             </div>
             <div class="space-y-2 pt-2 border-t border-slate-800/80">
               <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Riwayat Sesi:</span>
-              <!-- Disini area scrollbar diberikan jarak pr-3.5 agar tidak menempel pada tombol hapus (X) -->
               <div class="space-y-2 max-h-44 sm:max-h-52 overflow-y-auto custom-scrollbar pr-3.5">
                 ${sessionsHtml}
               </div>
@@ -721,16 +903,21 @@
         activeKegId = kegId;
         editSessionId = null;
         currentUploadedPhotosBase64 = [];
+        currentSignatureBase64 = null;
+        
         document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
         document.getElementById('modal-title').innerText = kegTitle;
         document.getElementById('modal-save-btn').innerText = "+ Simpan Sesi";
         document.getElementById('modal-input-photo').value = '';
         renderPhotoPreviews();
         renderCheckboxes([], kegId);
+        
         const now = new Date();
         document.getElementById('modal-input-date').value = now.toISOString().split('T')[0];
         document.getElementById('modal-input-note').value = '';
+        
         document.getElementById('input-modal').classList.remove('hidden');
+        setTimeout(initSignaturePad, 150);
       });
     }
 
@@ -739,6 +926,8 @@
         activeKegId = kegId;
         editSessionId = sessionId;
         currentUploadedPhotosBase64 = [];
+        currentSignatureBase64 = null;
+
         const kegData = kegiatanList.find(k => k.id === kegId);
         document.getElementById('modal-subtitle').innerText = "Edit Pelaksanaan";
         document.getElementById('modal-title').innerText = kegData ? kegData.title : "Ubah Sesi";
@@ -752,12 +941,15 @@
           document.getElementById('modal-input-note').value = targetSession.note || '';
           
           currentUploadedPhotosBase64 = targetSession.photos || (targetSession.photo ? [targetSession.photo] : []);
+          currentSignatureBase64 = targetSession.signature || null;
+          
           document.getElementById('modal-input-photo').value = '';
           renderPhotoPreviews();
-
           renderCheckboxes(targetSession.members || [], kegId);
         }
+        
         document.getElementById('input-modal').classList.remove('hidden');
+        setTimeout(initSignaturePad, 150);
       });
     }
 
@@ -782,6 +974,7 @@
       activeKegId = null;
       editSessionId = null;
       currentUploadedPhotosBase64 = [];
+      currentSignatureBase64 = null;
     }
 
     function saveNewSession() {
@@ -805,7 +998,8 @@
           state[activeKegId][indexToEdit].note = sessionNote;
           state[activeKegId][indexToEdit].members = selectedMembers;
           state[activeKegId][indexToEdit].photos = currentUploadedPhotosBase64;
-          delete state[activeKegId][indexToEdit].photo; // cleanup legacy format if any
+          state[activeKegId][indexToEdit].signature = currentSignatureBase64;
+          delete state[activeKegId][indexToEdit].photo;
         }
       } else {
         state[activeKegId].push({
@@ -813,7 +1007,8 @@
           date: selectedDate,
           note: sessionNote,
           members: selectedMembers,
-          photos: currentUploadedPhotosBase64
+          photos: currentUploadedPhotosBase64,
+          signature: currentSignatureBase64
         });
       }
 
@@ -837,7 +1032,7 @@
     }
 
     // ---------------------------------------------------------
-    // MENU PENGATURAN (SETTINGS GEAR) & KEAMANAN PIN
+    // PENGATURAN MASTER & KEAMANAN PIN
     // ---------------------------------------------------------
     function openSettingsModal() {
       checkLockAndRun(() => {
@@ -858,16 +1053,16 @@
         alert("PIN Lama salah! Perubahan dibatalkan.");
         return;
       }
-      const newInput = prompt("Masukkan PIN Baru (untuk membuka aplikasi & reset data):");
+      const newInput = prompt("Masukkan PIN Baru:");
       if (newInput === null || !newInput.trim()) return;
       const confirmInput = prompt("Konfirmasi PIN Baru:");
       if (newInput !== confirmInput) {
-        alert("PIN baru tidak cocok! Perubahan dibatalkan.");
+        alert("PIN baru tidak cocok!");
         return;
       }
       currentPin = newInput.trim();
       localStorage.setItem('garut_app_pin_v6', currentPin);
-      alert("PIN Keamanan universal berhasil diperbarui!\nPIN baru ini sekarang digunakan untuk membuka kunci aplikasi dan reset data.");
+      alert("PIN Keamanan universal berhasil diperbarui!");
     }
 
     function renderSettingsData() {
@@ -875,10 +1070,10 @@
       let kegHtml = '';
       kegiatanList.forEach(k => {
         kegHtml += `
-          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50">
             <div class="w-2/3 pr-2">
-              <p class="text-[11px] sm:text-xs font-bold text-white truncate" title="${k.title}">${k.title}</p>
-              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate" title="${k.desc}">${k.desc}</p>
+              <p class="text-[11px] sm:text-xs font-bold text-white truncate">${k.title}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">${k.desc}</p>
             </div>
             <div class="flex gap-1.5 flex-shrink-0">
               <button onclick="editActivity('${k.id}')" class="px-2.5 py-1.5 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded-lg hover:bg-blue-800 hover:text-white transition cursor-pointer border border-blue-800/50">Edit</button>
@@ -887,17 +1082,17 @@
           </div>
         `;
       });
-      kegContainer.innerHTML = kegHtml || '<p class="text-[11px] text-slate-500 italic p-2">Belum ada kegiatan terdaftar.</p>';
+      kegContainer.innerHTML = kegHtml || '<p class="text-[11px] text-slate-500 italic p-2">Belum ada kegiatan.</p>';
 
       const orangContainer = document.getElementById('settings-orang-list');
       let orangHtml = '';
       orang.forEach(o => {
         const full = dashboardFullNames[o] || o;
         orangHtml += `
-          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50">
             <div class="w-3/5 pr-2">
-              <p class="text-[11px] sm:text-xs font-bold text-white truncate" title="${o}">${o}</p>
-              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate" title="${full}">${full}</p>
+              <p class="text-[11px] sm:text-xs font-bold text-white truncate">${o}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">${full}</p>
             </div>
             <div class="flex gap-1.5 flex-shrink-0">
               <button onclick="editMember('${o}')" class="px-2.5 py-1.5 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded-lg hover:bg-blue-800 hover:text-white transition cursor-pointer border border-blue-800/50">Edit</button>
@@ -906,7 +1101,7 @@
           </div>
         `;
       });
-      orangContainer.innerHTML = orangHtml || '<p class="text-[11px] text-slate-500 italic p-2 col-span-2">Belum ada anggota terdaftar.</p>';
+      orangContainer.innerHTML = orangHtml || '<p class="text-[11px] text-slate-500 italic p-2 col-span-2">Belum ada anggota.</p>';
     }
 
     function addNewActivity() {
@@ -916,11 +1111,10 @@
 
       const newId = "keg_" + Date.now();
       kegiatanList.push({ id: newId, title: title, desc: desc || "-" });
-      
       localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
+      
       document.getElementById('new-keg-title').value = '';
       document.getElementById('new-keg-desc').value = '';
-      
       renderSettingsData();
       initView();
     }
@@ -931,7 +1125,6 @@
 
       const newTitle = prompt("Ubah Nama Kegiatan:", keg.title);
       if(!newTitle) return; 
-
       const newDesc = prompt("Ubah Deskripsi Kegiatan:", keg.desc);
       if(newDesc === null) return; 
 
@@ -944,7 +1137,7 @@
     }
 
     function deleteActivity(kegId) {
-      if(confirm("Yakin ingin menghapus kegiatan ini? Seluruh data riwayat sesi kegiatan ini juga akan ikut terhapus permanen!")) {
+      if(confirm("Yakin ingin menghapus kegiatan ini? Seluruh riwayat sesi juga akan terhapus!")) {
         kegiatanList = kegiatanList.filter(k => k.id !== kegId);
         if(state[kegId]) {
           delete state[kegId];
@@ -959,8 +1152,8 @@
     function addNewMember() {
       const shortName = document.getElementById('new-member-name').value.trim();
       const fullName = document.getElementById('new-member-fullname').value.trim();
-      if (!shortName) return alert("Nama panggilan anggota tidak boleh kosong!");
-      if (orang.includes(shortName)) return alert("Nama panggilan tersebut sudah ada di daftar!");
+      if (!shortName) return alert("Nama panggilan tidak boleh kosong!");
+      if (orang.includes(shortName)) return alert("Nama sudah terdaftar!");
 
       orang.push(shortName);
       dashboardFullNames[shortName] = fullName ? fullName.toUpperCase() : shortName.toUpperCase();
@@ -970,31 +1163,28 @@
 
       document.getElementById('new-member-name').value = '';
       document.getElementById('new-member-fullname').value = '';
-
       renderSettingsData();
       initView();
     }
 
     function editMember(oldShortName) {
-      const newShort = prompt("Ubah Nama Panggilan (Pendek):", oldShortName);
+      const newShort = prompt("Ubah Nama Panggilan:", oldShortName);
       if (!newShort) return; 
-      
       const oldFull = dashboardFullNames[oldShortName] || oldShortName;
-      const newFull = prompt("Ubah Nama Lengkap (Dashboard):", oldFull);
+      const newFull = prompt("Ubah Nama Lengkap:", oldFull);
       if (newFull === null) return;
 
       const finalShort = newShort.trim();
       const finalFull = newFull.trim().toUpperCase();
 
       if (finalShort !== oldShortName && orang.includes(finalShort)) {
-        alert("Nama panggilan tersebut sudah dipakai oleh anggota lain!");
+        alert("Nama panggilan sudah dipakai anggota lain!");
         return;
       }
 
       if (finalShort !== oldShortName) {
         const idx = orang.indexOf(oldShortName);
         if (idx > -1) orang[idx] = finalShort;
-        
         dashboardFullNames[finalShort] = finalFull;
         delete dashboardFullNames[oldShortName];
 
@@ -1013,13 +1203,12 @@
 
       localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
       localStorage.setItem('garut_fullnames_v6', JSON.stringify(dashboardFullNames));
-      
       renderSettingsData();
       initView();
     }
 
     function deleteMember(shortName) {
-      if(confirm(`Yakin ingin menghapus "${shortName}" dari Master Data? Data riwayat pada sesi sebelumnya akan tetap ada, tapi namanya akan hilang dari daftar form & target.`)) {
+      if(confirm(`Yakin ingin menghapus "${shortName}"?`)) {
         orang = orang.filter(o => o !== shortName);
         delete dashboardFullNames[shortName];
         localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
@@ -1030,7 +1219,7 @@
     }
 
     function resetData() {
-      if (confirm('Konfirmasi akhir: Reset seluruh data sesi catatan kegiatan? (Master kegiatan & anggota tetap aman)')) {
+      if (confirm('Konfirmasi: Reset seluruh data sesi kegiatan?')) {
         localStorage.removeItem('garut_unified_db_notes_v6');
         state = {};
         initView();
@@ -1168,14 +1357,9 @@
             let targetNeeded = 1;
             let isApplicable = true;
 
-            if (keg.id === "keg_5") {
-              targetNeeded = 2; 
-            } else if (keg.id === "keg_6") {
-              targetNeeded = 2; 
-              isApplicable = (o === "Hadi" || o === "Fikri");
-            } else if (keg.id === "keg_7") {
-              targetNeeded = 1; 
-            }
+            if (keg.id === "keg_5") targetNeeded = 2;
+            else if (keg.id === "keg_6") { targetNeeded = 2; isApplicable = (o === "Hadi" || o === "Fikri"); }
+            else if (keg.id === "keg_7") targetNeeded = 1;
 
             if (!isApplicable) return;
 
@@ -1187,7 +1371,7 @@
             tableRowsHtml += `
               <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
                 <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o] || o}</td>
-                <td class="p-2.5 text-center text-slate-500 font-bold text-[11px]">- (Target Bulanan Murni)</td>
+                <td class="p-2.5 text-center text-slate-500 font-bold text-[11px]">-</td>
                 <td class="p-2.5 text-center">${badgeMonthly}</td>
               </tr>
             `;
@@ -1236,9 +1420,7 @@
 
       let dynamicChartKegiatan = kegiatanList.filter(k => !["keg_5", "keg_6", "keg_7"].includes(k.id));
       let mappedWeeklyKeg = dynamicChartKegiatan.map((k, idx) => ({
-        id: k.id, 
-        label: k.title, 
-        color: chartColors[idx % chartColors.length]
+        id: k.id, label: k.title, color: chartColors[idx % chartColors.length]
       }));
 
       orang.forEach(o => {
@@ -1274,46 +1456,26 @@
             return matched ? 100 : 0; 
           });
 
-          return {
-            label: keg.label,
-            data: dataWeeks,
-            backgroundColor: keg.color,
-            borderRadius: 3,
-            borderSkipped: false
-          };
+          return { label: keg.label, data: dataWeeks, backgroundColor: keg.color, borderRadius: 3, borderSkipped: false };
         });
 
         personChartInstances[o] = new Chart(ctx, {
           type: 'bar',
-          data: {
-            labels: ['M1', 'M2', 'M3', 'M4'],
-            datasets: datasets
-          },
+          data: { labels: ['M1', 'M2', 'M3', 'M4'], datasets: datasets },
           options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
               legend: {
                 position: 'bottom',
-                labels: { 
-                  color: '#94a3b8', 
-                  boxWidth: 6, 
-                  boxHeight: 6, 
-                  font: { size: 8, weight: 'bold' },
-                  padding: 4
-                }
+                labels: { color: '#94a3b8', boxWidth: 6, boxHeight: 6, font: { size: 8, weight: 'bold' }, padding: 4 }
               }
             },
             scales: {
               y: {
                 beginAtZero: true,
                 max: 100,
-                ticks: { 
-                  callback: function(value) { return value + '%'; },
-                  color: '#94a3b8', 
-                  font: { size: 8, weight: 'bold' },
-                  stepSize: 50
-                },
+                ticks: { callback: function(value) { return value + '%'; }, color: '#94a3b8', font: { size: 8, weight: 'bold' }, stepSize: 50 },
                 grid: { color: '#1e293b' }
               },
               x: {
