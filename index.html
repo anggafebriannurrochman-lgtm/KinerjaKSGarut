@@ -7,7 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Library pptxgenjs untuk Export & Download file PowerPoint (.pptx) -->
+  <!-- Library pptxgenjs bundle untuk browser -->
   <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
@@ -229,7 +229,7 @@
       <div class="flex justify-between items-center border-b pb-4">
         <div>
           <h3 class="font-extrabold text-lg text-slate-900">Preview Laporan Format PowerPoint (PPTX)</h3>
-          <p class="text-xs text-slate-500">Sesuai format master Excel dengan tanda tangan tebal & foto dokumentasi</p>
+          <p class="text-xs text-slate-500">Sesuai format master Excel dengan tanda tangan latar putih & garis hitam tebal</p>
         </div>
         <div class="flex gap-2">
           <button onclick="downloadPptxFile()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5">
@@ -763,6 +763,63 @@
     }
 
     // ---------------------------------------------------------
+    // FUNGSI PEMROSESAN TANDA TANGAN (LATAR PUTIH, GARIS HITAM TEBAL)
+    // ---------------------------------------------------------
+    function processSignatureBase64(base64Src) {
+      return new Promise((resolve) => {
+        if (!base64Src) {
+          resolve('');
+          return;
+        }
+        let img = new Image();
+        img.onload = () => {
+          let canvas = document.createElement('canvas');
+          canvas.width = 300;
+          canvas.height = 150;
+          let ctx = canvas.getContext('2d');
+          
+          // 1. Latar Belakang Putih Bersih
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // 2. Gambar Tanda Tangan Asli
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // 3. Konversi Piksel: Stroke jadi Hitam Pekat, Background jadi Putih
+          let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+          let data = imgData.data;
+          for (let i = 0; i < data.length; i += 4) {
+            let r = data[i], g = data[i+1], b = data[i+2];
+            let avg = (r + g + b) / 3;
+            if (avg > 70) {
+              // Garis Goresan -> Hitam
+              data[i] = 0;
+              data[i+1] = 0;
+              data[i+2] = 0;
+            } else {
+              // Latar Belakang -> Putih
+              data[i] = 255;
+              data[i+1] = 255;
+              data[i+2] = 255;
+            }
+          }
+          ctx.putImageData(imgData, 0, 0);
+          
+          // 4. Efek Dilation (Membuat Garis Tanda Tangan Lebih Tebal & Tegas)
+          ctx.globalCompositeOperation = 'source-over';
+          ctx.drawImage(canvas, -1, 0);
+          ctx.drawImage(canvas, 1, 0);
+          ctx.drawImage(canvas, 0, -1);
+          ctx.drawImage(canvas, 0, 1);
+          
+          resolve(canvas.toDataURL('image/png'));
+        };
+        img.onerror = () => resolve(base64Src);
+        img.src = base64Src;
+      });
+    }
+
+    // ---------------------------------------------------------
     // KOMPRESI & PREVIEW FOTO
     // ---------------------------------------------------------
     function previewImages(event) {
@@ -842,21 +899,23 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR LAPORAN & DOWNLOAD POWERPOINT (.pptx)
+    // FITUR LAPORAN & PRATINJAU POWERPOINT (.pptx)
     // ---------------------------------------------------------
-    function openPptxReportModal() {
+    async function openPptxReportModal() {
       const tbody = document.getElementById('pptx-table-body');
-      tbody.innerHTML = '';
+      tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-slate-500 italic border border-black">Memproses laporan & tanda tangan...</td></tr>`;
       document.getElementById('pptx-station-subtitle').innerText = stationName;
+      document.getElementById('pptx-report-modal').classList.remove('hidden');
 
       let noCounter = 1;
       let hasData = false;
+      let rowsHtml = '';
 
-      kegiatanList.forEach(keg => {
+      for (let keg of kegiatanList) {
         let sessions = state[keg.id] || [];
         sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
         
-        sessions.forEach(sess => {
+        for (let sess of sessions) {
           hasData = true;
           let membersList = sess.members || [];
           let notePart = sess.note ? sess.note : '';
@@ -868,16 +927,17 @@
           if (membersList.length > 0) rencanaHtml += `<div class="text-slate-800 text-[11px] font-semibold mt-0.5">Petugas: ${membersList.join(', ')}</div>`;
 
           let sigHtmlItems = '';
-          Object.entries(sigsData).forEach(([mName, sSrc]) => {
+          for (let [mName, sSrc] of Object.entries(sigsData)) {
+            let processedSig = await processSignatureBase64(sSrc);
             sigHtmlItems += `
-              <div class="inline-block mr-2 mb-1 text-center bg-white p-1 rounded border border-slate-300">
+              <div class="inline-block mr-2 mb-1 text-center bg-white p-1 rounded border border-slate-300 shadow-sm">
                 <span class="text-[9px] font-bold text-black block">${mName}:</span>
-                <img src="${sSrc}" class="h-12 w-28 object-contain bg-white" style="filter: invert(1) contrast(300%);">
+                <img src="${processedSig}" class="h-12 w-28 object-contain bg-white">
               </div>
             `;
-          });
+          }
           if (sigHtmlItems) {
-            rencanaHtml += `<div class="mt-1.5 pt-1 border-t border-slate-300"><span class="text-[9px] font-bold text-slate-600 block mb-0.5">Tanda Tangan Petugas:</span>${sigHtmlItems}</div>`;
+            rencanaHtml += `<div class="mt-1.5 pt-1 border-t border-slate-300"><span class="text-[9px] font-bold text-slate-600 block mb-0.5">Tanda Tangan (Latar Putih, Hitam Tebal):</span>${sigHtmlItems}</div>`;
           }
 
           let ketHtml = `<div class="text-xs text-black font-medium">Sesi terlaksana (${membersList.length} Petugas)</div>`;
@@ -889,7 +949,7 @@
             ketHtml += `<div class="mt-2"><span class="text-[10px] font-bold text-slate-700 block mb-1">Foto Dokumentasi:</span><div class="flex flex-wrap gap-2">${photoHtmlItems}</div></div>`;
           }
 
-          tbody.innerHTML += `
+          rowsHtml += `
             <tr class="border-b border-black">
               <td class="border border-black p-2 text-center font-bold align-top">${noCounter++}</td>
               <td class="border border-black p-2 text-center font-semibold align-top">${sess.date || ''}</td>
@@ -899,22 +959,22 @@
               <td class="border border-black p-2.5 align-top">${ketHtml}</td>
             </tr>
           `;
-        });
-      });
-
-      if (!hasData) {
-        tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-slate-500 italic border border-black">Belum ada data sesi kegiatan.</td></tr>`;
+        }
       }
 
-      document.getElementById('pptx-report-modal').classList.remove('hidden');
+      if (!hasData) {
+        rowsHtml = `<tr><td colspan="6" class="text-center p-4 text-slate-500 italic border border-black">Belum ada data sesi kegiatan.</td></tr>`;
+      }
+
+      tbody.innerHTML = rowsHtml;
     }
 
     function closePptxReportModal() {
       document.getElementById('pptx-report-modal').classList.add('hidden');
     }
 
-    function downloadPptxFile() {
-      let pptx = new pptxgen();
+    async function downloadPptxFile() {
+      let pptx = new PptxGenJS();
       pptx.layout = 'LAYOUT_16X9';
       
       let slide = pptx.addSlide();
@@ -948,11 +1008,11 @@
       let noCounter = 1;
       let hasData = false;
 
-      kegiatanList.forEach(keg => {
+      for (let keg of kegiatanList) {
         let sessions = state[keg.id] || [];
         sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
 
-        sessions.forEach(sess => {
+        for (let sess of sessions) {
           hasData = true;
           let membersList = sess.members || [];
           let notePart = sess.note ? `Catatan: ${sess.note}` : '';
@@ -961,6 +1021,12 @@
           let rencanaText = `${keg.title}`;
           if (notePart) rencanaText += `\n${notePart}`;
           if (petugasText) rencanaText += `\n${petugasText}`;
+
+          let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
+          let sigNames = Object.keys(sigsData);
+          if (sigNames.length > 0) {
+            rencanaText += `\n[Tanda Tangan Petugas: Latar Putih, Hitam Tebal (${sigNames.join(', ')})]`;
+          }
 
           let ketText = `Sesi terlaksana (${membersList.length} Petugas)`;
           if (sess.photos && sess.photos.length > 0) {
@@ -975,8 +1041,8 @@
             { text: "", options: { align: 'center', fontSize: 9 } },
             { text: ketText, options: { fontSize: 9 } }
           ]);
-        });
-      });
+        }
+      }
 
       if (!hasData) {
         tableRows.push([
