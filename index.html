@@ -15,7 +15,7 @@
                         rail: {
                             orange: '#FF6600',
                             blue: '#003366',
-                            dark: '#0B0F19'
+                            dark: '#0A0F1D'
                         }
                     }
                 }
@@ -31,22 +31,22 @@
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
     </style>
 </head>
-<body class="bg-gradient-to-br from-gray-950 via-slate-900 to-gray-900 text-slate-100 min-h-screen flex flex-col selection:bg-orange-500 selection:text-white">
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-orange-500 selection:text-white">
 
     <!-- Modal Kunci / Buka Sistem -->
-    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/85 backdrop-blur-md">
-        <div class="bg-slate-900/95 border border-slate-800 p-8 rounded-3xl w-full max-w-md shadow-2xl text-center">
-            <div class="w-16 h-16 bg-orange-500/15 text-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl shadow-inner">
+    <div id="authModal" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl w-full max-w-md shadow-2xl text-center">
+            <div class="w-16 h-16 bg-orange-500/10 text-orange-500 rounded-2xl flex items-center justify-center mx-auto mb-4 text-2xl">
                 <i class="fa-solid fa-lock"></i>
             </div>
             <h2 class="text-2xl font-bold text-white mb-2">Akses Terbatas</h2>
             <p class="text-slate-400 text-sm mb-6">Masukkan 4 digit PIN keamanan untuk masuk dan membuka sistem operasional.</p>
             <form onsubmit="handleUnlock(event)" class="space-y-4">
                 <div class="relative">
-                    <input type="password" id="pinInput" maxlength="4" placeholder="• • • •" class="w-full bg-slate-950 border border-slate-700/80 text-center text-3xl tracking-widest py-3.5 rounded-2xl focus:outline-none focus:border-orange-500 text-white transition-all shadow-inner" required autofocus>
+                    <input type="password" id="pinInput" maxlength="4" placeholder="• • • •" class="w-full bg-slate-950 border border-slate-700 text-center text-3xl tracking-widest py-3 rounded-xl focus:outline-none focus:border-orange-500 text-white transition-all" required autofocus>
                 </div>
-                <div id="pinError" class="text-red-400 text-xs hidden font-medium">PIN yang Anda masukkan salah!</div>
-                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3.5 rounded-2xl transition-all shadow-lg shadow-orange-500/25">Buka Sistem</button>
+                <div id="pinError" class="text-red-500 text-xs hidden">PIN yang Anda masukkan salah!</div>
+                <button type="submit" class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-3 rounded-xl transition-all shadow-lg shadow-orange-500/20">Buka Sistem</button>
             </form>
         </div>
     </div>
@@ -54,30 +54,20 @@
     <!-- Konten Utama Aplikasi (Tersembunyi Sebelum PIN Benar) -->
     <div id="mainApp" class="flex-1 flex flex-col opacity-0 transition-opacity duration-500 pointer-events-none">
         <!-- Header -->
-        <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800/80 sticky top-0 z-30 shadow-sm">
+        <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
                 <div class="flex items-center space-x-4">
-                    <div class="w-12 h-12 rounded-2xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
                         <i class="fa-solid fa-train text-2xl"></i>
                     </div>
                     <div>
                         <h1 class="text-xl font-bold text-white tracking-tight">Work Tracker</h1>
-                        <p class="text-xs text-orange-400 font-semibold tracking-wide">Stasiun Garut • Sinergi & Integritas</p>
+                        <p class="text-xs text-orange-400 font-medium">Stasiun Garut • Sinergi & Integritas</p>
                     </div>
                 </div>
                 <div class="flex items-center space-x-3">
-                    <!-- Logo KAI Presisi -->
-                    <div class="flex items-center bg-slate-950/60 border border-slate-700/60 px-3.5 py-2 rounded-2xl shadow-inner">
-                        <svg class="h-7 w-auto" viewBox="0 0 200 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path d="M15 12h12v8h-12v12h14v8h-26v-36h12z" fill="#004488"/>
-                            <path d="M35 12h12v36h-12z" fill="#FF6600"/>
-                            <path d="M55 12h12l8 18 8-18h12l-14 36h-12l-16-36z" fill="#004488"/>
-                            <path d="M98 12h12v36h-12z" fill="#004488"/>
-                            <path d="M115 12h24v8h-12v6h10v8h-10v6h12v8h-24z" fill="#004488"/>
-                            <path d="M145 12h12l10 36h-11l-2-8h-9l-2 8h-11l10-36zm7 19h5l-2.5-10-2.5 10z" fill="#FF6600"/>
-                        </svg>
-                    </div>
-                    <button onclick="lockSystem()" title="Kunci Sistem" class="bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-4 py-2.5 rounded-2xl text-sm font-medium border border-slate-700/80 transition-all flex items-center space-x-2 shadow-sm">
+                    <!-- Pojok Kanan Atas Polos (Tanpa Tulisan/Logo Tambahan, Hanya Tombol Kunci) -->
+                    <button onclick="lockSystem()" title="Kunci Sistem" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-medium border border-slate-700 transition-all flex items-center space-x-2">
                         <i class="fa-solid fa-lock text-orange-500"></i>
                         <span class="hidden sm:inline">Kunci Sistem</span>
                     </button>
@@ -89,33 +79,33 @@
         <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-8">
             <!-- Statistik & Kontrol -->
             <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-                <div class="bg-slate-900/90 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex items-center justify-between">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Total Kegiatan</p>
-                        <h3 id="statTotal" class="text-3xl font-extrabold text-white mt-1">0</h3>
+                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Total Kegiatan</p>
+                        <h3 id="statTotal" class="text-3xl font-bold text-white mt-1">0</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-blue-500/10 text-blue-400 flex items-center justify-center text-xl border border-blue-500/20">
+                    <div class="w-12 h-12 rounded-xl bg-blue-500/10 text-blue-500 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-clipboard-list"></i>
                     </div>
                 </div>
-                <div class="bg-slate-900/90 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex items-center justify-between">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Petugas Aktif</p>
-                        <h3 class="text-3xl font-extrabold text-white mt-1">7</h3>
+                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Petugas Aktif</p>
+                        <h3 class="text-3xl font-bold text-white mt-1">7</h3>
                     </div>
-                    <div class="w-12 h-12 rounded-2xl bg-orange-500/10 text-orange-400 flex items-center justify-center text-xl border border-orange-500/20">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500/10 text-orange-500 flex items-center justify-center text-xl">
                         <i class="fa-solid fa-users"></i>
                     </div>
                 </div>
-                <div class="md:col-span-2 bg-slate-900/90 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex items-center justify-between">
+                <div class="md:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex items-center justify-between">
                     <div>
-                        <p class="text-slate-400 text-xs font-bold uppercase tracking-wider">Aksi Cepat Sistem</p>
-                        <div class="flex flex-wrap gap-2.5 mt-2">
-                            <button onclick="openModal()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all shadow-lg shadow-orange-500/25 flex items-center space-x-2">
+                        <p class="text-slate-400 text-xs font-semibold uppercase tracking-wider">Aksi Cepat Sistem</p>
+                        <div class="flex flex-wrap gap-2 mt-2">
+                            <button onclick="openModal()" class="bg-orange-500 hover:bg-orange-600 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-lg shadow-orange-500/20 flex items-center space-x-2">
                                 <i class="fa-solid fa-plus"></i>
                                 <span>Tambah Log Kegiatan</span>
                             </button>
-                            <button onclick="resetData()" class="bg-slate-800/80 hover:bg-red-500/20 hover:text-red-400 text-slate-300 border border-slate-700/80 px-4 py-2.5 rounded-2xl text-sm font-semibold transition-all flex items-center space-x-2">
+                            <button onclick="resetData()" class="bg-slate-800 hover:bg-red-500/20 hover:text-red-400 text-slate-300 border border-slate-700 px-4 py-2 rounded-xl text-sm font-medium transition-all flex items-center space-x-2">
                                 <i class="fa-solid fa-trash-can"></i>
                                 <span>Reset Data</span>
                             </button>
@@ -127,13 +117,13 @@
             <!-- Bagian Grafik & Rekapitulasi Target Bulanan -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <!-- Grafik Batang Akumulasi Target Bulanan -->
-                <div class="lg:col-span-2 bg-slate-900/90 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex flex-col justify-between">
+                <div class="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
                         <div>
                             <h2 class="text-lg font-bold text-white">Grafik Akumulasi Target Bulanan Petugas</h2>
-                            <p class="text-xs text-slate-400 font-medium">Total poin atau kegiatan yang diselesaikan setiap petugas bulan ini</p>
+                            <p class="text-xs text-slate-400">Total poin atau kegiatan yang diselesaikan setiap petugas bulan ini</p>
                         </div>
-                        <div class="text-orange-400 bg-orange-500/10 border border-orange-500/20 px-3 py-1 rounded-xl text-xs font-bold">Live Chart</div>
+                        <div class="text-orange-500 bg-orange-500/10 px-3 py-1 rounded-lg text-xs font-semibold">Live Chart</div>
                     </div>
                     <div class="relative h-72 w-full flex items-center justify-center">
                         <canvas id="monthlyTargetChart"></canvas>
@@ -141,38 +131,38 @@
                 </div>
 
                 <!-- Rekapitulasi Progres/Status Petugas -->
-                <div class="bg-slate-900/90 border border-slate-800/80 p-6 rounded-3xl shadow-xl flex flex-col">
+                <div class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col">
                     <h2 class="text-lg font-bold text-white mb-1">Status Kinerja Petugas</h2>
-                    <p class="text-xs text-slate-400 font-medium mb-4">Indikator progres aktivitas harian</p>
-                    <div class="space-y-3 overflow-y-auto max-h-72 pr-1" id="petugasStatusList">
+                    <p class="text-xs text-slate-400 mb-4">Indikator progres aktivitas harian</p>
+                    <div class="space-y-4 overflow-y-auto max-h-72 pr-1" id="petugasStatusList">
                         <!-- Diisi otomatis melalui JavaScript -->
                     </div>
                 </div>
             </div>
 
             <!-- Tabel Data Log Kegiatan -->
-            <div class="bg-slate-900/90 border border-slate-800/80 rounded-3xl shadow-xl overflow-hidden">
-                <div class="p-6 border-b border-slate-800/80 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl shadow-xl overflow-hidden">
+                <div class="p-6 border-b border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                     <div>
                         <h2 class="text-lg font-bold text-white">Daftar Rekapitulasi Log Kegiatan</h2>
-                        <p class="text-xs text-slate-400 font-medium">Seluruh riwayat operasional harian yang tercatat</p>
+                        <p class="text-xs text-slate-400">Seluruh riwayat operasional harian yang tercatat</p>
                     </div>
                     <div class="flex items-center space-x-2">
-                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="Cari kegiatan/petugas..." class="bg-slate-950 border border-slate-700/80 px-4 py-2.5 rounded-2xl text-sm text-white focus:outline-none focus:border-orange-500 transition-all shadow-inner">
+                        <input type="text" id="searchInput" oninput="renderTable()" placeholder="Cari kegiatan/petugas..." class="bg-slate-950 border border-slate-700 px-4 py-2 rounded-xl text-sm text-white focus:outline-none focus:border-orange-500">
                     </div>
                 </div>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left border-collapse">
                         <thead>
-                            <tr class="bg-slate-950/60 text-slate-400 text-xs font-bold uppercase tracking-wider border-b border-slate-800/80">
-                                <th class="p-4">Waktu / Tanggal</th>
-                                <th class="p-4">Nama Petugas</th>
-                                <th class="p-4">Kategori Kegiatan</th>
-                                <th class="p-4">Uraian / Detail</th>
-                                <th class="p-4 text-center">Aksi</th>
+                            <tr class="bg-slate-950/50 text-slate-400 text-xs uppercase tracking-wider border-b border-slate-800">
+                                <th class="p-4 font-semibold">Waktu / Tanggal</th>
+                                <th class="p-4 font-semibold">Nama Petugas</th>
+                                <th class="p-4 font-semibold">Kategori Kegiatan</th>
+                                <th class="p-4 font-semibold">Uraian / Detail</th>
+                                <th class="p-4 font-semibold text-center">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="logTableBody" class="divide-y divide-slate-800/60 text-sm">
+                        <tbody id="logTableBody" class="divide-y divide-slate-800 text-sm">
                             <!-- Diisi oleh JavaScript -->
                         </tbody>
                     </table>
@@ -182,15 +172,15 @@
     </div>
 
     <!-- Modal Tambah Data -->
-    <div id="logModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/85 backdrop-blur-md">
-        <div class="bg-slate-900 border border-slate-800 p-8 rounded-3xl w-full max-w-lg shadow-2xl relative">
-            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white transition-colors"><i class="fa-solid fa-xmark text-xl"></i></button>
+    <div id="logModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/80 backdrop-blur-sm">
+        <div class="bg-slate-900 border border-slate-800 p-8 rounded-2xl w-full max-w-lg shadow-2xl relative">
+            <button onclick="closeModal()" class="absolute top-6 right-6 text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-xl"></i></button>
             <h2 class="text-2xl font-bold text-white mb-2">Tambah Log Kegiatan</h2>
             <p class="text-slate-400 text-sm mb-6">Catat kegiatan operasional baru Stasiun Garut.</p>
             <form onsubmit="saveLog(event)" class="space-y-4">
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Nama Petugas</label>
-                    <select id="inputPetugas" class="w-full bg-slate-950 border border-slate-700/80 px-4 py-3 rounded-2xl text-white focus:outline-none focus:border-orange-500 transition-all shadow-inner" required>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Nama Petugas</label>
+                    <select id="inputPetugas" class="w-full bg-slate-950 border border-slate-700 px-4 py-3 rounded-xl text-white focus:outline-none focus:border-orange-500" required>
                         <option value="">Pilih Petugas...</option>
                         <option value="Hadi">Hadi</option>
                         <option value="Fikri">Fikri</option>
@@ -202,8 +192,8 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Kategori Kegiatan</label>
-                    <select id="inputKategori" class="w-full bg-slate-950 border border-slate-700/80 px-4 py-3 rounded-2xl text-white focus:outline-none focus:border-orange-500 transition-all shadow-inner" required>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Kategori Kegiatan</label>
+                    <select id="inputKategori" class="w-full bg-slate-950 border border-slate-700 px-4 py-3 rounded-xl text-white focus:outline-none focus:border-orange-500" required>
                         <option value="Pengawasan Operasi">Pengawasan Operasi</option>
                         <option value="Keamanan & Ketertiban">Keamanan & Ketertiban</option>
                         <option value="Pelayanan Penumpang">Pelayanan Penumpang</option>
@@ -212,12 +202,12 @@
                     </select>
                 </div>
                 <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase mb-1">Uraian / Detail Kegiatan</label>
-                    <textarea id="inputUraian" rows="3" placeholder="Tuliskan detail pelaksanaan kegiatan..." class="w-full bg-slate-950 border border-slate-700/80 px-4 py-3 rounded-2xl text-white focus:outline-none focus:border-orange-500 transition-all shadow-inner" required></textarea>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase mb-1">Uraian / Detail Kegiatan</label>
+                    <textarea id="inputUraian" rows="3" placeholder="Tuliskan detail pelaksanaan kegiatan..." class="w-full bg-slate-950 border border-slate-700 px-4 py-3 rounded-xl text-white focus:outline-none focus:border-orange-500" required></textarea>
                 </div>
                 <div class="flex justify-end space-x-3 pt-4">
-                    <button type="button" onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-5 py-3 rounded-2xl font-semibold transition-all">Batal</button>
-                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-6 py-3 rounded-2xl font-semibold transition-all shadow-lg shadow-orange-500/25">Simpan Log</button>
+                    <button type="button" onclick="closeModal()" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-5 py-2.5 rounded-xl font-medium transition-all">Batal</button>
+                    <button type="submit" class="bg-orange-500 hover:bg-orange-600 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-orange-500/20">Simpan Log</button>
                 </div>
             </form>
         </div>
@@ -338,7 +328,7 @@
             );
 
             if (filtered.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500 font-medium">Belum ada data kegiatan tercatat.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="5" class="p-6 text-center text-slate-500">Belum ada data kegiatan tercatat.</td></tr>`;
                 return;
             }
 
@@ -347,9 +337,9 @@
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-800/40 transition-colors';
                 tr.innerHTML = `
-                    <td class="p-4 text-slate-400 text-xs whitespace-nowrap font-medium">${item.timestamp}</td>
+                    <td class="p-4 text-slate-400 text-xs whitespace-nowrap">${item.timestamp}</td>
                     <td class="p-4 font-semibold text-white">${displayPetugasName}</td>
-                    <td class="p-4"><span class="bg-orange-500/10 text-orange-400 px-3 py-1 rounded-xl text-xs font-semibold border border-orange-500/20">${item.kategori}</span></td>
+                    <td class="p-4"><span class="bg-orange-500/10 text-orange-400 px-3 py-1 rounded-lg text-xs font-medium border border-orange-500/20">${item.kategori}</span></td>
                     <td class="p-4 text-slate-300 max-w-xs truncate">${item.uraian}</td>
                     <td class="p-4 text-center">
                         <button onclick="deleteLog(${item.id})" class="text-slate-500 hover:text-red-400 p-2 transition-colors"><i class="fa-solid fa-trash-can"></i></button>
@@ -370,14 +360,14 @@
             listPetugas.forEach(pShort => {
                 const pFull = dashboardFullNames[pShort];
                 const count = logs.filter(l => l.petugas === pShort).length;
-                let statusBadge = count > 0 ? `<span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2.5 py-1 rounded-xl font-semibold">Aktif (${count} Log)</span>` : `<span class="text-xs bg-slate-800 text-slate-400 px-2.5 py-1 rounded-xl font-semibold">Belum Ada Log</span>`;
+                let statusBadge = count > 0 ? `<span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-medium">Aktif (${count} Log)</span>` : `<span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-medium">Belum Ada Log</span>`;
 
                 const div = document.createElement('div');
-                div.className = 'flex items-center justify-between p-3.5 bg-slate-950/40 rounded-2xl border border-slate-800/60 shadow-inner';
+                div.className = 'flex items-center justify-between p-3 bg-slate-950/40 rounded-xl border border-slate-800/60';
                 div.innerHTML = `
                     <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-xl bg-slate-800 flex items-center justify-center text-orange-400 font-bold text-xs shadow-sm">${pShort.charAt(0)}</div>
-                        <span class="text-sm font-semibold text-slate-200">${pFull}</span>
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-orange-500 font-bold text-xs">${pShort.charAt(0)}</div>
+                        <span class="text-sm font-medium text-slate-200">${pFull}</span>
                     </div>
                     <div>${statusBadge}</div>
                 `;
@@ -398,7 +388,7 @@
                         label: 'Jumlah Target / Aktivitas',
                         data: dataCounts,
                         backgroundColor: '#FF6600',
-                        borderRadius: 10,
+                        borderRadius: 8,
                         borderSkipped: false
                     }]
                 },
@@ -411,13 +401,13 @@
                     scales: {
                         y: {
                             beginAtZero: true,
-                            ticks: { precision: 0, color: '#94a3b8', font: { weight: '500' } },
-                            grid: { color: '#1e293b50' }
+                            ticks: { precision: 0, color: '#94a3b8' },
+                            grid: { color: '#1e293b' }
                         },
                         x: {
                             ticks: { 
                                 color: '#94a3b8',
-                                font: { size: 10, weight: '600' },
+                                font: { size: 10 },
                                 maxRotation: 25,
                                 minRotation: 25
                             },
