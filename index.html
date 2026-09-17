@@ -639,8 +639,13 @@
     }
 
     function verifyPin() {
-    return true;
+    const entered = prompt("Masukkan PIN Keamanan:");
+    if (entered === null) return false;
+    if (entered.trim() === currentPin) return true;
+    alert("PIN Salah!");
+    return false;
 }
+
 
 
     function toggleSystemLock() {
