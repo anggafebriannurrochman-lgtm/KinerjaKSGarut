@@ -136,7 +136,7 @@
         <div class="bg-slate-900/90 p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center justify-between">
           <div>
             <p class="text-[11px] sm:text-xs font-semibold text-slate-400">Jenis Kegiatan</p>
-            <p class="text-xl sm:text-3xl font-black text-orange-400 mt-1">8 Menu</p>
+            <p id="kpi-jenis-kegiatan" class="text-xl sm:text-3xl font-black text-orange-400 mt-1">0 Menu</p>
           </div>
           <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 shadow-inner flex-shrink-0 text-sm">⚡</div>
         </div>
@@ -178,10 +178,25 @@
           <span class="text-[10px] text-emerald-400 bg-emerald-950/50 border border-emerald-800/50 px-2.5 py-1 rounded-full font-bold">Modern Compact View</span>
         </div>
         
-        <!-- Grid Mini Charts (3 Kolom agar rapi & tidak menghabiskan ruang) -->
+        <!-- Grid Mini Charts -->
         <div id="petugas-charts-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pt-1">
           <!-- Diisi secara dinamis melalui JavaScript -->
         </div>
+      </div>
+
+      <!-- Tombol Pengaturan Bagian Bawah Dashboard (Logo Gear) -->
+      <div class="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3 w-full sm:w-auto">
+          <div class="w-10 h-10 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 flex-shrink-0 text-lg">⚙️</div>
+          <div>
+            <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">Pengaturan Master Sistem & Keamanan</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400">Kelola kegiatan, anggota, ubah PIN keamanan, dan reset data</p>
+          </div>
+        </div>
+        <button onclick="openSettingsModal()" class="w-full sm:w-auto px-5 py-3 rounded-2xl bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-white text-xs font-black transition-all flex items-center justify-center gap-2 shadow-lg shadow-orange-600/30 cursor-pointer">
+          <span class="text-sm">⚙️</span>
+          <span>Buka Pengaturan (Gear)</span>
+        </button>
       </div>
     </section>
 
@@ -194,7 +209,7 @@
 
   </main>
 
-  <!-- Footer Bagian Bawah -->
+  <!-- Footer Bagian Bawah (Bersih tanpa tombol reset) -->
   <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
       <div>
@@ -202,14 +217,12 @@
         <p class="text-[10px] text-slate-500">Pusat kontrol dan rekapitulasi kepatuhan kegiatan operasional.</p>
       </div>
       <div>
-        <button onclick="resetData()" class="px-4 py-2.5 text-xs font-bold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 rounded-xl transition-all border border-rose-800/60 shadow-md cursor-pointer flex items-center gap-2">
-          <span>🗑️ Reset Seluruh Data</span>
-        </button>
+        <span class="text-[11px] font-bold text-slate-400">Akses Pengaturan & Keamanan via Logo Gear (⚙️) di Atas</span>
       </div>
     </div>
   </footer>
 
-  <!-- POP-UP MODAL (Tambah & Edit) -->
+  <!-- POP-UP MODAL (Tambah & Edit Sesi Kegiatan) -->
   <div id="input-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-md p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in duration-150">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -244,8 +257,92 @@
     </div>
   </div>
 
+  <!-- POP-UP MODAL PENGATURAN (Gear Settings) -->
+  <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-2xl p-5 sm:p-6 space-y-5 animate-in fade-in zoom-in duration-150">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50">⚙️</div>
+          <div>
+            <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase">Panel Pengaturan</span>
+            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data, PIN & Reset</h3>
+          </div>
+        </div>
+        <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition cursor-pointer">✕</button>
+      </div>
+
+      <!-- Scrollable Area for Settings -->
+      <div class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
+        
+        <!-- Bagian 1: Kelola Kegiatan -->
+        <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
+          <div>
+            <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>1️⃣</span> Master Kegiatan</h4>
+            <p class="text-[10px] text-slate-400 mt-1">Tambah, Edit, atau Hapus kegiatan.</p>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="new-keg-title" placeholder="Nama Kegiatan Baru" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
+            <input type="text" id="new-keg-desc" placeholder="Deskripsi Singkat" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 transition">
+            <button onclick="addNewActivity()" class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">+ Tambah</button>
+          </div>
+
+          <!-- List Kegiatan -->
+          <div class="mt-2 space-y-2" id="settings-kegiatan-list"></div>
+        </div>
+
+        <!-- Bagian 2: Kelola Anggota -->
+        <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
+          <div>
+            <h4 class="font-extrabold text-xs text-emerald-400 uppercase tracking-wider flex items-center gap-1.5"><span>2️⃣</span> Master Anggota / Petugas</h4>
+            <p class="text-[10px] text-slate-400 mt-1">Kelola data petugas.</p>
+          </div>
+          
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="new-member-name" placeholder="Panggilan (Contoh: Budi)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200 font-bold transition">
+            <input type="text" id="new-member-fullname" placeholder="Nama Lengkap (Contoh: BUDI S)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200 transition">
+            <button onclick="addNewMember()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">+ Tambah</button>
+          </div>
+
+          <!-- List Anggota -->
+          <div class="mt-2 space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2" id="settings-orang-list"></div>
+        </div>
+
+        <!-- Bagian 3: Keamanan & Reset Data -->
+        <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
+          <div>
+            <h4 class="font-extrabold text-xs text-rose-400 uppercase tracking-wider flex items-center gap-1.5"><span>3️⃣</span> Keamanan & Reset Data</h4>
+            <p class="text-[10px] text-slate-400 mt-1">Ubah PIN keamanan sistem atau lakukan reset seluruh sesi kegiatan.</p>
+          </div>
+
+          <div class="flex flex-col sm:flex-row gap-2.5">
+            <button onclick="changePinCode()" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
+              <span>🔑 Ubah PIN Keamanan</span>
+            </button>
+            <button onclick="resetData()" class="flex-1 py-3 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-800/80 font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
+              <span>🗑️ Reset Seluruh Data Sesi</span>
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="pt-2 border-t border-slate-800 flex justify-end">
+        <button onclick="closeSettingsModal()" class="px-6 py-2.5 text-xs font-bold text-slate-300 bg-slate-800 hover:bg-slate-700 rounded-xl transition cursor-pointer">Selesai & Tutup Pengaturan</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    const kegiatanList = [
+    // ---------------------------------------------------------
+    // INISIALISASI VARIABEL & STATE APLIKASI
+    // ---------------------------------------------------------
+
+    // Master Data PIN Keamanan
+    let currentPin = localStorage.getItem('garut_app_pin_v6') || "1789";
+
+    // Master Data Kegiatan default & dinamis
+    const defaultKegiatanList = [
       { id: "keg_0", title: "Safety Talk", desc: "Briefing keselamatan kerja materi IBPR." },
       { id: "keg_1", title: "Diskusi Studi Kasus", desc: "Pembedahan kasus operasional." },
       { id: "keg_2", title: "Sharing Session Kendala", desc: "Ruang diskusi terbuka kendala teknis dan lainnya." },
@@ -255,18 +352,13 @@
       { id: "keg_6", title: "Leadership", desc: "Melatih PPKA menerapkan pola kepemimpinan (Khusus Hadi & Fikri)." },
       { id: "keg_7", title: "Penilaian Cara Kerja & Komunikasi", desc: "Peningkatan keterampilan public speaking dan pola berfikir" }
     ];
+    let kegiatanList = JSON.parse(localStorage.getItem('garut_kegiatan_list_v6')) || defaultKegiatanList;
+
+    // Master Data Anggota default & dinamis
+    const defaultOrang = ["Hadi", "Fikri", "Supri", "Ujang", "Dina", "Ade", "Ramadhan"];
+    let orang = JSON.parse(localStorage.getItem('garut_orang_list_v6')) || defaultOrang;
     
-    const weeklyKegList = [
-      { id: "keg_0", label: "Safety Talk", color: "#FF6600" },
-      { id: "keg_1", label: "Studi Kasus", color: "#3b82f6" },
-      { id: "keg_2", label: "Sharing Session", color: "#10b981" },
-      { id: "keg_3", label: "Simulasi", color: "#f59e0b" },
-      { id: "keg_4", label: "Pelatihan Mental", color: "#ec4899" }
-    ];
-    
-    const orang = ["Hadi", "Fikri", "Supri", "Ujang", "Dina", "Ade", "Ramadhan"];
-    
-    const dashboardFullNames = {
+    const defaultFullNames = {
       "Hadi": "HADI CAHYADI",
       "Fikri": "FIKRI MA'RUF",
       "Supri": "SUPRIATNA SULAEMAN",
@@ -275,18 +367,17 @@
       "Ade": "ADE AAN KADARISMAN",
       "Ramadhan": "M RAMADHAN"
     };
+    let dashboardFullNames = JSON.parse(localStorage.getItem('garut_fullnames_v6')) || defaultFullNames;
 
     const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+    const chartColors = ["#FF6600", "#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6", "#f43f5e", "#84cc16", "#0ea5e9"];
 
     let state = JSON.parse(localStorage.getItem('garut_unified_db_notes_v6')) || {};
     let personChartInstances = {};
     let activeKegId = null;
     let editSessionId = null;
     let isSystemUnlocked = false;
-    
-    let activeWeeksPerKeg = {
-      "keg_0": 1, "keg_1": 1, "keg_2": 1, "keg_3": 1, "keg_4": 1
-    };
+    let activeWeeksPerKeg = {};
 
     window.addEventListener('DOMContentLoaded', () => {
       const now = new Date();
@@ -299,7 +390,6 @@
       } else {
         yearSelect.value = "2026";
       }
-
       initView();
     });
 
@@ -322,20 +412,23 @@
       }
     }
 
+    function verifyPin() {
+      const entered = prompt("Masukkan PIN Keamanan:");
+      if (entered === null) return false;
+      if (entered === currentPin) return true;
+      alert("PIN Salah!");
+      return false;
+    }
+
     function toggleSystemLock() {
       if (isSystemUnlocked) {
         isSystemUnlocked = false;
         updateSystemLockUI();
       } else {
-        const enteredPin = prompt("Masukkan PIN Keamanan:");
-        if (enteredPin === null) return;
-        
-        if (enteredPin === "1789") {
+        if (verifyPin()) {
           isSystemUnlocked = true;
           updateSystemLockUI();
           alert("Sistem berhasil dibuka kembali (Unlocked).");
-        } else {
-          alert("PIN Salah! Akses membuka kunci ditolak.");
         }
       }
     }
@@ -344,15 +437,10 @@
       if (isSystemUnlocked) {
         callback();
       } else {
-        const enteredPin = prompt("Masukkan PIN Keamanan:");
-        if (enteredPin === null) return;
-        
-        if (enteredPin === "1789") {
+        if (verifyPin()) {
           isSystemUnlocked = true;
           updateSystemLockUI();
           callback();
-        } else {
-          alert("PIN Salah! Akses perubahan ditolak.");
         }
       }
     }
@@ -368,7 +456,6 @@
         btn.className = "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-950/80 text-emerald-400 flex items-center justify-center font-bold border border-emerald-800/50 shadow-inner flex-shrink-0 text-sm hover:scale-105 active:scale-95 transition-all cursor-pointer";
         text.innerText = "Unlocked";
         text.className = "text-xl sm:text-3xl font-black text-emerald-400 mt-1";
-        
         indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
         indicatorText.innerText = "Sistem Online (Unlocked)";
       } else {
@@ -376,11 +463,9 @@
         btn.className = "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-rose-950/80 text-rose-400 flex items-center justify-center font-bold border border-rose-800/50 shadow-inner flex-shrink-0 text-sm hover:scale-105 active:scale-95 transition-all cursor-pointer";
         text.innerText = "Locked";
         text.className = "text-xl sm:text-3xl font-black text-rose-400 mt-1";
-
         indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0";
         indicatorText.innerText = "Sistem Terkunci (View Only)";
       }
-
       initView();
     }
 
@@ -397,9 +482,13 @@
       renderDashboard();
     }
 
+    // ---------------------------------------------------------
+    // RENDER UTAMA & SESI
+    // ---------------------------------------------------------
     function initView() {
       const container = document.getElementById('cards-container');
       container.innerHTML = '';
+      document.getElementById('kpi-jenis-kegiatan').innerText = kegiatanList.length + " Menu";
 
       kegiatanList.forEach((keg, index) => {
         let sessions = state[keg.id] || [];
@@ -414,7 +503,6 @@
             ).join(' ');
 
             let noteSection = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic bg-slate-900/80 px-2 py-1 rounded-xl border border-slate-800">📝 "${sess.note}"</p>` : '';
-
             let actionButtonsHtml = `
               <button onclick="openEditModal('${keg.id}', '${currentSessionId}')" class="px-2 py-0.5 rounded-lg bg-slate-800/60 text-slate-400 hover:bg-slate-700 hover:text-white font-bold text-[10px] transition border border-slate-700 cursor-pointer" title="Ubah sesi ini (Perlu PIN)">Edit</button>
               <button onclick="deleteSession('${keg.id}', '${currentSessionId}')" class="w-5 h-5 rounded-lg bg-slate-800/60 text-slate-400 hover:bg-slate-700 hover:text-white flex items-center justify-center font-bold text-xs transition border border-slate-700 cursor-pointer" title="Hapus sesi ini (Perlu PIN)">✕</button>
@@ -436,38 +524,33 @@
             `;
           });
         } else {
-          sessionsHtml = `
-            <div class="py-3 text-center text-slate-500 text-[11px] italic bg-slate-950/30 rounded-2xl border border-dashed border-slate-800">
-              Belum ada sesi tercatat.
-            </div>
-          `;
+          sessionsHtml = `<div class="py-3 text-center text-slate-500 text-[11px] italic bg-slate-950/30 rounded-2xl border border-dashed border-slate-800">Belum ada sesi tercatat.</div>`;
         }
+
+        const nomorUrut = (index + 1 < 10) ? `0${index + 1}` : `${index + 1}`;
 
         container.innerHTML += `
           <div class="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col justify-between space-y-3 hover:border-slate-700 transition-all">
             <div class="space-y-2">
               <div class="flex justify-between items-start">
-                <span class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 font-black text-[11px] flex items-center justify-center border border-slate-700/50">0${index + 1}</span>
+                <span class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 font-black text-[11px] flex items-center justify-center border border-slate-700/50">${nomorUrut}</span>
                 <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700/50">${sessions.length} Sesi Aktif</span>
               </div>
               <h3 class="font-extrabold text-white text-sm sm:text-base tracking-wide">${keg.title}</h3>
               <p class="text-[11px] sm:text-xs text-slate-400 leading-relaxed">${keg.desc}</p>
             </div>
-
             <div class="space-y-2 pt-2 border-t border-slate-800/80">
               <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Riwayat Sesi:</span>
               <div class="space-y-2 max-h-44 sm:max-h-52 overflow-y-auto custom-scrollbar pr-1">
                 ${sessionsHtml}
               </div>
             </div>
-
-            <button onclick="openModal('${keg.id}', '${keg.title}')" class="w-full mt-1 py-2 px-3 rounded-2xl bg-slate-800 hover:bg-orange-600 text-slate-200 hover:text-white text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm border border-slate-700/60 hover:border-orange-500 cursor-pointer">
+            <button onclick="openModal('${keg.id}', '${keg.title.replace(/'/g, "\\'")}')" class="w-full mt-1 py-2 px-3 rounded-2xl bg-slate-800 hover:bg-orange-600 text-slate-200 hover:text-white text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm border border-slate-700/60 hover:border-orange-500 cursor-pointer">
               <span>+ Tambah Sesi & Catatan</span>
             </button>
           </div>
         `;
       });
-
       renderDashboard();
     }
 
@@ -478,9 +561,7 @@
         document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
         document.getElementById('modal-title').innerText = kegTitle;
         document.getElementById('modal-save-btn').innerText = "+ Simpan Sesi";
-
         renderCheckboxes([], kegId);
-
         const now = new Date();
         document.getElementById('modal-input-date').value = now.toISOString().split('T')[0];
         document.getElementById('modal-input-note').value = '';
@@ -492,12 +573,10 @@
       checkLockAndRun(() => {
         activeKegId = kegId;
         editSessionId = sessionId;
-        
         const kegData = kegiatanList.find(k => k.id === kegId);
         document.getElementById('modal-subtitle').innerText = "Edit Pelaksanaan";
         document.getElementById('modal-title').innerText = kegData ? kegData.title : "Ubah Sesi";
         document.getElementById('modal-save-btn').innerText = "Simpan Perubahan";
-
         const sessions = state[kegId] || [];
         const targetSession = sessions.find(s => (s.id || sessions.indexOf(s)) == sessionId);
 
@@ -506,7 +585,6 @@
           document.getElementById('modal-input-note').value = targetSession.note || '';
           renderCheckboxes(targetSession.members || [], kegId);
         }
-
         document.getElementById('input-modal').classList.remove('hidden');
       });
     }
@@ -514,9 +592,8 @@
     function renderCheckboxes(selectedMembersList, kegId) {
       const containerBox = document.getElementById('modal-checkboxes-orang');
       containerBox.innerHTML = '';
+      const targetOrang = (kegId === "keg_6") ? orang.filter(o => o === "Hadi" || o === "Fikri") : orang; 
       
-      const targetOrang = (kegId === "keg_6") ? ["Hadi", "Fikri"] : orang;
-
       targetOrang.forEach(o => {
         const isChecked = selectedMembersList.includes(o) ? 'checked' : '';
         containerBox.innerHTML += `
@@ -536,7 +613,6 @@
 
     function saveNewSession() {
       if (!activeKegId) return;
-
       const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
       const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
       const selectedDate = document.getElementById('modal-input-date').value;
@@ -546,10 +622,7 @@
         alert("Harap pilih minimal 1 petugas untuk sesi ini.");
         return;
       }
-
-      if (!state[activeKegId]) {
-        state[activeKegId] = [];
-      }
+      if (!state[activeKegId]) state[activeKegId] = [];
 
       if (editSessionId !== null) {
         let sessions = state[activeKegId];
@@ -569,7 +642,6 @@
       }
 
       state[activeKegId].sort((a, b) => new Date(b.date) - new Date(a.date));
-
       localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
       closeModal();
       initView();
@@ -580,10 +652,7 @@
         if (confirm("Hapus sesi kegiatan ini?")) {
           if (state[kegId]) {
             state[kegId] = state[kegId].filter(s => (s.id || state[kegId].indexOf(s)) != sessionId);
-
-            if (state[kegId].length === 0) {
-              delete state[kegId];
-            }
+            if (state[kegId].length === 0) delete state[kegId];
             localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
             initView();
           }
@@ -591,17 +660,215 @@
       });
     }
 
-    function resetData() {
+    // ---------------------------------------------------------
+    // MENU PENGATURAN (SETTINGS GEAR) & KEAMANAN PIN
+    // ---------------------------------------------------------
+    function openSettingsModal() {
       checkLockAndRun(() => {
-        if (confirm('Konfirmasi akhir: Reset seluruh data catatan kegiatan Stasiun Garut?')) {
-          localStorage.removeItem('garut_unified_db_notes_v6');
-          state = {};
-          initView();
-          alert("Data berhasil direset.");
-        }
+        renderSettingsData();
+        document.getElementById('settings-modal').classList.remove('hidden');
       });
     }
 
+    function closeSettingsModal() {
+      document.getElementById('settings-modal').classList.add('hidden');
+    }
+
+    function changePinCode() {
+      const oldInput = prompt("Masukkan PIN Lama Anda:");
+      if (oldInput === null) return;
+      if (oldInput !== currentPin) {
+        alert("PIN Lama salah! Perubahan dibatalkan.");
+        return;
+      }
+      const newInput = prompt("Masukkan PIN Baru:");
+      if (newInput === null || !newInput.trim()) return;
+      const confirmInput = prompt("Konfirmasi PIN Baru:");
+      if (newInput !== confirmInput) {
+        alert("PIN baru tidak cocok! Perubahan dibatalkan.");
+        return;
+      }
+      currentPin = newInput.trim();
+      localStorage.setItem('garut_app_pin_v6', currentPin);
+      alert("PIN Keamanan berhasil diubah!");
+    }
+
+    function renderSettingsData() {
+      // Render List Kegiatan
+      const kegContainer = document.getElementById('settings-kegiatan-list');
+      let kegHtml = '';
+      kegiatanList.forEach(k => {
+        kegHtml += `
+          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+            <div class="w-2/3 pr-2">
+              <p class="text-[11px] sm:text-xs font-bold text-white truncate" title="${k.title}">${k.title}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate" title="${k.desc}">${k.desc}</p>
+            </div>
+            <div class="flex gap-1.5 flex-shrink-0">
+              <button onclick="editActivity('${k.id}')" class="px-2.5 py-1.5 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded-lg hover:bg-blue-800 hover:text-white transition cursor-pointer border border-blue-800/50">Edit</button>
+              <button onclick="deleteActivity('${k.id}')" class="px-2.5 py-1.5 bg-rose-900/50 text-rose-400 text-[10px] font-bold rounded-lg hover:bg-rose-800 hover:text-white transition cursor-pointer border border-rose-800/50">Hapus</button>
+            </div>
+          </div>
+        `;
+      });
+      kegContainer.innerHTML = kegHtml || '<p class="text-[11px] text-slate-500 italic p-2">Belum ada kegiatan terdaftar.</p>';
+
+      // Render List Anggota
+      const orangContainer = document.getElementById('settings-orang-list');
+      let orangHtml = '';
+      orang.forEach(o => {
+        const full = dashboardFullNames[o] || o;
+        orangHtml += `
+          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50 hover:border-slate-600 transition">
+            <div class="w-3/5 pr-2">
+              <p class="text-[11px] sm:text-xs font-bold text-white truncate" title="${o}">${o}</p>
+              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate" title="${full}">${full}</p>
+            </div>
+            <div class="flex gap-1.5 flex-shrink-0">
+              <button onclick="editMember('${o}')" class="px-2.5 py-1.5 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded-lg hover:bg-blue-800 hover:text-white transition cursor-pointer border border-blue-800/50">Edit</button>
+              <button onclick="deleteMember('${o}')" class="px-2.5 py-1.5 bg-rose-900/50 text-rose-400 text-[10px] font-bold rounded-lg hover:bg-rose-800 hover:text-white transition cursor-pointer border border-rose-800/50">Hapus</button>
+            </div>
+          </div>
+        `;
+      });
+      orangContainer.innerHTML = orangHtml || '<p class="text-[11px] text-slate-500 italic p-2 col-span-2">Belum ada anggota terdaftar.</p>';
+    }
+
+    // Aksi Kegiatan
+    function addNewActivity() {
+      const title = document.getElementById('new-keg-title').value.trim();
+      const desc = document.getElementById('new-keg-desc').value.trim();
+      if (!title) return alert("Nama kegiatan tidak boleh kosong!");
+
+      const newId = "keg_" + Date.now();
+      kegiatanList.push({ id: newId, title: title, desc: desc || "-" });
+      
+      localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
+      document.getElementById('new-keg-title').value = '';
+      document.getElementById('new-keg-desc').value = '';
+      
+      renderSettingsData();
+      initView();
+    }
+
+    function editActivity(kegId) {
+      const keg = kegiatanList.find(k => k.id === kegId);
+      if(!keg) return;
+
+      const newTitle = prompt("Ubah Nama Kegiatan:", keg.title);
+      if(!newTitle) return; 
+
+      const newDesc = prompt("Ubah Deskripsi Kegiatan:", keg.desc);
+      if(newDesc === null) return; 
+
+      keg.title = newTitle.trim();
+      keg.desc = newDesc.trim() || "-";
+
+      localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
+      renderSettingsData();
+      initView();
+    }
+
+    function deleteActivity(kegId) {
+      if(confirm("Yakin ingin menghapus kegiatan ini? Seluruh data riwayat sesi kegiatan ini juga akan ikut terhapus permanen!")) {
+        kegiatanList = kegiatanList.filter(k => k.id !== kegId);
+        if(state[kegId]) {
+          delete state[kegId];
+          localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+        }
+        localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
+        renderSettingsData();
+        initView();
+      }
+    }
+
+    // Aksi Anggota
+    function addNewMember() {
+      const shortName = document.getElementById('new-member-name').value.trim();
+      const fullName = document.getElementById('new-member-fullname').value.trim();
+      if (!shortName) return alert("Nama panggilan anggota tidak boleh kosong!");
+      if (orang.includes(shortName)) return alert("Nama panggilan tersebut sudah ada di daftar!");
+
+      orang.push(shortName);
+      dashboardFullNames[shortName] = fullName ? fullName.toUpperCase() : shortName.toUpperCase();
+
+      localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
+      localStorage.setItem('garut_fullnames_v6', JSON.stringify(dashboardFullNames));
+
+      document.getElementById('new-member-name').value = '';
+      document.getElementById('new-member-fullname').value = '';
+
+      renderSettingsData();
+      initView();
+    }
+
+    function editMember(oldShortName) {
+      const newShort = prompt("Ubah Nama Panggilan (Pendek):", oldShortName);
+      if (!newShort) return; 
+      
+      const oldFull = dashboardFullNames[oldShortName] || oldShortName;
+      const newFull = prompt("Ubah Nama Lengkap (Dashboard):", oldFull);
+      if (newFull === null) return;
+
+      const finalShort = newShort.trim();
+      const finalFull = newFull.trim().toUpperCase();
+
+      if (finalShort !== oldShortName && orang.includes(finalShort)) {
+        alert("Nama panggilan tersebut sudah dipakai oleh anggota lain!");
+        return;
+      }
+
+      if (finalShort !== oldShortName) {
+        const idx = orang.indexOf(oldShortName);
+        if (idx > -1) orang[idx] = finalShort;
+        
+        dashboardFullNames[finalShort] = finalFull;
+        delete dashboardFullNames[oldShortName];
+
+        for (let kId in state) {
+          state[kId].forEach(sess => {
+            if (sess.members && sess.members.includes(oldShortName)) {
+              let mIdx = sess.members.indexOf(oldShortName);
+              sess.members[mIdx] = finalShort;
+            }
+          });
+        }
+        localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+      } else {
+        dashboardFullNames[oldShortName] = finalFull;
+      }
+
+      localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
+      localStorage.setItem('garut_fullnames_v6', JSON.stringify(dashboardFullNames));
+      
+      renderSettingsData();
+      initView();
+    }
+
+    function deleteMember(shortName) {
+      if(confirm(`Yakin ingin menghapus "${shortName}" dari Master Data? Data riwayat pada sesi sebelumnya akan tetap ada, tapi namanya akan hilang dari daftar form & target.`)) {
+        orang = orang.filter(o => o !== shortName);
+        delete dashboardFullNames[shortName];
+        localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
+        localStorage.setItem('garut_fullnames_v6', JSON.stringify(dashboardFullNames));
+        renderSettingsData();
+        initView();
+      }
+    }
+
+    function resetData() {
+      if (confirm('Konfirmasi akhir: Reset seluruh data sesi catatan kegiatan? (Master kegiatan & anggota tetap aman)')) {
+        localStorage.removeItem('garut_unified_db_notes_v6');
+        state = {};
+        initView();
+        alert("Data sesi berhasil direset.");
+        closeSettingsModal();
+      }
+    }
+
+    // ---------------------------------------------------------
+    // DASHBOARD & CHART RENDER
+    // ---------------------------------------------------------
     function renderDashboard() {
       const containerStats = document.getElementById('kegiatan-stats-container');
       containerStats.innerHTML = '';
@@ -617,7 +884,6 @@
 
       kegiatanList.forEach(keg => {
         let sessions = state[keg.id] || [];
-        
         let filteredSessions = sessions.filter(sess => {
           if (!sess.date) return false;
           let d = new Date(sess.date);
@@ -626,12 +892,12 @@
 
         totalSessionsAll += filteredSessions.length;
 
-        const isWeeklyKeg = ["keg_0", "keg_1", "keg_2", "keg_3", "keg_4"].includes(keg.id);
-
+        const isWeeklyKeg = !["keg_5", "keg_6", "keg_7"].includes(keg.id);
         let tableRowsHtml = '';
 
         if (isWeeklyKeg) {
-          let currentWeek = activeWeeksPerKeg[keg.id] || 1;
+          if (activeWeeksPerKeg[keg.id] === undefined) activeWeeksPerKeg[keg.id] = 1;
+          let currentWeek = activeWeeksPerKeg[keg.id];
 
           let weeklyFilteredSessions = filteredSessions.filter(sess => {
             let d = new Date(sess.date);
@@ -640,34 +906,26 @@
 
           let weeklyMemberCounts = {};
           orang.forEach(o => weeklyMemberCounts[o] = 0);
-
           weeklyFilteredSessions.forEach(sess => {
-            if (sess.members) {
-              sess.members.forEach(mName => {
-                if (weeklyMemberCounts[mName] !== undefined) {
-                  weeklyMemberCounts[mName]++;
-                }
-              });
-            }
+            if (sess.members) sess.members.forEach(mName => {
+              if (weeklyMemberCounts[mName] !== undefined) weeklyMemberCounts[mName]++;
+            });
           });
 
           let monthlyMemberCounts = {};
           orang.forEach(o => monthlyMemberCounts[o] = 0);
           filteredSessions.forEach(sess => {
-            if (sess.members) {
-              sess.members.forEach(mName => {
-                if (monthlyMemberCounts[mName] !== undefined) {
-                  monthlyMemberCounts[mName]++;
-                  totalPersonAll++;
-                }
-              });
-            }
+            if (sess.members) sess.members.forEach(mName => {
+              if (monthlyMemberCounts[mName] !== undefined) {
+                monthlyMemberCounts[mName]++;
+                totalPersonAll++;
+              }
+            });
           });
 
           orang.forEach(o => {
             let weeklyCount = weeklyMemberCounts[o];
             let monthlyCount = monthlyMemberCounts[o];
-            
             let weeklyMet = weeklyCount >= 1;
             let monthlyMet = monthlyCount >= 4;
 
@@ -681,7 +939,7 @@
 
             tableRowsHtml += `
               <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
-                <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o]}</td>
+                <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o] || o}</td>
                 <td class="p-2.5 text-center">${badgeWeekly}</td>
                 <td class="p-2.5 text-center">${badgeMonthly}</td>
               </tr>
@@ -724,14 +982,12 @@
           let monthlyMemberCounts = {};
           orang.forEach(o => monthlyMemberCounts[o] = 0);
           filteredSessions.forEach(sess => {
-            if (sess.members) {
-              sess.members.forEach(mName => {
-                if (monthlyMemberCounts[mName] !== undefined) {
-                  monthlyMemberCounts[mName]++;
-                  totalPersonAll++;
-                }
-              });
-            }
+            if (sess.members) sess.members.forEach(mName => {
+              if (monthlyMemberCounts[mName] !== undefined) {
+                monthlyMemberCounts[mName]++;
+                totalPersonAll++;
+              }
+            });
           });
 
           orang.forEach(o => {
@@ -740,28 +996,24 @@
             let isApplicable = true;
 
             if (keg.id === "keg_5") {
-              targetNeeded = 2; // Coaching Teknis: 2x per bulan
+              targetNeeded = 2; 
             } else if (keg.id === "keg_6") {
-              targetNeeded = 2; // Leadership: 2x per bulan khusus Hadi & Fikri
+              targetNeeded = 2; 
               isApplicable = (o === "Hadi" || o === "Fikri");
             } else if (keg.id === "keg_7") {
-              targetNeeded = 1; // Komunikasi: 1x per bulan
+              targetNeeded = 1; 
             }
 
-            // Jika tidak ada target untuk petugas tersebut pada kegiatan ini, jangan tampilkan dalam tabel
-            if (!isApplicable) {
-              return;
-            }
+            if (!isApplicable) return;
 
             let monthlyMet = monthlyCount >= targetNeeded;
-
             let badgeMonthly = monthlyMet ? 
               `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${monthlyCount}/${targetNeeded})</span>` : 
               `<span class="px-2 py-0.5 rounded-md bg-amber-950/50 text-amber-400 font-bold text-[10px] border border-amber-800/40">Kurang (${monthlyCount}/${targetNeeded})</span>`;
 
             tableRowsHtml += `
               <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
-                <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o]}</td>
+                <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o] || o}</td>
                 <td class="p-2.5 text-center text-slate-500 font-bold text-[11px]">- (Target Bulanan Murni)</td>
                 <td class="p-2.5 text-center">${badgeMonthly}</td>
               </tr>
@@ -804,19 +1056,23 @@
       container.innerHTML = '';
 
       Object.keys(personChartInstances).forEach(key => {
-        if (personChartInstances[key]) {
-          personChartInstances[key].destroy();
-        }
+        if (personChartInstances[key]) personChartInstances[key].destroy();
       });
       personChartInstances = {};
 
+      let dynamicChartKegiatan = kegiatanList.filter(k => !["keg_5", "keg_6", "keg_7"].includes(k.id));
+      let mappedWeeklyKeg = dynamicChartKegiatan.map((k, idx) => ({
+        id: k.id, 
+        label: k.title, 
+        color: chartColors[idx % chartColors.length]
+      }));
+
       orang.forEach(o => {
         const canvasId = `canvas-chart-${o}`;
-        
         container.innerHTML += `
           <div class="bg-slate-950/60 border border-slate-800/80 p-3 rounded-2xl space-y-2 shadow-inner">
             <div class="flex justify-between items-center px-1">
-              <h4 class="font-extrabold text-white text-xs tracking-wide truncate max-w-[170px]">${dashboardFullNames[o]}</h4>
+              <h4 class="font-extrabold text-white text-xs tracking-wide truncate max-w-[170px]">${dashboardFullNames[o] || o}</h4>
               <span class="text-[9px] text-orange-400 bg-orange-950/60 border border-orange-800/40 px-2 py-0.5 rounded font-bold">4 Pekan</span>
             </div>
             <div class="relative h-36 w-full">
@@ -830,7 +1086,7 @@
         const canvasId = `canvas-chart-${o}`;
         const ctx = document.getElementById(canvasId).getContext('2d');
 
-        const datasets = weeklyKegList.map(keg => {
+        const datasets = mappedWeeklyKeg.map(keg => {
           const dataWeeks = [1, 2, 3, 4].map(w => {
             let sessions = state[keg.id] || [];
             let matched = sessions.some(sess => {
