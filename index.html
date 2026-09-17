@@ -56,29 +56,23 @@
         <!-- Header -->
         <header class="bg-slate-900/80 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30">
             <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
-                <!-- Sebelah Kiri -->
-                <div class="flex items-center space-x-3">
-                    <div class="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
-                        <i class="fa-solid fa-train text-lg"></i>
+                <div class="flex items-center space-x-4">
+                    <div class="w-12 h-12 rounded-xl bg-orange-500 flex items-center justify-center text-white shadow-lg shadow-orange-500/30">
+                        <i class="fa-solid fa-train text-2xl"></i>
                     </div>
                     <div>
-                        <h1 class="text-base sm:text-lg font-bold text-white tracking-tight">Kinerja Kepala Stasiun</h1>
+                        <h1 class="text-xl font-bold text-white tracking-tight">Work Tracker</h1>
+                        <p class="text-xs text-orange-400 font-medium">Stasiun Garut • Sinergi & Integritas</p>
                     </div>
                 </div>
-
-                <!-- Bagian Tengah -->
-                <div class="hidden md:block text-center">
-                    <span class="text-sm font-semibold text-orange-400 bg-orange-500/10 px-4 py-1.5 rounded-full border border-orange-500/20">Stasiun Garut</span>
-                </div>
-
-                <!-- Sebelah Kanan -->
-                <div class="flex items-center space-x-4">
-                    <div class="text-right">
-                        <p class="text-xs sm:text-sm font-bold text-white">Angga Febrian Nurrochman</p>
-                        <p class="text-[11px] text-slate-400 font-medium">NIPP. 50376</p>
+                <div class="flex items-center space-x-3">
+                    <div class="text-right hidden sm:block">
+                        <p class="text-sm font-semibold text-white">Angga Febrian Nurrochman</p>
+                        <p class="text-xs text-slate-400">NIPP. 50376</p>
                     </div>
-                    <button onclick="lockSystem()" title="Kunci Sistem" class="bg-slate-800 hover:bg-slate-700 text-slate-300 p-2.5 rounded-xl text-sm font-medium border border-slate-700 transition-all flex items-center justify-center">
+                    <button onclick="lockSystem()" title="Kunci Sistem" class="bg-slate-800 hover:bg-slate-700 text-slate-300 px-4 py-2.5 rounded-xl text-sm font-medium border border-slate-700 transition-all flex items-center space-x-2">
                         <i class="fa-solid fa-lock text-orange-500"></i>
+                        <span class="hidden sm:inline">Kunci Sistem</span>
                     </button>
                 </div>
             </div>
@@ -125,7 +119,7 @@
 
             <!-- Bagian Grafik & Rekapitulasi Target Bulanan -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <!-- Grafik Batang Akumulasi Target Bulanan -->
+                <!-- Grafik Akumulasi Target Bulanan -->
                 <div class="lg:col-span-2 bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl flex flex-col justify-between">
                     <div class="flex items-center justify-between mb-4">
                         <div>
@@ -224,17 +218,6 @@
 
     <!-- JavaScript Logika Aplikasi -->
     <script>
-        // Pemetaan Nama Lengkap khusus Dashboard Utama & Grafik
-        const dashboardFullNames = {
-            "Hadi": "HADI CAHYADI",
-            "Fikri": "FIKRI MA'RUF",
-            "Supri": "SUPRIATNA SULAEMAN",
-            "Ujang": "UJANG RACHMAT",
-            "Dina": "DINA TURDINA",
-            "Ade": "ADE AAN KADARISMAN",
-            "Ramadhan": "M RAMADHAN"
-        };
-
         const listPetugas = ["Hadi", "Fikri", "Supri", "Ujang", "Dina", "Ade", "Ramadhan"];
         let logs = JSON.parse(localStorage.getItem('work_tracker_garut_logs')) || [];
         let chartInstance = null;
@@ -343,12 +326,11 @@
             }
 
             filtered.forEach(item => {
-                const displayPetugasName = dashboardFullNames[item.petugas] || item.petugas;
                 const tr = document.createElement('tr');
                 tr.className = 'hover:bg-slate-800/40 transition-colors';
                 tr.innerHTML = `
                     <td class="p-4 text-slate-400 text-xs whitespace-nowrap">${item.timestamp}</td>
-                    <td class="p-4 font-semibold text-white">${displayPetugasName}</td>
+                    <td class="p-4 font-semibold text-white">${item.petugas}</td>
                     <td class="p-4"><span class="bg-orange-500/10 text-orange-400 px-3 py-1 rounded-lg text-xs font-medium border border-orange-500/20">${item.kategori}</span></td>
                     <td class="p-4 text-slate-300 max-w-xs truncate">${item.uraian}</td>
                     <td class="p-4 text-center">
@@ -367,17 +349,16 @@
             const container = document.getElementById('petugasStatusList');
             container.innerHTML = '';
 
-            listPetugas.forEach(pShort => {
-                const pFull = dashboardFullNames[pShort];
-                const count = logs.filter(l => l.petugas === pShort).length;
+            listPetugas.forEach(p => {
+                const count = logs.filter(l => l.petugas === p).length;
                 let statusBadge = count > 0 ? `<span class="text-xs bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 px-2 py-0.5 rounded font-medium">Aktif (${count} Log)</span>` : `<span class="text-xs bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-medium">Belum Ada Log</span>`;
 
                 const div = document.createElement('div');
                 div.className = 'flex items-center justify-between p-3 bg-slate-950/40 rounded-xl border border-slate-800/60';
                 div.innerHTML = `
                     <div class="flex items-center space-x-3">
-                        <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-orange-500 font-bold text-xs">${pShort.charAt(0)}</div>
-                        <span class="text-sm font-medium text-slate-200">${pFull}</span>
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-orange-500 font-bold text-xs">${p.charAt(0)}</div>
+                        <span class="text-sm font-medium text-slate-200">${p}</span>
                     </div>
                     <div>${statusBadge}</div>
                 `;
@@ -388,40 +369,26 @@
         function initChart() {
             const ctx = document.getElementById('monthlyTargetChart').getContext('2d');
             const dataCounts = listPetugas.map(p => logs.filter(l => l.petugas === p).length);
-            const labelFullNames = listPetugas.map(p => dashboardFullNames[p]);
 
             chartInstance = new Chart(ctx, {
-                type: 'bar',
+                type: 'doughnut',
                 data: {
-                    labels: labelFullNames,
+                    labels: listPetugas,
                     datasets: [{
-                        label: 'Jumlah Target / Aktivitas',
                         data: dataCounts,
-                        backgroundColor: '#FF6600',
-                        borderRadius: 8,
-                        borderSkipped: false
+                        backgroundColor: [
+                            '#FF6600', '#003366', '#10B981', '#3B82F6', '#8B5CF6', '#EC4899', '#F59E0B'
+                        ],
+                        borderWidth: 0
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: { display: false }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            ticks: { precision: 0, color: '#94a3b8' },
-                            grid: { color: '#1e293b' }
-                        },
-                        x: {
-                            ticks: { 
-                                color: '#94a3b8',
-                                font: { size: 10 },
-                                maxRotation: 25,
-                                minRotation: 25
-                            },
-                            grid: { display: false }
+                        legend: {
+                            position: 'right',
+                            labels: { color: '#94a3b8', font: { size: 11 } }
                         }
                     }
                 }
