@@ -218,13 +218,10 @@
 
   <!-- Footer Bagian Bawah -->
   <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
-      <div>
-        <p id="footer-station-name" class="text-xs font-bold text-slate-300">Stasiun Garut - Monitoring SO SDM Daop 2 Bandung</p>
-        <p class="text-[10px] text-slate-500">Pusat kontrol dan rekapitulasi kepatuhan kegiatan operasional.</p>
-      </div>
-      <div>
-        <span class="text-[11px] font-bold text-slate-400">Sistem Monitoring Terpadu</span>
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex justify-end">
+      <div class="text-right space-y-0.5">
+        <p class="text-xs sm:text-sm font-extrabold text-slate-300 tracking-wide">Penjagaan Pelaksanaan Kegiatan SO SDM</p>
+        <p class="text-[11px] sm:text-xs font-bold text-orange-400 tracking-wider">KS Garut</p>
       </div>
     </div>
   </footer>
@@ -415,9 +412,6 @@
     function updateStationHeaderUI() {
       const headerEl = document.getElementById('header-station-title');
       if (headerEl) headerEl.innerText = stationName;
-
-      const footerEl = document.getElementById('footer-station-name');
-      if (footerEl) footerEl.innerText = `${stationName} - Monitoring SO SDM Daop 2 Bandung`;
     }
 
     function saveStationName() {
