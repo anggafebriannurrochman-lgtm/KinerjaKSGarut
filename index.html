@@ -1,0 +1,846 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Work Tracker - Stasiun Garut</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-orange-500 selection:text-white">
+
+  <!-- Header Profesional -->
+  <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 shadow-2xl">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row justify-between items-center py-3 sm:h-20 gap-3">
+        
+        <!-- Kiri: Judul Sistem Saja -->
+        <div class="flex items-center justify-between w-full sm:w-auto gap-3">
+          <div>
+            <span class="text-[9px] sm:text-[10px] text-orange-400 font-extrabold tracking-widest uppercase">Sistem Monitoring</span>
+            <h1 class="font-bold text-slate-300 text-[11px] sm:text-xs">Work Tracker</h1>
+          </div>
+        </div>
+
+        <!-- Tengah: Teks STASIUN GARUT -->
+        <div class="text-center w-full sm:w-auto">
+          <span class="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-orange-400 font-bold block">KINERJA KEPALA STASIUN</span>
+          <h2 class="text-sm sm:text-xl font-black text-white tracking-wider bg-gradient-to-r from-white via-slate-200 to-orange-400 bg-clip-text text-transparent">STASIUN GARUT</h2>
+        </div>
+
+        <!-- Kanan: Nama Angga Febrian Nurrochman & NIPP -->
+        <div class="hidden sm:flex items-center gap-4">
+          <div class="flex items-center bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-xl shadow-inner gap-3">
+            <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-xs shadow-md">
+              AF
+            </div>
+            <div class="text-left leading-tight">
+              <span class="text-xs font-black text-white tracking-wide block">Angga Febrian Nurrochman</span>
+              <span class="text-[10px] text-orange-400 font-bold tracking-wider">NIPP. 50376</span>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </header>
+
+  <!-- Container Utama -->
+  <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex-1 w-full space-y-5">
+    
+    <!-- Navigation Tabs -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+      <div class="flex bg-slate-900 p-1.5 rounded-2xl w-full sm:w-fit border border-slate-800/80 shadow-inner justify-center">
+        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-all text-center cursor-pointer">
+          📊 Dashboard
+        </button>
+        <button onclick="switchTab('kegiatan')" id="tab-kegiatan" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all text-center cursor-pointer">
+          ⚡ Daftar Kegiatan
+        </button>
+      </div>
+      <div id="system-status-indicator" class="text-[11px] sm:text-xs text-slate-400 flex items-center gap-2 font-medium px-1">
+        <span id="indicator-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0"></span> 
+        <span id="indicator-text">Sistem Online (Unlocked)</span>
+      </div>
+    </div>
+
+    <!-- VIEW 1: DASHBOARD METRICS -->
+    <section id="view-dashboard" class="space-y-5">
+      
+      <!-- Filter Bar -->
+      <div class="bg-slate-900/90 p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-xl flex flex-col gap-4">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 flex-shrink-0">📅</div>
+          <div>
+            <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">Filter Periode Laporan Dashboard</h3>
+            <p class="text-[10px] sm:text-[11px] text-slate-400">Pilih bulan dan tahun untuk melihat rekapitulasi target kegiatan</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:flex sm:flex-wrap items-center gap-2.5">
+          <div class="flex items-center justify-between sm:justify-start gap-2 bg-slate-950 px-3 py-2 rounded-2xl border border-slate-800 flex-1">
+            <span class="text-xs font-bold text-slate-400">Bulan:</span>
+            <select id="filter-bulan" onchange="renderDashboard()" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
+              <option value="0">Januari</option>
+              <option value="1">Februari</option>
+              <option value="2">Maret</option>
+              <option value="3">April</option>
+              <option value="4">Mei</option>
+              <option value="5">Juni</option>
+              <option value="6">Juli</option>
+              <option value="7">Agustus</option>
+              <option value="8">September</option>
+              <option value="9">Oktober</option>
+              <option value="10">November</option>
+              <option value="11">Desember</option>
+            </select>
+          </div>
+
+          <div class="flex items-center justify-between sm:justify-start gap-2 bg-slate-950 px-3 py-2 rounded-2xl border border-slate-800 flex-1">
+            <span class="text-xs font-bold text-slate-400">Tahun:</span>
+            <select id="filter-tahun" onchange="renderDashboard()" class="bg-transparent text-xs font-bold text-white outline-none cursor-pointer">
+              <option value="2026" selected>2026</option>
+              <option value="2027">2027</option>
+              <option value="2028">2028</option>
+              <option value="2029">2029</option>
+              <option value="2030">2030</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- KPI Cards -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+        <div class="bg-slate-900/90 p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] sm:text-xs font-semibold text-slate-400">Total Sesi Tercatat</p>
+            <p id="kpi-target" class="text-2xl sm:text-3xl font-black text-white mt-1">0</p>
+          </div>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-blue-950/80 text-blue-400 flex items-center justify-center font-bold border border-blue-800/50 shadow-inner flex-shrink-0 text-sm">🎯</div>
+        </div>
+        <div class="bg-slate-900/90 p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] sm:text-xs font-semibold text-slate-400">Total Partisipasi</p>
+            <p id="kpi-realisasi" class="text-2xl sm:text-3xl font-black text-emerald-400 mt-1">0</p>
+          </div>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-950/80 text-emerald-400 flex items-center justify-center font-bold border border-emerald-800/50 shadow-inner flex-shrink-0 text-sm">✅</div>
+        </div>
+        <div class="bg-slate-900/90 p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] sm:text-xs font-semibold text-slate-400">Jenis Kegiatan</p>
+            <p class="text-xl sm:text-3xl font-black text-orange-400 mt-1">8 Menu</p>
+          </div>
+          <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 shadow-inner flex-shrink-0 text-sm">⚡</div>
+        </div>
+        
+        <!-- Tombol Kunci Interaktif -->
+        <div class="bg-slate-900/90 p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center justify-between">
+          <div>
+            <p class="text-[11px] sm:text-xs font-semibold text-slate-400">Status Sistem</p>
+            <p id="system-status-text" class="text-xl sm:text-3xl font-black text-emerald-400 mt-1">Unlocked</p>
+          </div>
+          <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-950/80 text-emerald-400 flex items-center justify-center font-bold border border-emerald-800/50 shadow-inner flex-shrink-0 text-sm hover:scale-105 active:scale-95 transition-all cursor-pointer">
+            🔓
+          </button>
+        </div>
+      </div>
+
+      <!-- Tabel Statistik per Kegiatan -->
+      <div class="bg-slate-900/90 rounded-2xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+          <div>
+            <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm" id="table-title-stats">Rekapitulasi Kepatuhan Target Kegiatan</h3>
+            <p class="text-[10px] text-slate-400">Pemisahan target mingguan & bulanan kegiatan stasiun</p>
+          </div>
+          <span class="text-[10px] text-orange-400 bg-orange-950/50 border border-orange-800/50 px-2.5 py-1 rounded-full font-bold">Target Spesifik</span>
+        </div>
+        
+        <div class="overflow-x-auto custom-scrollbar">
+          <div id="kegiatan-stats-container" class="space-y-6"></div>
+        </div>
+      </div>
+
+      <!-- Chart Batang Distribusi Target -->
+      <div class="bg-slate-900/90 rounded-2xl shadow-xl border border-slate-800 p-4 sm:p-6 flex flex-col justify-between">
+        <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm mb-1">Akumulasi Target Bulanan Petugas Tercapai (Bulan Ini)</h3>
+        <p class="text-[10px] text-slate-400 mb-4">Jumlah total target bulanan dari seluruh jenis kegiatan yang berhasil dipenuhi oleh masing-masing petugas</p>
+        <div class="relative flex-1 flex items-center justify-center my-2 h-72">
+          <canvas id="barChart"></canvas>
+        </div>
+      </div>
+    </section>
+
+    <!-- VIEW 2: DAFTAR KEGIATAN (2 Baris x 4 Kolom) -->
+    <section id="view-kegiatan" class="hidden space-y-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5" id="cards-container">
+        <!-- Kartu kegiatan dirender secara dinamis -->
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Footer Bagian Bawah: Tombol Reset Data Terproteksi PIN -->
+  <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
+      <div>
+        <p class="text-xs font-bold text-slate-300">Stasiun Garut - Work Tracker System</p>
+        <p class="text-[10px] text-slate-500">Pusat kontrol dan rekapitulasi kepatuhan kegiatan operasional.</p>
+      </div>
+      <div>
+        <button onclick="resetData()" class="px-4 py-2.5 text-xs font-bold text-rose-400 bg-rose-950/40 hover:bg-rose-900/50 rounded-xl transition-all border border-rose-800/60 shadow-md cursor-pointer flex items-center gap-2">
+          <span>🗑️ Reset Seluruh Data</span>
+        </button>
+      </div>
+    </div>
+  </footer>
+
+  <!-- POP-UP MODAL (Tambah & Edit) -->
+  <div id="input-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
+    <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-md p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+        <div>
+          <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase" id="modal-subtitle">Form Pelaksanaan</span>
+          <h3 class="font-extrabold text-slate-100 text-sm sm:text-base" id="modal-title">Tambah Sesi Kegiatan</h3>
+        </div>
+        <button onclick="closeModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition cursor-pointer">✕</button>
+      </div>
+
+      <div class="space-y-3">
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Tanggal / Hari:</label>
+          <input type="date" id="modal-input-date" class="w-full text-xs p-3 bg-slate-950 border border-slate-700/80 rounded-2xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Catatan / Keterangan Sesi:</label>
+          <textarea id="modal-input-note" placeholder="Contoh: Pemeriksaan berkas dan laporan..." rows="2" class="w-full text-xs p-3 bg-slate-950 border border-slate-700/80 rounded-2xl outline-none focus:border-orange-500 text-slate-200 font-medium transition resize-none"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Pilih Petugas Terlibat:</label>
+          <div id="modal-checkboxes-orang" class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar"></div>
+        </div>
+      </div>
+
+      <div class="flex gap-2.5 pt-2">
+        <button onclick="closeModal()" class="px-4 py-2.5 text-xs font-bold text-slate-400 bg-slate-800 hover:bg-slate-700 rounded-2xl w-1/3 transition cursor-pointer">Batal</button>
+        <button id="modal-save-btn" onclick="saveNewSession()" class="px-4 py-2.5 text-xs font-bold text-white bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 rounded-2xl flex-1 transition shadow-lg shadow-orange-600/35 cursor-pointer">+ Simpan Sesi</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const kegiatanList = [
+      { id: "keg_0", title: "Safety Talk", desc: "Briefing keselamatan kerja materi IBPR." },
+      { id: "keg_1", title: "Diskusi Studi Kasus", desc: "Pembedahan kasus operasional." },
+      { id: "keg_2", title: "Sharing Session Kendala", desc: "Ruang diskusi terbuka kendala teknis dan lainnya." },
+      { id: "keg_3", title: "Simulasi Pelayanan & Darurat", desc: "Latihan, penanganan kondisi normal dan gangguan." },
+      { id: "keg_4", title: "Coaching Teknis", desc: "Pembinaan teknis Peraturan Dinas." },
+      { id: "keg_5", title: "Pelatihan Mental", desc: "Kuis dengan waktu terbatas." },
+      { id: "keg_6", title: "Leadership", desc: "Melatih PPKA menerapkan pola kepemimpinan." },
+      { id: "keg_7", title: "Penilaian Cara Kerja & Komunikasi", desc: "Peningkatan keterampilan public speaking dan pola berfikir" }
+    ];
+    
+    const orang = ["Hadi", "Fikri", "Supri", "Ujang", "Dina", "Ade", "Ramadhan"];
+    const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+
+    let state = JSON.parse(localStorage.getItem('garut_unified_db_notes_v6')) || {};
+    let chartInstance = null;
+    let activeKegId = null;
+    let editSessionId = null;
+    let isSystemUnlocked = true;
+    
+    let activeWeeksPerKeg = {
+      "keg_0": 1, "keg_1": 1, "keg_2": 1, "keg_3": 1, "keg_5": 1
+    };
+
+    window.addEventListener('DOMContentLoaded', () => {
+      const now = new Date();
+      document.getElementById('filter-bulan').value = now.getMonth();
+      const currentYear = now.getFullYear();
+      const yearSelect = document.getElementById('filter-tahun');
+      
+      if (currentYear >= 2026 && currentYear <= 2030) {
+        yearSelect.value = currentYear;
+      } else {
+        yearSelect.value = "2026";
+      }
+
+      initView();
+    });
+
+    function toggleSystemLock() {
+      if (isSystemUnlocked) {
+        isSystemUnlocked = false;
+        updateSystemLockUI();
+      } else {
+        const enteredPin = prompt("Masukkan PIN Keamanan untuk membuka kunci sistem:");
+        if (enteredPin === null) return;
+        
+        if (enteredPin === "1789") {
+          isSystemUnlocked = true;
+          updateSystemLockUI();
+          alert("Sistem berhasil dibuka kembali (Unlocked).");
+        } else {
+          alert("PIN Salah! Akses membuka kunci ditolak.");
+        }
+      }
+    }
+
+    function updateSystemLockUI() {
+      const btn = document.getElementById('system-lock-btn');
+      const text = document.getElementById('system-status-text');
+      const indicatorDot = document.getElementById('indicator-dot');
+      const indicatorText = document.getElementById('indicator-text');
+
+      if (isSystemUnlocked) {
+        btn.innerHTML = "🔓";
+        btn.className = "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-emerald-950/80 text-emerald-400 flex items-center justify-center font-bold border border-emerald-800/50 shadow-inner flex-shrink-0 text-sm hover:scale-105 active:scale-95 transition-all cursor-pointer";
+        text.innerText = "Unlocked";
+        text.className = "text-xl sm:text-3xl font-black text-emerald-400 mt-1";
+        
+        indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
+        indicatorText.innerText = "Sistem Online (Unlocked)";
+      } else {
+        btn.innerHTML = "🔒";
+        btn.className = "w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-rose-950/80 text-rose-400 flex items-center justify-center font-bold border border-rose-800/50 shadow-inner flex-shrink-0 text-sm hover:scale-105 active:scale-95 transition-all cursor-pointer";
+        text.innerText = "Locked";
+        text.className = "text-xl sm:text-3xl font-black text-rose-400 mt-1";
+
+        indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0";
+        indicatorText.innerText = "Sistem Terkunci (Locked - View Only)";
+      }
+
+      initView();
+    }
+
+    function getWeekOfMonth(dateObj) {
+      const day = dateObj.getDate();
+      if (day <= 7) return 1;
+      if (day <= 14) return 2;
+      if (day <= 21) return 3;
+      return 4;
+    }
+
+    function setKegiatanWeek(kegId, weekNum) {
+      activeWeeksPerKeg[kegId] = weekNum;
+      renderDashboard();
+    }
+
+    function initView() {
+      const container = document.getElementById('cards-container');
+      container.innerHTML = '';
+
+      kegiatanList.forEach((keg, index) => {
+        let sessions = state[keg.id] || [];
+        sessions.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        let sessionsHtml = '';
+        if (sessions.length > 0) {
+          sessions.forEach((sess, sIndex) => {
+            const currentSessionId = sess.id || sIndex;
+            const badges = sess.members.map(mName => 
+              `<span class="bg-orange-500/10 text-orange-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg border border-orange-500/20">${mName}</span>`
+            ).join(' ');
+
+            let noteSection = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic bg-slate-900/80 px-2 py-1 rounded-xl border border-slate-800">📝 "${sess.note}"</p>` : '';
+
+            let actionButtonsHtml = '';
+            if (isSystemUnlocked) {
+              actionButtonsHtml = `
+                <button onclick="openEditModal('${keg.id}', '${currentSessionId}')" class="px-2 py-0.5 rounded-lg bg-sky-950/60 text-sky-400 hover:bg-sky-900 hover:text-white font-bold text-[10px] transition border border-sky-800/40 cursor-pointer" title="Ubah sesi ini">Edit</button>
+                <button onclick="deleteSession('${keg.id}', '${currentSessionId}')" class="w-5 h-5 rounded-lg bg-rose-950/50 text-rose-400 hover:bg-rose-900 hover:text-white flex items-center justify-center font-bold text-xs transition border border-rose-800/40 cursor-pointer" title="Hapus sesi ini">✕</button>
+              `;
+            } else {
+              actionButtonsHtml = `
+                <span class="px-2 py-0.5 rounded-lg bg-slate-800/40 text-slate-500 font-bold text-[10px] border border-slate-800 cursor-not-allowed" title="Terkunci">Edit</span>
+                <span class="w-5 h-5 rounded-lg bg-slate-800/40 text-slate-500 flex items-center justify-center font-bold text-xs border border-slate-800 cursor-not-allowed" title="Terkunci">✕</span>
+              `;
+            }
+
+            sessionsHtml += `
+              <div class="bg-slate-950/70 border border-slate-800/80 p-2.5 sm:p-3 rounded-2xl space-y-2">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center gap-1.5 text-[11px] sm:text-xs text-orange-400 font-extrabold">
+                    <span>📅</span> <span>${sess.date || 'Tanggal Tidak Diatur'}</span>
+                  </div>
+                  <div class="flex items-center gap-1">
+                    ${actionButtonsHtml}
+                  </div>
+                </div>
+                ${noteSection}
+                <div class="flex flex-wrap gap-1">${badges}</div>
+              </div>
+            `;
+          });
+        } else {
+          sessionsHtml = `
+            <div class="py-3 text-center text-slate-500 text-[11px] italic bg-slate-950/30 rounded-2xl border border-dashed border-slate-800">
+              Belum ada sesi tercatat.
+            </div>
+          `;
+        }
+
+        let mainActionBtn = '';
+        if (isSystemUnlocked) {
+          mainActionBtn = `
+            <button onclick="openModal('${keg.id}', '${keg.title}')" class="w-full mt-1 py-2 px-3 rounded-2xl bg-slate-800 hover:bg-orange-600 text-slate-200 hover:text-white text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm border border-slate-700/60 hover:border-orange-500 cursor-pointer">
+              <span>+ Tambah Sesi & Catatan</span>
+            </button>
+          `;
+        } else {
+          mainActionBtn = `
+            <button disabled class="w-full mt-1 py-2 px-3 rounded-2xl bg-slate-900/50 text-slate-600 text-[11px] sm:text-xs font-bold flex items-center justify-center gap-2 border border-slate-800/50 cursor-not-allowed" title="Sistem sedang dikunci">
+              <span>🔒 Ditambahkan (Terkunci)</span>
+            </button>
+          `;
+        }
+
+        container.innerHTML += `
+          <div class="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col justify-between space-y-3 hover:border-slate-700 transition-all">
+            <div class="space-y-2">
+              <div class="flex justify-between items-start">
+                <span class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 font-black text-[11px] flex items-center justify-center border border-slate-700/50">0${index + 1}</span>
+                <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700/50">${sessions.length} Sesi Aktif</span>
+              </div>
+              <h3 class="font-extrabold text-white text-sm sm:text-base tracking-wide">${keg.title}</h3>
+              <p class="text-[11px] sm:text-xs text-slate-400 leading-relaxed">${keg.desc}</p>
+            </div>
+
+            <div class="space-y-2 pt-2 border-t border-slate-800/80">
+              <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Riwayat Sesi:</span>
+              <div class="space-y-2 max-h-44 sm:max-h-52 overflow-y-auto custom-scrollbar pr-1">
+                ${sessionsHtml}
+              </div>
+            </div>
+
+            ${mainActionBtn}
+          </div>
+        `;
+      });
+
+      renderDashboard();
+    }
+
+    function openModal(kegId, kegTitle) {
+      if (!isSystemUnlocked) return;
+      activeKegId = kegId;
+      editSessionId = null;
+      document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
+      document.getElementById('modal-title').innerText = kegTitle;
+      document.getElementById('modal-save-btn').innerText = "+ Simpan Sesi";
+
+      renderCheckboxes([]);
+
+      const now = new Date();
+      document.getElementById('modal-input-date').value = now.toISOString().split('T')[0];
+      document.getElementById('modal-input-note').value = '';
+      document.getElementById('input-modal').classList.remove('hidden');
+    }
+
+    function openEditModal(kegId, sessionId) {
+      if (!isSystemUnlocked) return;
+      activeKegId = kegId;
+      editSessionId = sessionId;
+      
+      const kegData = kegiatanList.find(k => k.id === kegId);
+      document.getElementById('modal-subtitle').innerText = "Edit Pelaksanaan";
+      document.getElementById('modal-title').innerText = kegData ? kegData.title : "Ubah Sesi";
+      document.getElementById('modal-save-btn').innerText = "Simpan Perubahan";
+
+      const sessions = state[kegId] || [];
+      const targetSession = sessions.find(s => (s.id || sessions.indexOf(s)) == sessionId);
+
+      if (targetSession) {
+        document.getElementById('modal-input-date').value = targetSession.date || '';
+        document.getElementById('modal-input-note').value = targetSession.note || '';
+        renderCheckboxes(targetSession.members || []);
+      }
+
+      document.getElementById('input-modal').classList.remove('hidden');
+    }
+
+    function renderCheckboxes(selectedMembersList) {
+      const containerBox = document.getElementById('modal-checkboxes-orang');
+      containerBox.innerHTML = '';
+      orang.forEach(o => {
+        const isChecked = selectedMembersList.includes(o) ? 'checked' : '';
+        containerBox.innerHTML += `
+          <label class="flex items-center gap-2 p-1.5 sm:p-2 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-slate-700 cursor-pointer text-[11px] sm:text-xs font-bold text-slate-300 transition">
+            <input type="checkbox" value="${o}" ${isChecked} class="modal-person-cb w-3.5 h-3.5 text-orange-600 rounded focus:ring-orange-500 bg-slate-900 border-slate-700 accent-orange-600">
+            ${o}
+          </label>
+        `;
+      });
+    }
+
+    function closeModal() {
+      document.getElementById('input-modal').classList.add('hidden');
+      activeKegId = null;
+      editSessionId = null;
+    }
+
+    function saveNewSession() {
+      if (!isSystemUnlocked || !activeKegId) return;
+
+      const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
+      const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
+      const selectedDate = document.getElementById('modal-input-date').value;
+      const sessionNote = document.getElementById('modal-input-note').value.trim();
+
+      if (selectedMembers.length === 0) {
+        alert("Harap pilih minimal 1 petugas untuk sesi ini.");
+        return;
+      }
+
+      if (!state[activeKegId]) {
+        state[activeKegId] = [];
+      }
+
+      if (editSessionId !== null) {
+        let sessions = state[activeKegId];
+        let indexToEdit = sessions.findIndex(s => (s.id || sessions.indexOf(s)) == editSessionId);
+        if (indexToEdit !== -1) {
+          state[activeKegId][indexToEdit].date = selectedDate;
+          state[activeKegId][indexToEdit].note = sessionNote;
+          state[activeKegId][indexToEdit].members = selectedMembers;
+        }
+      } else {
+        state[activeKegId].push({
+          id: '_' + Math.random().toString(36).substr(2, 9),
+          date: selectedDate,
+          note: sessionNote,
+          members: selectedMembers
+        });
+      }
+
+      state[activeKegId].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+      closeModal();
+      initView();
+    }
+
+    function deleteSession(kegId, sessionId) {
+      if (!isSystemUnlocked) return;
+      if (confirm("Hapus sesi kegiatan ini?")) {
+        if (state[kegId]) {
+          state[kegId] = state[kegId].filter(s => (s.id || state[kegId].indexOf(s)) != sessionId);
+
+          if (state[kegId].length === 0) {
+            delete state[kegId];
+          }
+          localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+          initView();
+        }
+      }
+    }
+
+    function resetData() {
+      const enteredPin = prompt("Masukkan PIN Keamanan untuk mereset seluruh data:");
+      if (enteredPin === null) return;
+
+      if (enteredPin !== "1789") {
+        alert("PIN Salah! Aksi reset data dibatalkan.");
+        return;
+      }
+
+      if (confirm('Konfirmasi akhir: Reset seluruh data catatan kegiatan Stasiun Garut?')) {
+        localStorage.removeItem('garut_unified_db_notes_v6');
+        state = {};
+        initView();
+        alert("Data berhasil direset.");
+      }
+    }
+
+    function renderDashboard() {
+      const containerStats = document.getElementById('kegiatan-stats-container');
+      containerStats.innerHTML = '';
+
+      const filterBulan = parseInt(document.getElementById('filter-bulan').value);
+      const filterTahun = parseInt(document.getElementById('filter-tahun').value);
+      const namaBulanStr = namaBulan[filterBulan];
+
+      document.getElementById('table-title-stats').innerText = `Rekapitulasi Kepatuhan Target Kegiatan (${namaBulanStr} ${filterTahun})`;
+
+      let totalSessionsAll = 0;
+      let totalPersonAll = 0;
+      
+      let totalCompletedTargetsPerPerson = {};
+      orang.forEach(o => totalCompletedTargetsPerPerson[o] = 0);
+
+      kegiatanList.forEach(keg => {
+        let sessions = state[keg.id] || [];
+        
+        let filteredSessions = sessions.filter(sess => {
+          if (!sess.date) return false;
+          let d = new Date(sess.date);
+          return d.getMonth() === filterBulan && d.getFullYear() === filterTahun;
+        });
+
+        totalSessionsAll += filteredSessions.length;
+
+        const isWeeklyKeg = ["keg_0", "keg_1", "keg_2", "keg_3", "keg_5"].includes(keg.id);
+
+        let tableRowsHtml = '';
+
+        if (isWeeklyKeg) {
+          let currentWeek = activeWeeksPerKeg[keg.id] || 1;
+
+          let weeklyFilteredSessions = filteredSessions.filter(sess => {
+            let d = new Date(sess.date);
+            return getWeekOfMonth(d) === currentWeek;
+          });
+
+          let weeklyMemberCounts = {};
+          orang.forEach(o => weeklyMemberCounts[o] = 0);
+
+          weeklyFilteredSessions.forEach(sess => {
+            if (sess.members) {
+              sess.members.forEach(mName => {
+                if (weeklyMemberCounts[mName] !== undefined) {
+                  weeklyMemberCounts[mName]++;
+                }
+              });
+            }
+          });
+
+          let monthlyMemberCounts = {};
+          orang.forEach(o => monthlyMemberCounts[o] = 0);
+          filteredSessions.forEach(sess => {
+            if (sess.members) {
+              sess.members.forEach(mName => {
+                if (monthlyMemberCounts[mName] !== undefined) {
+                  monthlyMemberCounts[mName]++;
+                  totalPersonAll++;
+                }
+              });
+            }
+          });
+
+          orang.forEach(o => {
+            let weeklyCount = weeklyMemberCounts[o];
+            let monthlyCount = monthlyMemberCounts[o];
+            
+            let weeklyMet = weeklyCount >= 1;
+            let monthlyMet = monthlyCount >= 4;
+
+            if (monthlyMet) {
+              totalCompletedTargetsPerPerson[o]++;
+            }
+
+            let weeklyBadge = weeklyMet 
+              ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-950 text-emerald-400 border border-emerald-800/50">Tercapai</span>`
+              : `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-rose-950/60 text-rose-400 border border-rose-800/50">Belum</span>`;
+
+            let monthlyBadge = monthlyMet 
+              ? `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-emerald-950 text-emerald-400 border border-emerald-800/50">Tercapai</span>`
+              : `<span class="px-2 py-0.5 rounded-full text-[9px] font-extrabold bg-rose-950/60 text-rose-400 border border-rose-800/50">Belum</span>`;
+
+            tableRowsHtml += `
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-2 sm:p-2.5 font-bold text-slate-200">${o}</td>
+                <td class="p-2 sm:p-2.5 text-center font-black text-orange-400">${weeklyCount}x <span class="text-[9px] text-slate-500 font-normal">(Target: 1x)</span></td>
+                <td class="p-2 sm:p-2.5 text-center">${weeklyBadge}</td>
+                <td class="p-2 sm:p-2.5 text-center font-bold text-amber-400 border-l border-slate-800/80">${monthlyCount}x <span class="text-[9px] text-slate-500 font-normal">(Target: 4x)</span></td>
+                <td class="p-2 sm:p-2.5 text-center">${monthlyBadge}</td>
+              </tr>
+            `;
+          });
+
+          let weekButtonsHtml = '';
+          for (let w = 1; w <= 4; w++) {
+            let activeClass = currentWeek === w ? "bg-orange-600 text-white" : "bg-slate-900 text-slate-400 hover:text-white";
+            weekButtonsHtml += `<button onclick="setKegiatanWeek('${keg.id}', ${w})" class="px-2.5 py-1 text-[10px] font-bold rounded-lg transition cursor-pointer ${activeClass}">M${w}</button>`;
+          }
+
+          containerStats.innerHTML += `
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-800/80 p-3 sm:p-4 space-y-3">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800/60 pb-2">
+                <div>
+                  <h4 class="font-extrabold text-white text-xs sm:text-sm">${keg.title}</h4>
+                  <p class="text-[10px] text-orange-400 font-semibold">Target: 1x / Minggu & Akumulasi 4x / Bulan</p>
+                </div>
+                <div class="flex items-center gap-2">
+                  <span class="text-[10px] text-slate-400 font-bold">Pilih Minggu:</span>
+                  <div class="flex gap-1 bg-slate-900 p-1 rounded-xl border border-slate-800">
+                    ${weekButtonsHtml}
+                  </div>
+                </div>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left border-collapse text-slate-300 min-w-[500px]">
+                  <thead>
+                    <tr class="bg-slate-900 font-bold text-slate-400 border-b border-slate-800">
+                      <th class="p-2 rounded-l-xl">Petugas</th>
+                      <th class="p-2 text-center">Pencapaian Mingguan (M${currentWeek})</th>
+                      <th class="p-2 text-center">Status Mingguan</th>
+                      <th class="p-2 text-center border-l border-slate-800">Akumulasi Bulanan</th>
+                      <th class="p-2 text-center rounded-r-xl">Status Bulanan</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/40">
+                    ${tableRowsHtml}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+
+        } else {
+          let memberCounts = {};
+          orang.forEach(o => memberCounts[o] = 0);
+
+          filteredSessions.forEach(sess => {
+            if (sess.members) {
+              sess.members.forEach(mName => {
+                if (memberCounts[mName] !== undefined) {
+                  memberCounts[mName]++;
+                  totalPersonAll++;
+                }
+              });
+            }
+          });
+
+          let targetText = "Target: 2x / bulan (Seluruh Petugas)";
+          let targetValue = 2;
+          if (keg.id === "keg_7") {
+            targetText = "Target: 1x / bulan (Seluruh Petugas)";
+            targetValue = 1;
+          } else if (keg.id === "keg_6") {
+            targetText = "Target: 2x / bulan (Khusus Hadi & Fikri)";
+            targetValue = 2;
+          }
+
+          orang.forEach(o => {
+            if (keg.id === "keg_6" && o !== "Hadi" && o !== "Fikri") {
+              return;
+            }
+
+            let count = memberCounts[o];
+            let metTarget = count >= targetValue;
+
+            if (metTarget) {
+              totalCompletedTargetsPerPerson[o]++;
+            }
+
+            let statusBadge = metTarget 
+              ? `<span class="px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-emerald-950 text-emerald-400 border border-emerald-800/50">Tercapai</span>`
+              : `<span class="px-2.5 py-0.5 rounded-full text-[9px] sm:text-[10px] font-extrabold bg-rose-950/60 text-rose-400 border border-rose-800/50">Belum</span>`;
+
+            tableRowsHtml += `
+              <tr class="hover:bg-slate-800/40">
+                <td class="p-2 sm:p-2.5 font-bold text-slate-200">${o}</td>
+                <td class="p-2 sm:p-2.5 text-center font-black text-orange-400">${count}x <span class="text-[10px] text-slate-500 font-normal">(Target: ${targetValue}x)</span></td>
+                <td class="p-2 sm:p-2.5 text-center font-bold text-amber-400">${count}x Pelaksanaan</td>
+                <td class="p-2 sm:p-2.5 text-center">${statusBadge}</td>
+              </tr>
+            `;
+          });
+
+          containerStats.innerHTML += `
+            <div class="bg-slate-950/60 rounded-2xl border border-slate-800/80 p-3 sm:p-4 space-y-3">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-1 border-b border-slate-800/60 pb-2">
+                <div>
+                  <h4 class="font-extrabold text-white text-xs sm:text-sm">${keg.title}</h4>
+                  <p class="text-[10px] text-orange-400 font-semibold">${targetText}</p>
+                </div>
+                <span class="text-[10px] font-bold text-slate-400 bg-slate-900 px-2 py-0.5 rounded-lg border border-slate-800">${filteredSessions.length} Sesi Terlaksana</span>
+              </div>
+              <div class="overflow-x-auto">
+                <table class="w-full text-xs text-left border-collapse text-slate-300 min-w-[400px]">
+                  <thead>
+                    <tr class="bg-slate-900 font-bold text-slate-400 border-b border-slate-800">
+                      <th class="p-2 rounded-l-xl">Petugas</th>
+                      <th class="p-2 text-center">Total Pelaksanaan</th>
+                      <th class="p-2 text-center">Keterangan</th>
+                      <th class="p-2 text-center rounded-r-xl">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody class="divide-y divide-slate-800/40">
+                    ${tableRowsHtml}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          `;
+        }
+      });
+
+      document.getElementById('kpi-target').innerText = totalSessionsAll;
+      document.getElementById('kpi-realisasi').innerText = totalPersonAll;
+
+      renderBarChart(totalCompletedTargetsPerPerson);
+    }
+
+    function renderBarChart(orangCounts) {
+      const ctx = document.getElementById('barChart').getContext('2d');
+      if (chartInstance) chartInstance.destroy();
+
+      const labels = Object.keys(orangCounts);
+      const dataValues = Object.values(orangCounts);
+
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: 'Total Target Tercapai',
+            data: dataValues,
+            backgroundColor: '#f97316',
+            borderColor: '#ea580c',
+            borderWidth: 1,
+            borderRadius: 8
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: {
+              grid: { display: false },
+              ticks: { color: '#cbd5e1', font: { size: 10, weight: 'bold' } }
+            },
+            y: {
+              beginAtZero: true,
+              ticks: { stepSize: 1, color: '#cbd5e1', font: { size: 10 } },
+              grid: { color: '#1e293b' }
+            }
+          }
+        }
+      });
+    }
+
+    function switchTab(tabName) {
+      const viewKegiatan = document.getElementById('view-kegiatan');
+      const viewDashboard = document.getElementById('view-dashboard');
+      const btnKegiatan = document.getElementById('tab-kegiatan');
+      const btnDashboard = document.getElementById('tab-dashboard');
+
+      if (tabName === 'dashboard') {
+        viewDashboard.classList.remove('hidden');
+        viewKegiatan.classList.add('hidden');
+        btnDashboard.className = "flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-all text-center cursor-pointer";
+        btnKegiatan.className = "flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all text-center cursor-pointer";
+        renderDashboard();
+      } else {
+        viewKegiatan.classList.remove('hidden');
+        viewDashboard.classList.add('hidden');
+        btnKegiatan.className = "flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-all text-center cursor-pointer";
+        btnDashboard.className = "flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all text-center cursor-pointer";
+      }
+    }
+  </script>
+</body>
+</html>
