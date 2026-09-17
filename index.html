@@ -418,7 +418,6 @@
     let activeWeeksPerKeg = {};
     let currentUploadedPhotosBase64 = [];
     
-    // Objek penyimpan tanda tangan per petugas khusus untuk sesi aktif: { "NamaPetugas": "base64..." }
     let currentSignaturesObj = {};
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -790,7 +789,7 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR KONVERSI KE EXCEL
+    // FITUR KONVERSI KE EXCEL (CATATAN, PETUGAS, & TTD DI RENCANA KERJA | FOTO DI KETERANGAN)
     // ---------------------------------------------------------
     function exportToExcel() {
       let dataRows = [];
@@ -802,13 +801,26 @@
         sessions.forEach(sess => {
           let membersList = sess.members || [];
           let notePart = sess.note ? sess.note : '';
+          let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
+          let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
+          let sigNames = Object.keys(sigsData);
           
+          // Kolom Rencana Kerja: Nama Kegiatan + Catatan + Petugas + Keterangan TTD
           let rencanaKerjaText = keg.title;
           if (notePart) {
             rencanaKerjaText += `\nCatatan: ${notePart}`;
           }
           if (membersList.length > 0) {
             rencanaKerjaText += `\nPetugas TTD: ${membersList.join(', ')}`;
+          }
+          if (sigNames.length > 0) {
+            rencanaKerjaText += `\n[Gambar Tanda Tangan Petugas: ${sigNames.join(', ')}]`;
+          }
+
+          // Kolom Keterangan: Sesi terlaksana + Info Foto Dokumentasi
+          let ketText = `Sesi terlaksana (${membersList.length} Petugas)`;
+          if (photosList.length > 0) {
+            ketText += `\n[Foto Dokumentasi: ${photosList.length} File terlampir]`;
           }
 
           dataRows.push({
@@ -817,7 +829,7 @@
             rencana: rencanaKerjaText,
             realisasi_ya: '✓',
             realisasi_tidak: '',
-            keterangan: `Sesi terlaksana (${membersList.length} Petugas)`
+            keterangan: ketText
           });
         });
       });
@@ -858,7 +870,7 @@
           { v: row.rencana, t: "s", s: { alignment: { horizontal: "left", vertical: "center", wrapText: true }, border: getBorder() } },
           { v: row.realisasi_ya, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
           { v: row.realisasi_tidak, t: "s", s: { alignment: { horizontal: "center", vertical: "center" }, border: getBorder() } },
-          { v: row.keterangan, t: "s", s: { alignment: { horizontal: "left", vertical: "center" }, border: getBorder() } }
+          { v: row.keterangan, t: "s", s: { alignment: { horizontal: "left", vertical: "center", wrapText: true }, border: getBorder() } }
         ]);
       });
 
@@ -893,7 +905,7 @@
     }
 
     // ---------------------------------------------------------
-    // RENDER UTAMA & SESI (URUTAN: CATATAN & FOTO -> TTD DI BAWAH)
+    // RENDER UTAMA & SESI (HISTORI KEGIATAN LEBIH RINGKAS TANPA TTD)
     // ---------------------------------------------------------
     function initView() {
       const container = document.getElementById('cards-container');
@@ -913,7 +925,7 @@
               `<span class="bg-orange-500/10 text-orange-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg border border-orange-500/20">${mName}</span>`
             ).join(' ');
 
-            // Kolom Catatan & Foto Dokumentasi di Atas
+            // Catatan & Foto Dokumentasi pada Kartu Histori
             let noteText = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic">📝 "${sess.note}"</p>` : '';
             let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
             let photoThumbs = photosList.length > 0 ? `
@@ -935,24 +947,6 @@
               `;
             }
 
-            // Gambar Tanda Tangan & Nama Petugas persis Di Bawah Catatan
-            let sigSection = '';
-            let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
-            if (Object.keys(sigsData).length > 0) {
-              let sigItems = Object.entries(sigsData).map(([mName, sigSrc]) => `
-                <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
-                  <span class="text-[10px] text-orange-400 font-bold">✍️ ${mName}</span>
-                  <img src="${sigSrc}" onclick="openLightbox('${sigSrc}')" class="h-10 object-contain bg-slate-950 px-2 py-0.5 rounded border border-slate-800 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar TTD ${mName}">
-                </div>
-              `).join('');
-              sigSection = `
-                <div class="space-y-1.5 pt-1">
-                  <span class="text-[9px] text-slate-400 font-bold block">Tanda Tangan Kehadiran:</span>
-                  <div class="space-y-1">${sigItems}</div>
-                </div>
-              `;
-            }
-
             let actionButtonsHtml = `
               <button onclick="openEditModal('${keg.id}', '${currentSessionId}')" class="px-2 py-0.5 rounded-lg bg-slate-800/60 text-slate-400 hover:bg-slate-700 hover:text-white font-bold text-[10px] transition border border-slate-700 cursor-pointer" title="Ubah sesi ini (Perlu PIN)">Edit</button>
               <button onclick="deleteSession('${keg.id}', '${currentSessionId}')" class="w-5 h-5 rounded-lg bg-slate-800/60 text-slate-400 hover:bg-slate-700 hover:text-white flex items-center justify-center font-bold text-xs transition border border-slate-700 cursor-pointer" title="Hapus sesi ini (Perlu PIN)">✕</button>
@@ -969,7 +963,6 @@
                   </div>
                 </div>
                 ${noteAndPhotoSection}
-                ${sigSection}
                 <div class="flex flex-wrap gap-1 pt-1">${badges}</div>
               </div>
             `;
