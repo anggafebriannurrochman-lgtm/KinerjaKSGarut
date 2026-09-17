@@ -19,24 +19,36 @@
 
   <!-- Header Profesional -->
   <header class="bg-slate-900/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-30 shadow-2xl">
-    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
-      <div class="flex flex-col sm:flex-row justify-between items-center py-3 sm:h-20 gap-3">
+    <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-20">
+      <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 h-full">
         
-        <!-- Kiri: Judul Sistem Baru -->
-        <div class="flex items-center justify-between w-full sm:w-auto gap-3">
+        <!-- Baris Atas di HP (Sejajar Kiri & Kanan), Sisi Kiri di Desktop -->
+        <div class="flex justify-between items-center w-full sm:w-auto">
+          <!-- Kiri: Judul Sistem -->
           <div>
             <span class="text-[9px] sm:text-[10px] text-orange-400 font-extrabold tracking-widest uppercase">Monitoring SO SDM</span>
             <h1 class="font-bold text-slate-300 text-[11px] sm:text-xs">Daop 2 Bandung</h1>
+          </div>
+
+          <!-- Kanan HP (Versi Ringkas, Sejajar dengan Monitoring SO SDM) -->
+          <div class="flex sm:hidden items-center bg-slate-950/80 border border-slate-800 px-2.5 py-1.5 rounded-xl shadow-inner gap-2">
+            <div class="w-6 h-6 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-[10px] shadow-md flex-shrink-0">
+              AF
+            </div>
+            <div class="text-left leading-tight">
+              <span class="text-[10px] font-black text-white tracking-wide block">Angga Febrian</span>
+              <span class="text-[8px] text-orange-400 font-bold tracking-wider">NIPP. 50376</span>
+            </div>
           </div>
         </div>
 
         <!-- Tengah: Teks STASIUN GARUT -->
         <div class="text-center w-full sm:w-auto">
-          <span class="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-orange-400 font-black block">KINERJA KEPALA STASIUN</span>
-          <h2 id="header-station-title" class="text-base sm:text-2xl font-black text-white tracking-widest bg-gradient-to-r from-white via-slate-100 to-orange-400 bg-clip-text text-transparent drop-shadow-sm">STASIUN GARUT</h2>
+          <span class="text-[9px] sm:text-xs uppercase tracking-[0.25em] text-orange-400 font-black block">KINERJA KEPALA STASIUN</span>
+          <h2 id="header-station-title" class="text-sm sm:text-2xl font-black text-white tracking-widest bg-gradient-to-r from-white via-slate-100 to-orange-400 bg-clip-text text-transparent drop-shadow-sm">STASIUN GARUT</h2>
         </div>
 
-        <!-- Kanan: Nama Angga Febrian Nurrochman & NIPP -->
+        <!-- Kanan: Versi Lengkap untuk Desktop (sm ke atas) -->
         <div class="hidden sm:flex items-center gap-4">
           <div class="flex items-center bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-xl shadow-inner gap-3">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-xs shadow-md">
@@ -68,8 +80,8 @@
       </div>
 
       <!-- Tombol Kunci & Status di Atas Status Kunci -->
-      <div class="flex flex-col items-center sm:items-end gap-1 px-1">
-        <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer">
+      <div class="flex flex-col items-center sm:items-end gap-1 px-1 w-full sm:w-auto">
+        <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer">
           <span>🔒</span> <span id="system-lock-label">Sistem Terkunci</span>
         </button>
         <div id="system-status-indicator" class="text-[11px] sm:text-xs text-slate-400 flex items-center gap-2 font-medium px-1">
@@ -319,12 +331,12 @@
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
             <h4 class="font-extrabold text-xs text-rose-400 uppercase tracking-wider flex items-center gap-1.5"><span>4️⃣</span> Keamanan & Reset Data</h4>
-            <p class="text-[10px] text-slate-400 mt-1">Ubah PIN keamanan sistem atau lakukan reset seluruh sesi kegiatan.</p>
+            <p class="text-[10px] text-slate-400 mt-1">Ubah PIN keamanan universal atau lakukan reset seluruh sesi kegiatan.</p>
           </div>
 
           <div class="flex flex-col sm:flex-row gap-2.5">
             <button onclick="changePinCode()" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
-              <span>🔑 Ubah PIN Keamanan</span>
+              <span>🔑 Ubah PIN Keamanan (Aplikasi & Reset)</span>
             </button>
             <button onclick="resetData()" class="flex-1 py-3 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-800/80 font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
               <span>🗑️ Reset Seluruh Data Sesi</span>
@@ -480,13 +492,13 @@
       const indicatorText = document.getElementById('indicator-text');
 
       if (isSystemUnlocked) {
-        btn.className = "px-3 py-1 rounded-xl bg-emerald-950/80 text-emerald-400 text-[11px] font-bold border border-emerald-800/50 shadow-inner flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer";
+        btn.className = "w-full sm:w-auto px-3 py-1 rounded-xl bg-emerald-950/80 text-emerald-400 text-[11px] font-bold border border-emerald-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer";
         if (label) label.innerText = "Sistem Terbuka";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔓";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
         if (indicatorText) indicatorText.innerText = "Sistem Online (Unlocked)";
       } else {
-        btn.className = "px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer";
+        btn.className = "w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer";
         if (label) label.innerText = "Sistem Terkunci";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔒";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0";
@@ -709,7 +721,7 @@
         alert("PIN Lama salah! Perubahan dibatalkan.");
         return;
       }
-      const newInput = prompt("Masukkan PIN Baru:");
+      const newInput = prompt("Masukkan PIN Baru (untuk membuka aplikasi & reset data):");
       if (newInput === null || !newInput.trim()) return;
       const confirmInput = prompt("Konfirmasi PIN Baru:");
       if (newInput !== confirmInput) {
@@ -718,7 +730,7 @@
       }
       currentPin = newInput.trim();
       localStorage.setItem('garut_app_pin_v6', currentPin);
-      alert("PIN Keamanan berhasil diubah!");
+      alert("PIN Keamanan universal berhasil diperbarui!\nPIN baru ini sekarang digunakan untuk membuka kunci aplikasi dan reset data.");
     }
 
     function renderSettingsData() {
