@@ -30,10 +30,10 @@
           </div>
         </div>
 
-        <!-- Tengah: Teks STASIUN GARUT -->
+        <!-- Tengah: Teks STASIUN GARUT (Lebih besar & estetis) -->
         <div class="text-center w-full sm:w-auto">
-          <span class="text-[9px] sm:text-[10px] uppercase tracking-[0.2em] text-orange-400 font-bold block">KINERJA KEPALA STASIUN</span>
-          <h2 class="text-sm sm:text-xl font-black text-white tracking-wider bg-gradient-to-r from-white via-slate-200 to-orange-400 bg-clip-text text-transparent">STASIUN GARUT</h2>
+          <span class="text-[10px] sm:text-xs uppercase tracking-[0.25em] text-orange-400 font-black block">KINERJA KEPALA STASIUN</span>
+          <h2 id="header-station-title" class="text-base sm:text-2xl font-black text-white tracking-widest bg-gradient-to-r from-white via-slate-100 to-orange-400 bg-clip-text text-transparent drop-shadow-sm">STASIUN GARUT</h2>
         </div>
 
         <!-- Kanan: Nama Angga Febrian Nurrochman & NIPP -->
@@ -203,7 +203,7 @@
   <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-center sm:text-left">
       <div>
-        <p class="text-xs font-bold text-slate-300">Stasiun Garut - Monitoring SO SDM Daop 2 Bandung</p>
+        <p id="footer-station-name" class="text-xs font-bold text-slate-300">Stasiun Garut - Monitoring SO SDM Daop 2 Bandung</p>
         <p class="text-[10px] text-slate-500">Pusat kontrol dan rekapitulasi kepatuhan kegiatan operasional.</p>
       </div>
       <div>
@@ -255,7 +255,7 @@
           <div class="w-8 h-8 rounded-xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50">⚙️</div>
           <div>
             <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase">Panel Pengaturan</span>
-            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data, PIN & Reset</h3>
+            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Stasiun, Master Data & PIN</h3>
           </div>
         </div>
         <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition cursor-pointer">✕</button>
@@ -264,10 +264,22 @@
       <!-- Scrollable Area for Settings -->
       <div class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
         
-        <!-- Bagian 1: Kelola Kegiatan -->
+        <!-- Bagian 1: Identitas Stasiun -->
+        <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
+          <div>
+            <h4 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5"><span>1️⃣</span> Identitas Stasiun</h4>
+            <p class="text-[10px] text-slate-400 mt-1">Ubah nama stasiun yang tampil di bagian tengah atas header.</p>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input type="text" id="settings-station-name" placeholder="Contoh: STASIUN GARUT" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-amber-500 text-slate-200 font-bold transition">
+            <button onclick="saveStationName()" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">Simpan Nama</button>
+          </div>
+        </div>
+
+        <!-- Bagian 2: Kelola Kegiatan -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
-            <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>1️⃣</span> Master Kegiatan</h4>
+            <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>2️⃣</span> Master Kegiatan</h4>
             <p class="text-[10px] text-slate-400 mt-1">Tambah, Edit, atau Hapus kegiatan.</p>
           </div>
           
@@ -281,10 +293,10 @@
           <div class="mt-2 space-y-2" id="settings-kegiatan-list"></div>
         </div>
 
-        <!-- Bagian 2: Kelola Anggota -->
+        <!-- Bagian 3: Kelola Anggota -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
-            <h4 class="font-extrabold text-xs text-emerald-400 uppercase tracking-wider flex items-center gap-1.5"><span>2️⃣</span> Master Anggota / Petugas</h4>
+            <h4 class="font-extrabold text-xs text-emerald-400 uppercase tracking-wider flex items-center gap-1.5"><span>3️⃣</span> Master Anggota / Petugas</h4>
             <p class="text-[10px] text-slate-400 mt-1">Kelola data petugas.</p>
           </div>
           
@@ -298,10 +310,10 @@
           <div class="mt-2 space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2" id="settings-orang-list"></div>
         </div>
 
-        <!-- Bagian 3: Keamanan & Reset Data -->
+        <!-- Bagian 4: Keamanan & Reset Data -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
-            <h4 class="font-extrabold text-xs text-rose-400 uppercase tracking-wider flex items-center gap-1.5"><span>3️⃣</span> Keamanan & Reset Data</h4>
+            <h4 class="font-extrabold text-xs text-rose-400 uppercase tracking-wider flex items-center gap-1.5"><span>4️⃣</span> Keamanan & Reset Data</h4>
             <p class="text-[10px] text-slate-400 mt-1">Ubah PIN keamanan sistem atau lakukan reset seluruh sesi kegiatan.</p>
           </div>
 
@@ -329,6 +341,7 @@
     // ---------------------------------------------------------
 
     let currentPin = localStorage.getItem('garut_app_pin_v6') || "1789";
+    let stationName = localStorage.getItem('garut_station_name_v6') || "STASIUN GARUT";
 
     const defaultKegiatanList = [
       { id: "keg_0", title: "Safety Talk", desc: "Briefing keselamatan kerja materi IBPR." },
@@ -377,8 +390,30 @@
       } else {
         yearSelect.value = "2026";
       }
+
+      updateStationHeaderUI();
       initView();
     });
+
+    function updateStationHeaderUI() {
+      const headerEl = document.getElementById('header-station-title');
+      if (headerEl) headerEl.innerText = stationName;
+
+      const footerEl = document.getElementById('footer-station-name');
+      if (footerEl) footerEl.innerText = `${stationName} - Monitoring SO SDM Daop 2 Bandung`;
+    }
+
+    function saveStationName() {
+      const inputVal = document.getElementById('settings-station-name').value.trim();
+      if (!inputVal) {
+        alert("Nama stasiun tidak boleh kosong!");
+        return;
+      }
+      stationName = inputVal.toUpperCase();
+      localStorage.setItem('garut_station_name_v6', stationName);
+      updateStationHeaderUI();
+      alert("Nama stasiun berhasil diperbarui!");
+    }
 
     function switchTab(tabName) {
       const btnDash = document.getElementById('tab-dashboard');
@@ -652,6 +687,7 @@
     // ---------------------------------------------------------
     function openSettingsModal() {
       checkLockAndRun(() => {
+        document.getElementById('settings-station-name').value = stationName;
         renderSettingsData();
         document.getElementById('settings-modal').classList.remove('hidden');
       });
@@ -964,8 +1000,8 @@
         } else {
           let monthlyMemberCounts = {};
           orang.forEach(o => monthlyMemberCounts[o] = 0);
-          filteredSessions.forEach(sess => {
-            if (sess.members) sess.members.forEach(mName => {
+          filteredSessions.filter(sess => sess.members).forEach(sess => {
+            sess.members.forEach(mName => {
               if (monthlyMemberCounts[mName] !== undefined) {
                 monthlyMemberCounts[mName]++;
                 totalPersonAll++;
