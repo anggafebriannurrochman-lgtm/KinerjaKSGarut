@@ -252,15 +252,11 @@
           <div id="modal-checkboxes-orang" class="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto p-2 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar"></div>
         </div>
 
-        <!-- Fitur Tanda Tangan Digital (Optimasi Touch/Stylus HP) -->
+        <!-- Kolom Tanda Tangan Dinamis Sesuai Nama Petugas yang Dipilih -->
         <div>
-          <div class="flex justify-between items-center mb-1">
-            <label class="text-xs font-bold text-slate-300">Tanda Tangan Petugas / Kehadiran:</label>
-            <button type="button" onclick="clearSignature()" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline cursor-pointer">Hapus / Ulang TTD</button>
-          </div>
-          <div class="bg-slate-950 border border-slate-700/80 rounded-2xl p-2 relative">
-            <canvas id="signature-canvas" class="w-full h-32 bg-slate-900 rounded-xl cursor-crosshair touch-none border border-slate-800/80"></canvas>
-            <p class="text-[9px] text-slate-500 text-center mt-1">Tulis tanda tangan menggunakan jari atau stylus/pen HP di kotak atas</p>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Tanda Tangan Petugas Terpilih:</label>
+          <div id="signature-pads-container" class="space-y-3 max-h-56 overflow-y-auto p-2 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar">
+            <p class="text-[11px] text-slate-500 italic text-center py-2">Pilih petugas di atas untuk memunculkan kolom tanda tangan masing-masing.</p>
           </div>
         </div>
 
@@ -412,9 +408,8 @@
     let activeWeeksPerKeg = {};
     let currentUploadedPhotosBase64 = [];
     
-    // Variabel Tanda Tangan Canvas
-    let sigCanvas, sigCtx, isDrawing = false, lastX = 0, lastY = 0;
-    let currentSignatureBase64 = null;
+    // Objek penyimpan tanda tangan per petugas: { "NamaPetugas": "base64..." }
+    let currentSignaturesObj = {};
 
     window.addEventListener('DOMContentLoaded', () => {
       const now = new Date();
@@ -538,82 +533,120 @@
     }
 
     // ---------------------------------------------------------
-    // INISIALISASI & PENGELOLAAN SIGNATURE PAD (TOUCH/STYLUS OPTIMIZED)
+    // RENDER & MANAJEMEN TANDA TANGAN DINAMIS PER PETUGAS
     // ---------------------------------------------------------
-    function initSignaturePad() {
-      sigCanvas = document.getElementById('signature-canvas');
-      if (!sigCanvas) return;
-      sigCtx = sigCanvas.getContext('2d');
+    function updateSignaturePads() {
+      const container = document.getElementById('signature-pads-container');
+      const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
+      const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
 
-      // Set explicit internal resolution vs CSS display size
-      sigCanvas.width = sigCanvas.clientWidth || 340;
-      sigCanvas.height = 128;
+      // Simpan tanda tangan yang sedang digambar sebelum re-render
+      container.querySelectorAll('.sig-canvas').forEach(canvas => {
+        const memberName = canvas.dataset.member;
+        if (canvas.width > 0 && canvas.height > 0) {
+          currentSignaturesObj[memberName] = canvas.toDataURL('image/png');
+        }
+      });
 
-      sigCtx.strokeStyle = '#ffffff';
-      sigCtx.lineWidth = 2.5;
-      sigCtx.lineCap = 'round';
-      sigCtx.lineJoin = 'round';
-
-      if (currentSignatureBase64) {
-        let img = new Image();
-        img.onload = () => { sigCtx.drawImage(img, 0, 0, sigCanvas.width, sigCanvas.height); };
-        img.src = currentSignatureBase64;
-      } else {
-        sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+      if (selectedMembers.length === 0) {
+        container.innerHTML = `<p class="text-[11px] text-slate-500 italic text-center py-2">Pilih petugas di atas untuk memunculkan kolom tanda tangan masing-masing.</p>`;
+        return;
       }
 
-      function getCoords(e) {
-        const rect = sigCanvas.getBoundingClientRect();
+      container.innerHTML = '';
+      selectedMembers.forEach(member => {
+        container.innerHTML += `
+          <div class="bg-slate-900 border border-slate-800 rounded-xl p-2.5 space-y-1.5">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-extrabold text-orange-400">✍️ Tanda Tangan: ${member}</span>
+              <button type="button" onclick="clearSpecificSignature('${member}')" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline cursor-pointer">Hapus / Ulang</button>
+            </div>
+            <div class="bg-slate-950 border border-slate-700/80 rounded-lg p-1 relative">
+              <canvas id="sig-canvas-${member}" data-member="${member}" class="sig-canvas w-full h-24 bg-slate-900 rounded cursor-crosshair touch-none border border-slate-800"></canvas>
+            </div>
+          </div>
+        `;
+      });
+
+      // Inisialisasi event canvas untuk masing-masing petugas
+      setTimeout(() => {
+        container.querySelectorAll('.sig-canvas').forEach(canvas => {
+          initSingleCanvas(canvas, canvas.dataset.member);
+        });
+      }, 50);
+    }
+
+    function initSingleCanvas(canvas, memberName) {
+      const ctx = canvas.getContext('2d');
+      canvas.width = canvas.clientWidth || 320;
+      canvas.height = 96;
+
+      ctx.strokeStyle = '#ffffff';
+      ctx.lineWidth = 2.5;
+      ctx.lineCap = 'round';
+      ctx.lineJoin = 'round';
+
+      // Load existing signature if available
+      if (currentSignaturesObj[memberName]) {
+        let img = new Image();
+        img.onload = () => { ctx.drawImage(img, 0, 0, canvas.width, canvas.height); };
+        img.src = currentSignaturesObj[memberName];
+      }
+
+      let isLocalDrawing = false;
+      let lastX = 0, lastY = 0;
+
+      function getPos(e) {
+        const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
         return {
-          x: (clientX - rect.left) * (sigCanvas.width / rect.width),
-          y: (clientY - rect.top) * (sigCanvas.height / rect.height)
+          x: (clientX - rect.left) * (canvas.width / rect.width),
+          y: (clientY - rect.top) * (canvas.height / rect.height)
         };
       }
 
-      sigCanvas.onmousedown = (e) => {
-        isDrawing = true;
-        const pos = getCoords(e);
+      canvas.onmousedown = (e) => {
+        isLocalDrawing = true;
+        const pos = getPos(e);
         [lastX, lastY] = [pos.x, pos.y];
       };
-      sigCanvas.onmousemove = (e) => {
-        if (!isDrawing) return;
-        const pos = getCoords(e);
-        sigCtx.beginPath();
-        sigCtx.moveTo(lastX, lastY);
-        sigCtx.lineTo(pos.x, pos.y);
-        sigCtx.stroke();
+      canvas.onmousemove = (e) => {
+        if (!isLocalDrawing) return;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
         [lastX, lastY] = [pos.x, pos.y];
-        currentSignatureBase64 = sigCanvas.toDataURL('image/png');
+        currentSignaturesObj[memberName] = canvas.toDataURL('image/png');
       };
-      sigCanvas.onmouseup = () => isDrawing = false;
-      sigCanvas.onmouseout = () => isDrawing = false;
+      canvas.onmouseup = () => isLocalDrawing = false;
+      canvas.onmouseout = () => isLocalDrawing = false;
 
-      sigCanvas.ontouchstart = (e) => {
+      canvas.ontouchstart = (e) => {
         e.preventDefault();
-        isDrawing = true;
-        const pos = getCoords(e);
+        isLocalDrawing = true;
+        const pos = getPos(e);
         [lastX, lastY] = [pos.x, pos.y];
       };
-      sigCanvas.ontouchmove = (e) => {
+      canvas.ontouchmove = (e) => {
         e.preventDefault();
-        if (!isDrawing) return;
-        const pos = getCoords(e);
-        sigCtx.beginPath();
-        sigCtx.moveTo(lastX, lastY);
-        sigCtx.lineTo(pos.x, pos.y);
-        sigCtx.stroke();
+        if (!isLocalDrawing) return;
+        const pos = getPos(e);
+        ctx.beginPath();
+        ctx.moveTo(lastX, lastY);
+        ctx.lineTo(pos.x, pos.y);
+        ctx.stroke();
         [lastX, lastY] = [pos.x, pos.y];
-        currentSignatureBase64 = sigCanvas.toDataURL('image/png');
+        currentSignaturesObj[memberName] = canvas.toDataURL('image/png');
       };
-      sigCanvas.ontouchend = () => isDrawing = false;
+      canvas.ontouchend = () => isLocalDrawing = false;
     }
 
-    function clearSignature() {
-      if (!sigCanvas || !sigCtx) return;
-      sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
-      currentSignatureBase64 = null;
+    function clearSpecificSignature(memberName) {
+      delete currentSignaturesObj[memberName];
+      updateSignaturePads();
     }
 
     // ---------------------------------------------------------
@@ -709,7 +742,6 @@
           let membersStr = sess.members ? sess.members.join(', ') : '-';
           let notePart = sess.note ? sess.note : 'Sesi terlaksana';
           
-          // Pemetaan Catatan Kegiatan, Nama Program (Kegiatan) & Peserta pada Kolom Excel
           let fullKeteranganText = `Catatan: ${notePart} | Peserta: ${membersStr}`;
           
           dataRows.push({
@@ -725,13 +757,11 @@
 
       let ws_data = [];
 
-      // Baris 1: Judul Utama
       ws_data.push([
         { v: "PROGRAM DAN REALISASI KERJA KS", t: "s", s: { font: { bold: true, sz: 14, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "FFFFFF" } } } },
         "", "", "", "", ""
       ]);
 
-      // Baris 2: Header Utama (Warna Hijau & Border Hitam)
       ws_data.push([
         { v: "NO", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
         { v: "HARI/TANGGAL", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
@@ -741,7 +771,6 @@
         { v: "KETERANGAN", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } }
       ]);
 
-      // Baris 3: Sub-header (1, 2, 3, YA, TIDAK, 6)
       ws_data.push([
         { v: "1", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
         { v: "2", t: "s", s: { font: { bold: true, color: { rgb: "000000" } }, alignment: { horizontal: "center", vertical: "center" }, fill: { fgColor: { rgb: "00FF00" } }, border: getBorder() } },
@@ -776,10 +805,10 @@
       ws['!cols'] = [
         { wch: 6 },  // NO
         { wch: 16 }, // HARI/TANGGAL
-        { wch: 32 }, // RENCANA KERJA (Program)
+        { wch: 32 }, // RENCANA KERJA
         { wch: 10 }, // YA
         { wch: 10 }, // TIDAK
-        { wch: 60 }  // KETERANGAN (Catatan & Peserta)
+        { wch: 60 }  // KETERANGAN
       ];
 
       let wb = XLSX.utils.book_new();
@@ -834,13 +863,20 @@
               `;
             }
 
-            // Tanda Tangan
+            // Tanda Tangan per Petugas
             let sigSection = '';
-            if (sess.signature) {
+            let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
+            if (Object.keys(sigsData).length > 0) {
+              let sigItems = Object.entries(sigsData).map(([mName, sigSrc]) => `
+                <div class="inline-block bg-slate-900 p-1.5 rounded-lg border border-slate-800 mr-2 mb-1">
+                  <span class="text-[9px] text-orange-400 font-bold block mb-0.5">✍️ ${mName}:</span>
+                  <img src="${sigSrc}" onclick="openLightbox('${sigSrc}')" class="h-8 object-contain bg-slate-950 px-2 py-0.5 rounded border border-slate-800 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar TTD ${mName}">
+                </div>
+              `).join('');
               sigSection = `
-                <div class="mt-1.5 bg-slate-950 p-2 rounded-xl border border-slate-800 inline-block">
+                <div class="mt-1.5">
                   <span class="text-[9px] text-slate-400 font-bold block mb-1">Tanda Tangan Kehadiran:</span>
-                  <img src="${sess.signature}" onclick="openLightbox('${sess.signature}')" class="h-10 object-contain bg-slate-900 px-2 py-1 rounded border border-slate-800 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar TTD">
+                  <div class="flex flex-wrap gap-1">${sigItems}</div>
                 </div>
               `;
             }
@@ -903,7 +939,7 @@
         activeKegId = kegId;
         editSessionId = null;
         currentUploadedPhotosBase64 = [];
-        currentSignatureBase64 = null;
+        currentSignaturesObj = {};
         
         document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
         document.getElementById('modal-title').innerText = kegTitle;
@@ -917,7 +953,7 @@
         document.getElementById('modal-input-note').value = '';
         
         document.getElementById('input-modal').classList.remove('hidden');
-        setTimeout(initSignaturePad, 150);
+        updateSignaturePads();
       });
     }
 
@@ -926,7 +962,7 @@
         activeKegId = kegId;
         editSessionId = sessionId;
         currentUploadedPhotosBase64 = [];
-        currentSignatureBase64 = null;
+        currentSignaturesObj = {};
 
         const kegData = kegiatanList.find(k => k.id === kegId);
         document.getElementById('modal-subtitle').innerText = "Edit Pelaksanaan";
@@ -941,7 +977,7 @@
           document.getElementById('modal-input-note').value = targetSession.note || '';
           
           currentUploadedPhotosBase64 = targetSession.photos || (targetSession.photo ? [targetSession.photo] : []);
-          currentSignatureBase64 = targetSession.signature || null;
+          currentSignaturesObj = targetSession.signatures || (targetSession.signature ? { [targetSession.members[0]]: targetSession.signature } : {});
           
           document.getElementById('modal-input-photo').value = '';
           renderPhotoPreviews();
@@ -949,7 +985,7 @@
         }
         
         document.getElementById('input-modal').classList.remove('hidden');
-        setTimeout(initSignaturePad, 150);
+        updateSignaturePads();
       });
     }
 
@@ -962,7 +998,7 @@
         const isChecked = selectedMembersList.includes(o) ? 'checked' : '';
         containerBox.innerHTML += `
           <label class="flex items-center gap-2 p-1.5 sm:p-2 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-slate-700 cursor-pointer text-[11px] sm:text-xs font-bold text-slate-300 transition">
-            <input type="checkbox" value="${o}" ${isChecked} class="modal-person-cb w-3.5 h-3.5 text-orange-600 rounded focus:ring-orange-500 bg-slate-900 border-slate-700 accent-orange-600">
+            <input type="checkbox" value="${o}" ${isChecked} onchange="updateSignaturePads()" class="modal-person-cb w-3.5 h-3.5 text-orange-600 rounded focus:ring-orange-500 bg-slate-900 border-slate-700 accent-orange-600">
             ${o}
           </label>
         `;
@@ -974,7 +1010,7 @@
       activeKegId = null;
       editSessionId = null;
       currentUploadedPhotosBase64 = [];
-      currentSignatureBase64 = null;
+      currentSignaturesObj = {};
     }
 
     function saveNewSession() {
@@ -988,6 +1024,15 @@
         alert("Harap pilih minimal 1 petugas untuk sesi ini.");
         return;
       }
+
+      // Pastikan tanda tangan yang aktif tergambar ikut tersimpan
+      document.querySelectorAll('.sig-canvas').forEach(canvas => {
+        const member = canvas.dataset.member;
+        if (canvas.width > 0 && canvas.height > 0) {
+          currentSignaturesObj[member] = canvas.toDataURL('image/png');
+        }
+      });
+
       if (!state[activeKegId]) state[activeKegId] = [];
 
       if (editSessionId !== null) {
@@ -998,8 +1043,9 @@
           state[activeKegId][indexToEdit].note = sessionNote;
           state[activeKegId][indexToEdit].members = selectedMembers;
           state[activeKegId][indexToEdit].photos = currentUploadedPhotosBase64;
-          state[activeKegId][indexToEdit].signature = currentSignatureBase64;
+          state[activeKegId][indexToEdit].signatures = currentSignaturesObj;
           delete state[activeKegId][indexToEdit].photo;
+          delete state[activeKegId][indexToEdit].signature;
         }
       } else {
         state[activeKegId].push({
@@ -1008,7 +1054,7 @@
           note: sessionNote,
           members: selectedMembers,
           photos: currentUploadedPhotosBase64,
-          signature: currentSignatureBase64
+          signatures: currentSignaturesObj
         });
       }
 
