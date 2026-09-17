@@ -604,7 +604,6 @@
       const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
       const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
 
-      // Simpan tanda tangan sementara jika sedang diedit
       container.querySelectorAll('.sig-canvas').forEach(canvas => {
         const memberName = canvas.dataset.member;
         if (canvas.width > 0 && canvas.height > 0) {
@@ -626,7 +625,6 @@
               <button type="button" onclick="clearSpecificSignature('${member}')" class="text-[10px] text-rose-400 hover:text-rose-300 font-bold underline cursor-pointer">Hapus / Ulang</button>
             </div>
             <div class="bg-slate-950 border border-slate-700 rounded-xl p-1.5 relative">
-              <!-- Kolom Tanda Tangan Diperluas (h-48 / 192px) -->
               <canvas id="sig-canvas-${member}" data-member="${member}" class="sig-canvas w-full h-48 bg-slate-900 rounded-lg cursor-crosshair touch-none border border-slate-800"></canvas>
             </div>
           </div>
@@ -643,7 +641,7 @@
     function initSingleCanvas(canvas, memberName) {
       const ctx = canvas.getContext('2d');
       canvas.width = canvas.clientWidth || 340;
-      canvas.height = 192; // Diperluas
+      canvas.height = 192;
 
       ctx.strokeStyle = '#ffffff';
       ctx.lineWidth = 2.5;
@@ -792,7 +790,7 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR KONVERSI KE EXCEL (CATATAN & TTD DI KOLOM RENCANA KERJA)
+    // FITUR KONVERSI KE EXCEL
     // ---------------------------------------------------------
     function exportToExcel() {
       let dataRows = [];
@@ -803,10 +801,8 @@
         sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
         sessions.forEach(sess => {
           let membersList = sess.members || [];
-          let membersStr = membersList.join(', ');
           let notePart = sess.note ? sess.note : '';
           
-          // Memindahkan catatan dan daftar petugas yang bertanda tangan ke kolom Rencana Kerja
           let rencanaKerjaText = keg.title;
           if (notePart) {
             rencanaKerjaText += `\nCatatan: ${notePart}`;
@@ -876,7 +872,7 @@
       ws['!cols'] = [
         { wch: 6 },  // NO
         { wch: 16 }, // HARI/TANGGAL
-        { wch: 45 }, // RENCANA KERJA (Diperlebar untuk menampung Catatan & TTD)
+        { wch: 45 }, // RENCANA KERJA
         { wch: 10 }, // YA
         { wch: 10 }, // TIDAK
         { wch: 30 }  // KETERANGAN
@@ -897,7 +893,7 @@
     }
 
     // ---------------------------------------------------------
-    // RENDER UTAMA & SESI
+    // RENDER UTAMA & SESI (URUTAN: CATATAN & FOTO -> TTD DI BAWAH)
     // ---------------------------------------------------------
     function initView() {
       const container = document.getElementById('cards-container');
@@ -917,37 +913,42 @@
               `<span class="bg-orange-500/10 text-orange-300 text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-lg border border-orange-500/20">${mName}</span>`
             ).join(' ');
 
-            let noteSection = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic bg-slate-900/80 px-2 py-1 rounded-xl border border-slate-800">📝 "${sess.note}"</p>` : '';
-            
-            // Foto Dokumentasi
+            // Kolom Catatan & Foto Dokumentasi di Atas
+            let noteText = sess.note ? `<p class="text-[10px] sm:text-[11px] text-slate-300 italic">📝 "${sess.note}"</p>` : '';
             let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
-            let photoSection = '';
-            if (photosList.length > 0) {
-              let thumbs = photosList.map(pSrc => `
-                <img src="${pSrc}" onclick="openLightbox('${pSrc}')" class="w-10 h-10 object-cover rounded-lg border border-slate-700 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar foto">
-              `).join('');
-              photoSection = `
-                <div class="mt-1">
-                  <span class="text-[9px] text-slate-400 font-bold block mb-1">Dokumentasi (${photosList.length} Foto):</span>
-                  <div class="flex flex-wrap gap-1.5">${thumbs}</div>
+            let photoThumbs = photosList.length > 0 ? `
+              <div class="mt-2">
+                <span class="text-[9px] text-slate-400 font-bold block mb-1">Foto Dokumentasi (${photosList.length}):</span>
+                <div class="flex flex-wrap gap-1.5">
+                  ${photosList.map(pSrc => `<img src="${pSrc}" onclick="openLightbox('${pSrc}')" class="w-12 h-12 object-cover rounded-lg border border-slate-700 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar foto">`).join('')}
+                </div>
+              </div>
+            ` : '';
+
+            let noteAndPhotoSection = '';
+            if (sess.note || photosList.length > 0) {
+              noteAndPhotoSection = `
+                <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 space-y-1">
+                  ${noteText}
+                  ${photoThumbs}
                 </div>
               `;
             }
 
-            // Tanda Tangan per Petugas
+            // Gambar Tanda Tangan & Nama Petugas persis Di Bawah Catatan
             let sigSection = '';
             let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
             if (Object.keys(sigsData).length > 0) {
               let sigItems = Object.entries(sigsData).map(([mName, sigSrc]) => `
-                <div class="inline-block bg-slate-900 p-1.5 rounded-lg border border-slate-800 mr-2 mb-1">
-                  <span class="text-[9px] text-orange-400 font-bold block mb-0.5">✍️ ${mName}:</span>
+                <div class="bg-slate-900/60 p-2 rounded-xl border border-slate-800 flex items-center justify-between gap-2">
+                  <span class="text-[10px] text-orange-400 font-bold">✍️ ${mName}</span>
                   <img src="${sigSrc}" onclick="openLightbox('${sigSrc}')" class="h-10 object-contain bg-slate-950 px-2 py-0.5 rounded border border-slate-800 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar TTD ${mName}">
                 </div>
               `).join('');
               sigSection = `
-                <div class="mt-1.5">
-                  <span class="text-[9px] text-slate-400 font-bold block mb-1">Tanda Tangan Kehadiran:</span>
-                  <div class="flex flex-wrap gap-1">${sigItems}</div>
+                <div class="space-y-1.5 pt-1">
+                  <span class="text-[9px] text-slate-400 font-bold block">Tanda Tangan Kehadiran:</span>
+                  <div class="space-y-1">${sigItems}</div>
                 </div>
               `;
             }
@@ -967,8 +968,7 @@
                     ${actionButtonsHtml}
                   </div>
                 </div>
-                ${noteSection}
-                ${photoSection}
+                ${noteAndPhotoSection}
                 ${sigSection}
                 <div class="flex flex-wrap gap-1 pt-1">${badges}</div>
               </div>
@@ -1010,7 +1010,6 @@
         activeKegId = kegId;
         editSessionId = null;
         currentUploadedPhotosBase64 = [];
-        // Pastikan objek tanda tangan selalu dikosongkan (fresh) agar tidak membawa TTD lama
         currentSignaturesObj = {};
         
         document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
