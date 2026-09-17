@@ -245,14 +245,15 @@
   </div>
 
   <script>
+    // Kegiatan telah ditukar posisinya: Pelatihan Mental (keg_4) dan Coaching Teknis (keg_5)
     const kegiatanList = [
       { id: "keg_0", title: "Safety Talk", desc: "Briefing keselamatan kerja materi IBPR." },
       { id: "keg_1", title: "Diskusi Studi Kasus", desc: "Pembedahan kasus operasional." },
       { id: "keg_2", title: "Sharing Session Kendala", desc: "Ruang diskusi terbuka kendala teknis dan lainnya." },
       { id: "keg_3", title: "Simulasi Pelayanan & Darurat", desc: "Latihan, penanganan kondisi normal dan gangguan." },
-      { id: "keg_4", title: "Coaching Teknis", desc: "Pembinaan teknis Peraturan Dinas." },
-      { id: "keg_5", title: "Pelatihan Mental", desc: "Kuis dengan waktu terbatas." },
-      { id: "keg_6", title: "Leadership", desc: "Melatih PPKA menerapkan pola kepemimpinan." },
+      { id: "keg_4", title: "Pelatihan Mental", desc: "Kuis dengan waktu terbatas." },
+      { id: "keg_5", title: "Coaching Teknis", desc: "Pembinaan teknis Peraturan Dinas." },
+      { id: "keg_6", title: "Leadership", desc: "Melatih PPKA menerapkan pola kepemimpinan (Khusus Hadi & Fikri)." },
       { id: "keg_7", title: "Penilaian Cara Kerja & Komunikasi", desc: "Peningkatan keterampilan public speaking dan pola berfikir" }
     ];
     
@@ -262,7 +263,7 @@
       { id: "keg_1", label: "Studi Kasus", color: "#3b82f6" },
       { id: "keg_2", label: "Sharing Session", color: "#10b981" },
       { id: "keg_3", label: "Simulasi", color: "#f59e0b" },
-      { id: "keg_5", label: "Pelatihan Mental", color: "#ec4899" }
+      { id: "keg_4", label: "Pelatihan Mental", color: "#ec4899" }
     ];
     
     const orang = ["Hadi", "Fikri", "Supri", "Ujang", "Dina", "Ade", "Ramadhan"];
@@ -286,7 +287,7 @@
     let isSystemUnlocked = false;
     
     let activeWeeksPerKeg = {
-      "keg_0": 1, "keg_1": 1, "keg_2": 1, "keg_3": 1, "keg_5": 1
+      "keg_0": 1, "keg_1": 1, "keg_2": 1, "keg_3": 1, "keg_4": 1
     };
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -328,7 +329,7 @@
         isSystemUnlocked = false;
         updateSystemLockUI();
       } else {
-        const enteredPin = prompt("Masukkan PIN Keamanan untuk membuka kunci sistem:");
+        const enteredPin = prompt("Masukkan PIN Keamanan:");
         if (enteredPin === null) return;
         
         if (enteredPin === "1789") {
@@ -345,7 +346,7 @@
       if (isSystemUnlocked) {
         callback();
       } else {
-        const enteredPin = prompt("Masukkan PIN Keamanan (1789) untuk melakukan perubahan data:");
+        const enteredPin = prompt("Masukkan PIN Keamanan:");
         if (enteredPin === null) return;
         
         if (enteredPin === "1789") {
@@ -480,7 +481,7 @@
         document.getElementById('modal-title').innerText = kegTitle;
         document.getElementById('modal-save-btn').innerText = "+ Simpan Sesi";
 
-        renderCheckboxes([]);
+        renderCheckboxes([], kegId);
 
         const now = new Date();
         document.getElementById('modal-input-date').value = now.toISOString().split('T')[0];
@@ -505,17 +506,21 @@
         if (targetSession) {
           document.getElementById('modal-input-date').value = targetSession.date || '';
           document.getElementById('modal-input-note').value = targetSession.note || '';
-          renderCheckboxes(targetSession.members || []);
+          renderCheckboxes(targetSession.members || [], kegId);
         }
 
         document.getElementById('input-modal').classList.remove('hidden');
       });
     }
 
-    function renderCheckboxes(selectedMembersList) {
+    function renderCheckboxes(selectedMembersList, kegId) {
       const containerBox = document.getElementById('modal-checkboxes-orang');
       containerBox.innerHTML = '';
-      orang.forEach(o => {
+      
+      // Khusus Leadership (keg_6) hanya menampilkan Hadi dan Fikri
+      const targetOrang = (kegId === "keg_6") ? ["Hadi", "Fikri"] : orang;
+
+      targetOrang.forEach(o => {
         const isChecked = selectedMembersList.includes(o) ? 'checked' : '';
         containerBox.innerHTML += `
           <label class="flex items-center gap-2 p-1.5 sm:p-2 rounded-xl hover:bg-slate-800/80 border border-transparent hover:border-slate-700 cursor-pointer text-[11px] sm:text-xs font-bold text-slate-300 transition">
@@ -624,7 +629,8 @@
 
         totalSessionsAll += filteredSessions.length;
 
-        const isWeeklyKeg = ["keg_0", "keg_1", "keg_2", "keg_3", "keg_5"].includes(keg.id);
+        // Kegiatan mingguan mencakup keg_0 s.d. keg_4
+        const isWeeklyKeg = ["keg_0", "keg_1", "keg_2", "keg_3", "keg_4"].includes(keg.id);
 
         let tableRowsHtml = '';
 
@@ -734,11 +740,38 @@
 
           orang.forEach(o => {
             let monthlyCount = monthlyMemberCounts[o];
-            let monthlyMet = monthlyCount >= 1;
+            let targetNeeded = 1;
+            let isApplicable = true;
+
+            // Target Spesifik Bulanan Baru
+            if (keg.id === "keg_5") {
+              // Coaching Teknis: 2x dalam 1 bulan
+              targetNeeded = 2;
+            } else if (keg.id === "keg_6") {
+              // Leadership: Khusus Hadi & Fikri, 2x dalam 1 bulan
+              targetNeeded = 2;
+              isApplicable = (o === "Hadi" || o === "Fikri");
+            } else if (keg.id === "keg_7") {
+              // Penilaian Cara Kerja & Komunikasi: 1x dalam 1 bulan
+              targetNeeded = 1;
+            }
+
+            if (!isApplicable) {
+              tableRowsHtml += `
+                <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
+                  <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o]}</td>
+                  <td class="p-2.5 text-center text-slate-500 font-bold text-[11px]">- (Khusus Hadi & Fikri)</td>
+                  <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-500 font-bold text-[10px]">N/A</span></td>
+                </tr>
+              `;
+              return;
+            }
+
+            let monthlyMet = monthlyCount >= targetNeeded;
 
             let badgeMonthly = monthlyMet ? 
-              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${monthlyCount})</span>` : 
-              `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 font-bold text-[10px]">Belum (${monthlyCount})</span>`;
+              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${monthlyCount}/${targetNeeded})</span>` : 
+              `<span class="px-2 py-0.5 rounded-md bg-amber-950/50 text-amber-400 font-bold text-[10px] border border-amber-800/40">Kurang (${monthlyCount}/${targetNeeded})</span>`;
 
             tableRowsHtml += `
               <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
