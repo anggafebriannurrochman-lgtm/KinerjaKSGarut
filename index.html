@@ -7,20 +7,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Library html2pdf untuk Export & Download PDF langsung -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Library pptxgenjs untuk Export & Download file PowerPoint (.pptx) -->
+  <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { height: 4px; width: 4px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
-    @media print {
-      body { background: white !important; color: black !important; }
-      header, nav, button, footer, .no-print { display: none !important; }
-      .print-container { width: 100% !important; padding: 0 !important; margin: 0 !important; }
-    }
   </style>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col selection:bg-orange-500 selection:text-white" onclick="closeDropdownOnClickOutside(event)">
@@ -83,8 +77,8 @@
         <button onclick="switchTab('kegiatan')" id="tab-kegiatan" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all text-center cursor-pointer">
           ⚡ Daftar Kegiatan
         </button>
-        <button onclick="openPdfReportModal()" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all text-center cursor-pointer flex items-center justify-center gap-1.5">
-          <span>📄</span> <span>Laporan & Download PDF</span>
+        <button onclick="openPptxReportModal()" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all text-center cursor-pointer flex items-center justify-center gap-1.5">
+          <span>📽️</span> <span>Laporan & Download PowerPoint (.pptx)</span>
         </button>
       </div>
 
@@ -229,31 +223,28 @@
     </div>
   </footer>
 
-  <!-- MODAL LAPORAN & DOWNLOAD PDF -->
-  <div id="pdf-report-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+  <!-- MODAL PREVIEW & DOWNLOAD POWERPOINT (.pptx) -->
+  <div id="pptx-report-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
     <div class="bg-white text-slate-900 rounded-3xl shadow-2xl w-full max-w-5xl p-6 sm:p-8 space-y-6 my-auto">
       <div class="flex justify-between items-center border-b pb-4">
         <div>
-          <h3 class="font-extrabold text-lg text-slate-900">Preview Dokumen Laporan Resmi (Sesuai Master Excel)</h3>
-          <p class="text-xs text-slate-500">Tanda tangan tebal & jelas serta foto dokumentasi besar termuat sempurna dalam tabel</p>
+          <h3 class="font-extrabold text-lg text-slate-900">Preview Laporan Format PowerPoint (PPTX)</h3>
+          <p class="text-xs text-slate-500">Sesuai format master Excel dengan tanda tangan tebal & foto dokumentasi</p>
         </div>
         <div class="flex gap-2">
-          <button onclick="downloadPdfFile()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5">
-            <span>📥</span> <span>Download PDF</span>
+          <button onclick="downloadPptxFile()" class="px-4 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5">
+            <span>📥</span> <span>Download File .pptx</span>
           </button>
-          <button onclick="window.print()" class="px-4 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5">
-            <span>🖨️</span> <span>Cetak Langsung</span>
-          </button>
-          <button onclick="closePdfReportModal()" class="px-3 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition cursor-pointer">✕</button>
+          <button onclick="closePptxReportModal()" class="px-3 py-2 bg-slate-200 text-slate-700 font-bold text-xs rounded-xl hover:bg-slate-300 transition cursor-pointer">✕</button>
         </div>
       </div>
 
-      <!-- Area Dokumen Resmi untuk PDF Export -->
+      <!-- Area Preview Tabel Resmi -->
       <div class="max-h-[70vh] overflow-y-auto border border-slate-300 p-2 rounded-2xl bg-slate-50">
-        <div id="pdf-export-container" class="space-y-4 font-sans bg-white p-6 rounded-xl shadow-sm">
+        <div class="space-y-4 font-sans bg-white p-6 rounded-xl shadow-sm">
           <div class="text-center space-y-1 pb-4 border-b-2 border-black">
             <h1 class="text-base sm:text-lg font-black uppercase tracking-wider text-black">PROGRAM DAN REALISASI KERJA KEPALA STASIUN</h1>
-            <h2 id="pdf-station-subtitle" class="text-sm font-bold text-slate-800 uppercase">STASIUN GARUT</h2>
+            <h2 id="pptx-station-subtitle" class="text-sm font-bold text-slate-800 uppercase">STASIUN GARUT</h2>
           </div>
           
           <div class="overflow-x-auto">
@@ -282,7 +273,7 @@
                   <th class="border border-black p-1">6</th>
                 </tr>
               </thead>
-              <tbody id="pdf-table-body">
+              <tbody id="pptx-table-body">
                 <!-- Diisi secara dinamis -->
               </tbody>
             </table>
@@ -604,7 +595,7 @@
     }
 
     // ---------------------------------------------------------
-    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS (DIPERTEBAL)
+    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS (TEBAL)
     // ---------------------------------------------------------
     function toggleStaffDropdown(e) {
       if (e) e.stopPropagation();
@@ -705,7 +696,7 @@
       canvas.height = 192;
 
       ctx.strokeStyle = '#ffffff';
-      ctx.lineWidth = 5.0; // Ketebalan garis dipertebal agar sangat jelas dan tegas
+      ctx.lineWidth = 5.0; // Garis tebal dan jelas
       ctx.lineCap = 'round';
       ctx.lineJoin = 'round';
 
@@ -851,12 +842,12 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR LAPORAN & DOWNLOAD PDF RESMI
+    // FITUR LAPORAN & DOWNLOAD POWERPOINT (.pptx)
     // ---------------------------------------------------------
-    function openPdfReportModal() {
-      const tbody = document.getElementById('pdf-table-body');
+    function openPptxReportModal() {
+      const tbody = document.getElementById('pptx-table-body');
       tbody.innerHTML = '';
-      document.getElementById('pdf-station-subtitle').innerText = stationName;
+      document.getElementById('pptx-station-subtitle').innerText = stationName;
 
       let noCounter = 1;
       let hasData = false;
@@ -872,7 +863,6 @@
           let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
           let sigsData = sess.signatures || (sess.signature ? { [sess.members[0]]: sess.signature } : {});
 
-          // Rencana Kerja (Nama Kegiatan + Catatan + Petugas + Tanda Tangan)
           let rencanaHtml = `<div class="font-bold text-black text-xs">${keg.title}</div>`;
           if (notePart) rencanaHtml += `<div class="text-slate-700 text-[11px] mt-0.5">Catatan: ${notePart}</div>`;
           if (membersList.length > 0) rencanaHtml += `<div class="text-slate-800 text-[11px] font-semibold mt-0.5">Petugas: ${membersList.join(', ')}</div>`;
@@ -890,7 +880,6 @@
             rencanaHtml += `<div class="mt-1.5 pt-1 border-t border-slate-300"><span class="text-[9px] font-bold text-slate-600 block mb-0.5">Tanda Tangan Petugas:</span>${sigHtmlItems}</div>`;
           }
 
-          // Keterangan & Foto Dokumentasi Ukuran Besar
           let ketHtml = `<div class="text-xs text-black font-medium">Sesi terlaksana (${membersList.length} Petugas)</div>`;
           let photoHtmlItems = '';
           photosList.forEach(pSrc => {
@@ -917,28 +906,100 @@
         tbody.innerHTML = `<tr><td colspan="6" class="text-center p-4 text-slate-500 italic border border-black">Belum ada data sesi kegiatan.</td></tr>`;
       }
 
-      document.getElementById('pdf-report-modal').classList.remove('hidden');
+      document.getElementById('pptx-report-modal').classList.remove('hidden');
     }
 
-    function closePdfReportModal() {
-      document.getElementById('pdf-report-modal').classList.add('hidden');
+    function closePptxReportModal() {
+      document.getElementById('pptx-report-modal').classList.add('hidden');
     }
 
-    function downloadPdfFile() {
-      const element = document.getElementById('pdf-export-container');
-      const opt = {
-        margin:       0.5,
-        filename:     `Program_Dan_Realisasi_Kerja_${stationName}.pdf`,
-        image:        { type: 'jpeg', quality: 0.98 },
-        html2canvas:  { scale: 2, useCORS: true, letterRendering: true },
-        jsPDF:        { unit: 'in', format: 'a4', orientation: 'landscape' }
-      };
+    function downloadPptxFile() {
+      let pptx = new pptxgen();
+      pptx.layout = 'LAYOUT_16X9';
+      
+      let slide = pptx.addSlide();
 
-      html2pdf().from(element).set(opt).save();
+      // Judul Presentasi
+      slide.addText("PROGRAM DAN REALISASI KERJA KEPALA STASIUN", { x: 0.5, y: 0.3, w: '90%', h: 0.4, fontSize: 14, bold: true, align: 'center', color: '363636' });
+      slide.addText(stationName, { x: 0.5, y: 0.7, w: '90%', h: 0.3, fontSize: 12, bold: true, align: 'center', color: '555555' });
+
+      let tableRows = [
+        [
+          { text: "NO", options: { rowSpan: 2, fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", valign: "middle", fontSize: 10 } },
+          { text: "HARI/TANGGAL", options: { rowSpan: 2, fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", valign: "middle", fontSize: 10 } },
+          { text: "RENCANA KERJA", options: { rowSpan: 2, fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", valign: "middle", fontSize: 10 } },
+          { text: "REALISASI", options: { colSpan: 2, fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", valign: "middle", fontSize: 10 } },
+          { text: "KETERANGAN", options: { rowSpan: 2, fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", valign: "middle", fontSize: 10 } }
+        ],
+        [
+          { text: "YA", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 10 } },
+          { text: "TIDAK", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 10 } }
+        ],
+        [
+          { text: "1", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 9 } },
+          { text: "2", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 9 } },
+          { text: "3", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 9 } },
+          { text: "4", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 9 } },
+          { text: "5", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 9 } },
+          { text: "6", options: { fill: { color: "00FF00" }, color: "000000", bold: true, align: "center", fontSize: 9 } }
+        ]
+      ];
+
+      let noCounter = 1;
+      let hasData = false;
+
+      kegiatanList.forEach(keg => {
+        let sessions = state[keg.id] || [];
+        sessions.sort((a, b) => new Date(a.date) - new Date(b.date));
+
+        sessions.forEach(sess => {
+          hasData = true;
+          let membersList = sess.members || [];
+          let notePart = sess.note ? `Catatan: ${sess.note}` : '';
+          let petugasText = membersList.length > 0 ? `Petugas: ${membersList.join(', ')}` : '';
+          
+          let rencanaText = `${keg.title}`;
+          if (notePart) rencanaText += `\n${notePart}`;
+          if (petugasText) rencanaText += `\n${petugasText}`;
+
+          let ketText = `Sesi terlaksana (${membersList.length} Petugas)`;
+          if (sess.photos && sess.photos.length > 0) {
+            ketText += `\n[${sess.photos.length} Foto Dokumentasi Terlampir]`;
+          }
+
+          tableRows.push([
+            { text: String(noCounter++), options: { align: 'center', fontSize: 9 } },
+            { text: String(sess.date || ''), options: { align: 'center', fontSize: 9 } },
+            { text: rencanaText, options: { fontSize: 9 } },
+            { text: "✓", options: { align: 'center', bold: true, fontSize: 11 } },
+            { text: "", options: { align: 'center', fontSize: 9 } },
+            { text: ketText, options: { fontSize: 9 } }
+          ]);
+        });
+      });
+
+      if (!hasData) {
+        tableRows.push([
+          { text: "Belum ada data sesi kegiatan.", options: { colSpan: 6, align: 'center', fontSize: 10 } }
+        ]);
+      }
+
+      slide.addTable(tableRows, {
+        x: 0.5,
+        y: 1.1,
+        w: 9.0,
+        colW: [0.6, 1.2, 3.2, 0.6, 0.6, 3.8],
+        border: { pt: 1, color: '000000' },
+        fontFace: 'Arial',
+        fontSize: 9,
+        valign: 'middle'
+      });
+
+      pptx.writeFile({ fileName: `Program_Dan_Realisasi_Kerja_${stationName}.pptx` });
     }
 
     // ---------------------------------------------------------
-    // RENDER UTAMA & SESI (HISTORI KEGIATAN LEBIH RINGKAS TANPA TTD)
+    // RENDER UTAMA & SESI
     // ---------------------------------------------------------
     function initView() {
       const container = document.getElementById('cards-container');
