@@ -97,9 +97,6 @@
         <button onclick="switchTab('kegiatan')" id="tab-kegiatan" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl text-slate-400 hover:text-white transition-all text-center cursor-pointer">
           ⚡ Daftar Kegiatan
         </button>
-        <button onclick="openPdfReportModal()" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-600/30 transition-all text-center cursor-pointer flex items-center justify-center gap-1.5">
-          <span>📄</span> <span>Laporan & Download PDF</span>
-        </button>
       </div>
 
       <!-- Tombol Kunci & Status -->
@@ -219,6 +216,59 @@
         
         <div id="petugas-charts-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pt-1"></div>
       </div>
+
+      <!-- SECTION DOWNLOAD PDF & FILTER DI BAGIAN BAWAH DASHBOARD -->
+      <div class="bg-slate-900/90 rounded-3xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
+        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3">
+          <div>
+            <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">📄 Download Laporan & Cetak PDF</h3>
+            <p class="text-[10px] text-slate-400">Atur filter waktu dan jenis kegiatan di bawah ini lalu unduh dokumen</p>
+          </div>
+          <div class="flex gap-2 w-full sm:w-auto">
+            <button onclick="downloadPdfFile()" class="flex-1 sm:flex-initial px-5 py-3 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-rose-600/30 cursor-pointer flex items-center justify-center gap-2">
+              <span>📥</span> <span>Download PDF</span>
+            </button>
+            <button onclick="window.print()" class="px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2">
+              <span>🖨️</span> <span>Cetak</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Pilihan Filter di bawah tombol -->
+        <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
+          <h4 class="font-bold text-xs text-slate-300 uppercase tracking-wide flex items-center gap-1.5"><span>🔍</span> Filter Parameter Laporan</h4>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[11px] font-bold text-slate-400 mb-1">Rentang Tanggal (Kosongkan jika ingin semua):</label>
+              <div class="flex items-center gap-2">
+                <input type="date" id="pdf-start-date" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-rose-500">
+                <span class="text-xs text-slate-400 font-bold">s/d</span>
+                <input type="date" id="pdf-end-date" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-rose-500">
+              </div>
+            </div>
+            <div>
+              <div class="flex justify-between items-center mb-1">
+                <label class="text-[11px] font-bold text-slate-400">Pilih Jenis Kegiatan:</label>
+                <button type="button" onclick="toggleAllPdfActivities(true)" class="text-[10px] text-orange-400 hover:underline font-bold">Pilih Semua</button>
+              </div>
+              <div id="pdf-activity-checkboxes" class="max-h-28 overflow-y-auto bg-slate-900 p-2.5 border border-slate-700 rounded-xl space-y-1 text-xs custom-scrollbar">
+                <!-- Checkboxes dimuat dinamis -->
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Preview Dokumen PDF -->
+        <div>
+          <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-2">Preview Lembar Laporan:</span>
+          <div class="overflow-x-auto border border-slate-700/60 p-3 rounded-2xl bg-slate-950 flex justify-center custom-scrollbar">
+            <div id="pdf-export-container" class="space-y-4 font-sans bg-white shadow-xl" style="width: 210mm;">
+              <!-- Diisi secara dinamis -->
+            </div>
+          </div>
+        </div>
+      </div>
+
     </section>
 
     <!-- VIEW 2: DAFTAR KEGIATAN -->
@@ -242,58 +292,6 @@
       </div>
     </div>
   </footer>
-
-  <!-- MODAL PREVIEW & DOWNLOAD PDF DENGAN FILTER -->
-  <div id="pdf-report-modal" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
-    <div class="bg-white text-slate-900 rounded-3xl shadow-2xl w-full max-w-5xl p-5 sm:p-7 space-y-4 my-auto">
-      <div class="flex justify-between items-center border-b pb-3">
-        <div>
-          <span class="text-[10px] text-blue-600 font-bold tracking-widest uppercase">Dokumen Resmi</span>
-          <h3 class="font-extrabold text-base sm:text-lg text-slate-900">Filter & Preview Laporan PDF</h3>
-        </div>
-        <div class="flex gap-2">
-          <button onclick="downloadPdfFile()" class="px-3.5 py-2 bg-emerald-600 text-white font-bold text-xs rounded-xl hover:bg-emerald-700 transition cursor-pointer flex items-center gap-1.5 shadow-md">
-            <span>📥</span> <span>Download PDF</span>
-          </button>
-          <button onclick="window.print()" class="px-3.5 py-2 bg-blue-600 text-white font-bold text-xs rounded-xl hover:bg-blue-700 transition cursor-pointer flex items-center gap-1.5 shadow-md">
-            <span>🖨️</span> <span>Cetak</span>
-          </button>
-          <button onclick="closePdfReportModal()" class="w-8 h-8 rounded-xl bg-slate-100 text-slate-700 hover:bg-slate-200 font-bold text-xs flex items-center justify-center transition cursor-pointer">✕</button>
-        </div>
-      </div>
-
-      <!-- Panel Filter Laporan PDF -->
-      <div class="bg-slate-100 p-3.5 rounded-2xl border border-slate-200 space-y-3">
-        <h4 class="font-bold text-xs text-slate-800 uppercase tracking-wide flex items-center gap-1.5"><span>🔍</span> Filter Parameter Cetak PDF</h4>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <div>
-            <label class="block text-[11px] font-bold text-slate-700 mb-1">Rentang Tanggal (Kosongkan jika ingin semua):</label>
-            <div class="flex items-center gap-2">
-              <input type="date" id="pdf-start-date" onchange="renderPdfPreview()" class="text-xs p-2 bg-white border border-slate-300 rounded-xl text-slate-800 font-bold w-full outline-none focus:border-blue-500">
-              <span class="text-xs text-slate-500 font-bold">s/d</span>
-              <input type="date" id="pdf-end-date" onchange="renderPdfPreview()" class="text-xs p-2 bg-white border border-slate-300 rounded-xl text-slate-800 font-bold w-full outline-none focus:border-blue-500">
-            </div>
-          </div>
-          <div>
-            <div class="flex justify-between items-center mb-1">
-              <label class="text-[11px] font-bold text-slate-700">Pilih Jenis Kegiatan:</label>
-              <button type="button" onclick="toggleAllPdfActivities(true)" class="text-[10px] text-blue-600 hover:underline font-bold">Pilih Semua</button>
-            </div>
-            <div id="pdf-activity-checkboxes" class="max-h-24 overflow-y-auto bg-white p-2 border border-slate-300 rounded-xl space-y-1 text-xs custom-scrollbar">
-              <!-- Checkbox kegiatan dimuat dinamis -->
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Area Dokumen Resmi untuk PDF Export (A5 Landscape) -->
-      <div class="max-h-[55vh] overflow-y-auto border border-slate-300 p-2 rounded-2xl bg-slate-100 flex justify-center custom-scrollbar">
-        <div id="pdf-export-container" class="space-y-4 font-sans bg-white shadow-md" style="width: 210mm;">
-          <!-- Diisi secara dinamis -->
-        </div>
-      </div>
-    </div>
-  </div>
 
   <!-- POP-UP MODAL (Tambah & Edit Sesi Kegiatan) -->
   <div id="input-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
@@ -482,6 +480,7 @@
     let isSystemUnlocked = false;
     let activeWeeksPerKeg = {};
     let currentUploadedPhotosBase64 = [];
+    let sigCache = {}; // Cache tanda tangan agar ringan
     
     let currentSignaturesObj = {};
 
@@ -498,6 +497,7 @@
       }
 
       updateStationHeaderUI();
+      initDashboardPdfCheckboxes();
       initView();
     });
 
@@ -775,7 +775,7 @@
     }
 
     // ---------------------------------------------------------
-    // FUNGSI PEMROSESAN TANDA TANGAN (LATAR PUTIH, GARIS HITAM TEBAL)
+    // FUNGSI PEMROSESAN TANDA TANGAN DENGAN CACHE (RINGAN & CEPAT)
     // ---------------------------------------------------------
     function processSignatureBase64(base64Src) {
       return new Promise((resolve) => {
@@ -783,11 +783,16 @@
           resolve('');
           return;
         }
+        if (sigCache[base64Src]) {
+          resolve(sigCache[base64Src]);
+          return;
+        }
+
         let img = new Image();
         img.onload = () => {
           let canvas = document.createElement('canvas');
-          canvas.width = 300;
-          canvas.height = 150;
+          canvas.width = 200;
+          canvas.height = 100;
           let ctx = canvas.getContext('2d');
           
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
@@ -798,18 +803,16 @@
             let r = data[i], g = data[i+1], b = data[i+2];
             let avg = (r + g + b) / 3;
             if (avg > 80) {
-              data[i] = 0;
-              data[i+1] = 0;
-              data[i+2] = 0;
+              data[i] = 0; data[i+1] = 0; data[i+2] = 0;
             } else {
-              data[i] = 255;
-              data[i+1] = 255;
-              data[i+2] = 255;
+              data[i] = 255; data[i+1] = 255; data[i+2] = 255;
             }
           }
           ctx.putImageData(imgData, 0, 0);
           
-          resolve(canvas.toDataURL('image/png'));
+          let result = canvas.toDataURL('image/png');
+          sigCache[base64Src] = result;
+          resolve(result);
         };
         img.onerror = () => resolve(base64Src);
         img.src = base64Src;
@@ -829,8 +832,8 @@
           const img = new Image();
           img.onload = function() {
             const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 600;
-            const MAX_HEIGHT = 600;
+            const MAX_WIDTH = 500;
+            const MAX_HEIGHT = 500;
             let width = img.width;
             let height = img.height;
 
@@ -896,38 +899,35 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR LAPORAN & DOWNLOAD PDF (HANYA MUNCULKAN KELAS YANG ADA ISINYA)
+    // FITUR LAPORAN & DOWNLOAD PDF DI DASHBOARD (DIOPTIMALKAN)
     // ---------------------------------------------------------
-    function openPdfReportModal() {
+    function initDashboardPdfCheckboxes() {
       const cbContainer = document.getElementById('pdf-activity-checkboxes');
+      if (!cbContainer) return;
       cbContainer.innerHTML = '';
       kegiatanList.forEach(k => {
         cbContainer.innerHTML += `
-          <label class="flex items-center gap-2 p-1 hover:bg-slate-50 rounded cursor-pointer font-medium text-slate-700">
-            <input type="checkbox" value="${k.id}" checked onchange="renderPdfPreview()" class="pdf-keg-cb w-3.5 h-3.5 text-blue-600 rounded border-slate-300">
+          <label class="flex items-center gap-2 p-1 hover:bg-slate-800 rounded cursor-pointer font-medium text-slate-300">
+            <input type="checkbox" value="${k.id}" checked onchange="renderDashboardPdfPreview()" class="pdf-keg-cb w-3.5 h-3.5 text-rose-600 rounded border-slate-700 accent-rose-600">
             <span class="truncate">${k.title}</span>
           </label>
         `;
       });
-
-      document.getElementById('pdf-start-date').value = '';
-      document.getElementById('pdf-end-date').value = '';
-
-      renderPdfPreview();
-      document.getElementById('pdf-report-modal').classList.remove('hidden');
+      renderDashboardPdfPreview();
     }
 
     function toggleAllPdfActivities(status) {
       document.querySelectorAll('.pdf-keg-cb').forEach(cb => cb.checked = status);
-      renderPdfPreview();
+      renderDashboardPdfPreview();
     }
 
-    async function renderPdfPreview() {
+    async function renderDashboardPdfPreview() {
       const container = document.getElementById('pdf-export-container');
-      container.innerHTML = `<div class="text-center p-6 text-slate-500 italic">Memproses laporan & tanda tangan...</div>`;
+      if (!container) return;
+      container.innerHTML = `<div class="text-center p-6 text-slate-500 italic text-xs">Memproses laporan & tanda tangan...</div>`;
 
-      const startDate = document.getElementById('pdf-start-date').value;
-      const endDate = document.getElementById('pdf-end-date').value;
+      const startDate = document.getElementById('pdf-start-date') ? document.getElementById('pdf-start-date').value : '';
+      const endDate = document.getElementById('pdf-end-date') ? document.getElementById('pdf-end-date').value : '';
       const selectedKegIds = Array.from(document.querySelectorAll('.pdf-keg-cb:checked')).map(cb => cb.value);
 
       let filteredKegList = kegiatanList.filter(k => selectedKegIds.includes(k.id));
@@ -959,7 +959,7 @@
       }
 
       if (validActivities.length === 0) {
-        container.innerHTML = `<div class="text-center p-8 text-slate-500 italic bg-white rounded shadow text-xs">Tidak ada data kegiatan yang tercatat atau sesuai dengan filter tanggal/pilihan tersebut.</div>`;
+        container.innerHTML = `<div class="text-center p-8 text-slate-500 italic bg-white rounded shadow text-xs text-slate-700">Tidak ada data kegiatan yang tercatat atau sesuai dengan filter tanggal/pilihan tersebut.</div>`;
         return;
       }
 
@@ -1059,10 +1059,6 @@
       }
 
       container.innerHTML = allActivitiesHtml;
-    }
-
-    function closePdfReportModal() {
-      document.getElementById('pdf-report-modal').classList.add('hidden');
     }
 
     function downloadPdfFile() {
@@ -1287,6 +1283,7 @@
       localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
       closeModal();
       initView();
+      renderDashboardPdfPreview();
     }
 
     function deleteSession(kegId, sessionId) {
@@ -1297,6 +1294,7 @@
             if (state[kegId].length === 0) delete state[kegId];
             localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
             initView();
+            renderDashboardPdfPreview();
           }
         }
       });
@@ -1388,6 +1386,7 @@
       document.getElementById('new-keg-desc').value = '';
       renderSettingsData();
       initView();
+      initDashboardPdfCheckboxes();
     }
 
     function editActivity(kegId) {
@@ -1405,6 +1404,7 @@
       localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
       renderSettingsData();
       initView();
+      initDashboardPdfCheckboxes();
     }
 
     function deleteActivity(kegId) {
@@ -1417,6 +1417,7 @@
         localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
         renderSettingsData();
         initView();
+        initDashboardPdfCheckboxes();
       }
     }
 
@@ -1494,6 +1495,7 @@
         localStorage.removeItem('garut_unified_db_notes_v6');
         state = {};
         initView();
+        initDashboardPdfCheckboxes();
         alert("Data sesi berhasil direset.");
         closeSettingsModal();
       }
