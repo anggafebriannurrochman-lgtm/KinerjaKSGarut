@@ -7,14 +7,26 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Library html2pdf untuk Export & Download PDF langsung -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <!-- Library Supabase JS Client -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
     .custom-scrollbar::-webkit-scrollbar { height: 6px; width: 6px; }
     .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+
+    /* Memastikan warna cetak/PDF muncul persis seperti di layar */
+    * {
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    /* Pengaturan Otomatis Ukuran Kertas A5 Lanskap pada Window Print */
+    @page {
+      size: A5 landscape;
+      margin: 0;
+    }
 
     /* Aturan Khusus Cetak/Print: Hanya menampilkan kontainer laporan PDF */
     @media print {
@@ -99,7 +111,7 @@
         </button>
       </div>
 
-      <!-- Tombol Kunci & Status -->
+      <!-- Tombol Kunci & Status Cloud -->
       <div class="flex flex-col items-center sm:items-end gap-1 px-1 w-full sm:w-auto">
         <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer">
           <span>🔒</span> <span id="system-lock-label">Sistem Terkunci</span>
@@ -217,19 +229,16 @@
         <div id="petugas-charts-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pt-1"></div>
       </div>
 
-      <!-- SECTION DOWNLOAD PDF & FILTER DI BAGIAN BAWAH DASHBOARD -->
+      <!-- SECTION CETAK / PDF & FILTER DI BAGIAN BAWAH DASHBOARD -->
       <div class="bg-slate-900/90 rounded-3xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3">
           <div>
-            <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">📄 Download Laporan & Cetak PDF</h3>
-            <p class="text-[10px] text-slate-400">Atur filter waktu dan jenis kegiatan di bawah ini lalu unduh dokumen</p>
+            <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">📄 Cetak Laporan / Simpan PDF</h3>
+            <p class="text-[10px] text-slate-400">Atur filter waktu dan jenis kegiatan di bawah ini lalu klik cetak</p>
           </div>
           <div class="flex gap-2 w-full sm:w-auto">
-            <button id="download-pdf-btn" onclick="downloadPdfFile()" class="flex-1 sm:flex-initial px-5 py-3 bg-rose-600 hover:bg-rose-500 text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-rose-600/30 cursor-pointer flex items-center justify-center gap-2">
-              <span>📥</span> <span>Download PDF</span>
-            </button>
-            <button onclick="window.print()" class="px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2">
-              <span>🖨️</span> <span>Cetak</span>
+            <button onclick="window.print()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2">
+              <span>🖨️</span> <span>Cetak Dokumen (A5 Lanskap)</span>
             </button>
           </div>
         </div>
@@ -241,14 +250,14 @@
             <div>
               <label class="block text-[11px] font-bold text-slate-400 mb-1">Rentang Tanggal (Opsional):</label>
               <div class="flex items-center gap-2">
-                <input type="date" id="pdf-start-date" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-rose-500">
+                <input type="date" id="pdf-start-date" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-blue-500">
                 <span class="text-xs text-slate-400 font-bold">s/d</span>
-                <input type="date" id="pdf-end-date" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-rose-500">
+                <input type="date" id="pdf-end-date" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-blue-500">
               </div>
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-400 mb-1">Pilih Jenis Kegiatan:</label>
-              <select id="pdf-activity-select" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-rose-500 cursor-pointer">
+              <select id="pdf-activity-select" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-blue-500 cursor-pointer">
                 <!-- Diisi dinamis -->
               </select>
             </div>
@@ -370,13 +379,27 @@
           <div class="w-8 h-8 rounded-xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50">⚙️</div>
           <div>
             <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase">Panel Pengaturan</span>
-            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data, Stasiun & PIN</h3>
+            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data, Supabase Cloud & PIN</h3>
           </div>
         </div>
         <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition cursor-pointer">✕</button>
       </div>
 
       <div class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
+        
+        <!-- PENGATURAN KONEKSI SUPABASE CLOUD -->
+        <div class="bg-slate-950/70 p-4 rounded-2xl border border-orange-800/50 space-y-3">
+          <div>
+            <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>☁️</span> Konfigurasi Supabase Cloud Database</h4>
+            <p class="text-[10px] text-slate-400 mt-1">Masukkan URL dan Anon Key Supabase Anda agar data tersimpan online.</p>
+          </div>
+          <div class="space-y-2">
+            <input type="text" id="settings-supabase-url" placeholder="Supabase Project URL (https://xxx.supabase.co)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
+            <input type="password" id="settings-supabase-key" placeholder="Supabase Anon / Public Key" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
+            <button onclick="saveSupabaseConfig()" class="w-full py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs transition shadow-md cursor-pointer">Simpan & Hubungkan Supabase</button>
+          </div>
+        </div>
+
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
             <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>1️⃣</span> Master Kegiatan</h4>
@@ -438,11 +461,70 @@
 
   <script>
     // ---------------------------------------------------------
+    // KONEKSI & INISIALISASI SUPABASE CLOUD
+    // ---------------------------------------------------------
+    let supabaseUrl = localStorage.getItem('garut_supabase_url') || "";
+    let supabaseKey = localStorage.getItem('garut_supabase_key') || "";
+    let supabaseClient = null;
+
+    if (supabaseUrl && supabaseKey && window.supabase) {
+      supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+    }
+
+    function saveSupabaseConfig() {
+      const url = document.getElementById('settings-supabase-url').value.trim();
+      const key = document.getElementById('settings-supabase-key').value.trim();
+      if (!url || !key) {
+        alert("URL dan Anon Key tidak boleh kosong!");
+        return;
+      }
+      localStorage.setItem('garut_supabase_url', url);
+      localStorage.setItem('garut_supabase_key', key);
+      alert("Konfigurasi Supabase berhasil disimpan! Halaman akan dimuat ulang.");
+      location.reload();
+    }
+
+    async function cloudGet(key, defaultVal) {
+      if (!supabaseClient) {
+        let local = localStorage.getItem(key);
+        return local ? JSON.parse(local) : defaultVal;
+      }
+      try {
+        let { data, error } = await supabaseClient
+          .from('app_storage')
+          .select('value')
+          .eq('key', key)
+          .single();
+        if (error || !data) return defaultVal;
+        return data.value;
+      } catch (e) {
+        let local = localStorage.getItem(key);
+        return local ? JSON.parse(local) : defaultVal;
+      }
+    }
+
+    async function cloudSet(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+
+      if (!supabaseClient) return;
+      try {
+        await supabaseClient
+          .from('app_storage')
+          .upsert({ key: key, value: value });
+      } catch (e) {
+        console.error("Gagal sinkron ke Supabase:", e);
+      }
+    }
+
+    // ---------------------------------------------------------
     // INISIALISASI VARIABEL & STATE APLIKASI
     // ---------------------------------------------------------
-
-    let currentPin = localStorage.getItem('garut_app_pin_v6') || "1789";
-    let stationName = localStorage.getItem('garut_station_name_v6') || "STASIUN GARUT";
+    let currentPin = "1789";
+    let stationName = "STASIUN GARUT";
+    let kegiatanList = [];
+    let orang = [];
+    let dashboardFullNames = {};
+    let state = {};
 
     const defaultKegiatanList = [
       { id: "keg_0", title: "Safety Talk", desc: "Briefing keselamatan kerja materi IBPR." },
@@ -454,10 +536,8 @@
       { id: "keg_6", title: "Leadership", desc: "Melatih PPKA menerapkan pola kepemimpinan (Khusus Hadi & Fikri)." },
       { id: "keg_7", title: "Penilaian Cara Kerja & Komunikasi", desc: "Peningkatan keterampilan public speaking dan pola berfikir" }
     ];
-    let kegiatanList = JSON.parse(localStorage.getItem('garut_kegiatan_list_v6')) || defaultKegiatanList;
 
     const defaultOrang = ["Hadi", "Fikri", "Supri", "Ujang", "Dina", "Ade", "Ramadhan"];
-    let orang = JSON.parse(localStorage.getItem('garut_orang_list_v6')) || defaultOrang;
     
     const defaultFullNames = {
       "Hadi": "HADI CAHYADI",
@@ -468,12 +548,10 @@
       "Ade": "ADE AAN KADARISMAN",
       "Ramadhan": "M RAMADHAN"
     };
-    let dashboardFullNames = JSON.parse(localStorage.getItem('garut_fullnames_v6')) || defaultFullNames;
 
     const namaBulan = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
     const chartColors = ["#FF6600", "#3b82f6", "#10b981", "#f59e0b", "#ec4899", "#8b5cf6", "#14b8a6", "#f43f5e", "#84cc16", "#0ea5e9"];
 
-    let state = JSON.parse(localStorage.getItem('garut_unified_db_notes_v6')) || {};
     let personChartInstances = {};
     let activeKegId = null;
     let editSessionId = null;
@@ -481,10 +559,16 @@
     let activeWeeksPerKeg = {};
     let currentUploadedPhotosBase64 = [];
     let sigCache = {}; 
-    
     let currentSignaturesObj = {};
 
-    window.addEventListener('DOMContentLoaded', () => {
+    window.addEventListener('DOMContentLoaded', async () => {
+      currentPin = await cloudGet('garut_app_pin_v6', "1789");
+      stationName = await cloudGet('garut_station_name_v6', "STASIUN GARUT");
+      kegiatanList = await cloudGet('garut_kegiatan_list_v6', defaultKegiatanList);
+      orang = await cloudGet('garut_orang_list_v6', defaultOrang);
+      dashboardFullNames = await cloudGet('garut_fullnames_v6', defaultFullNames);
+      state = await cloudGet('garut_unified_db_notes_v6', {});
+
       const now = new Date();
       document.getElementById('filter-bulan').value = now.getMonth();
       const currentYear = now.getFullYear();
@@ -497,25 +581,35 @@
       }
 
       updateStationHeaderUI();
+      updateCloudStatusUI();
       initDashboardPdfDropdown();
       initView();
     });
+
+    function updateCloudStatusUI() {
+      const indicatorDot = document.getElementById('indicator-dot');
+      const indicatorText = document.getElementById('indicator-text');
+      if (supabaseClient) {
+        if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
+        if (indicatorText) indicatorText.innerText = isSystemUnlocked ? "Supabase Online & Unlocked" : "Supabase Terhubung (Terkunci)";
+      }
+    }
 
     function updateStationHeaderUI() {
       const headerEl = document.getElementById('header-station-title');
       if (headerEl) headerEl.innerText = stationName;
     }
 
-    function saveStationName() {
+    async function saveStationName() {
       const inputVal = document.getElementById('settings-station-name').value.trim();
       if (!inputVal) {
         alert("Nama stasiun tidak boleh kosong!");
         return;
       }
       stationName = inputVal.toUpperCase();
-      localStorage.setItem('garut_station_name_v6', stationName);
+      await cloudSet('garut_station_name_v6', stationName);
       updateStationHeaderUI();
-      alert("Nama stasiun berhasil diperbarui!");
+      alert("Nama stasiun berhasil diperbarui ke cloud!");
     }
 
     function switchTab(tabName) {
@@ -582,13 +676,13 @@
         if (label) label.innerText = "Sistem Terbuka";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔓";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
-        if (indicatorText) indicatorText.innerText = "Sistem Online (Unlocked)";
+        if (indicatorText) indicatorText.innerText = supabaseClient ? "Supabase Online & Unlocked" : "Sistem Online (Unlocked)";
       } else {
         btn.className = "w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer";
         if (label) label.innerText = "Sistem Terkunci";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔒";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0";
-        if (indicatorText) indicatorText.innerText = "Sistem Terkunci (View Only)";
+        if (indicatorText) indicatorText.innerText = supabaseClient ? "Supabase Terhubung (Terkunci)" : "Sistem Terkunci (View Only)";
       }
       initView();
     }
@@ -607,7 +701,7 @@
     }
 
     // ---------------------------------------------------------
-    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS (SELALU BARU)
+    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS
     // ---------------------------------------------------------
     function toggleStaffDropdown(e) {
       if (e) e.stopPropagation();
@@ -774,9 +868,6 @@
       updateSignaturePads();
     }
 
-    // ---------------------------------------------------------
-    // FUNGSI PEMROSESAN TANDA TANGAN DENGAN CACHE
-    // ---------------------------------------------------------
     function processSignatureBase64(base64Src) {
       return new Promise((resolve) => {
         if (!base64Src) {
@@ -819,9 +910,6 @@
       });
     }
 
-    // ---------------------------------------------------------
-    // KOMPRESI & PREVIEW FOTO
-    // ---------------------------------------------------------
     function previewImages(event) {
       const files = event.target.files;
       if (!files || files.length === 0) return;
@@ -899,7 +987,7 @@
     }
 
     // ---------------------------------------------------------
-    // FITUR LAPORAN & DOWNLOAD PDF DENGAN PENGAMAN STABILITAS
+    // FITUR LAPORAN & PREVIEW CETAK
     // ---------------------------------------------------------
     function initDashboardPdfDropdown() {
       const selectEl = document.getElementById('pdf-activity-select');
@@ -976,20 +1064,25 @@
           for (let [mName, sSrc] of Object.entries(sigsData)) {
             let processedSig = await processSignatureBase64(sSrc);
             sigHtmlItems += `
-              <div class="inline-block mr-2 mb-1 text-center bg-white p-1 rounded border border-slate-300 shadow-sm">
-                <span class="text-[8px] font-bold text-black block">${mName}:</span>
-                <img src="${processedSig}" class="h-10 w-24 object-contain bg-white">
+              <div style="flex: 0 0 48%; box-sizing: border-box;" class="text-center bg-white p-0.5 rounded border border-slate-300 shadow-sm">
+                <span class="text-[7px] font-bold text-black block truncate">${mName}</span>
+                <img src="${processedSig}" style="height: 25px; width: 100%; object-fit: contain; background: white;">
               </div>
             `;
           }
           if (sigHtmlItems) {
-            rencanaHtml += `<div class="mt-1 pt-1 border-t border-slate-300"><span class="text-[8px] font-bold text-slate-600 block mb-0.5">Tanda Tangan:</span>${sigHtmlItems}</div>`;
+            rencanaHtml += `
+              <div class="mt-1 pt-1 border-t border-slate-300">
+                <span class="text-[8px] font-bold text-slate-600 block mb-0.5">Tanda Tangan:</span>
+                <div style="display: flex; flex-wrap: wrap; gap: 4px;">${sigHtmlItems}</div>
+              </div>
+            `;
           }
 
           let ketHtml = `<div class="text-[10px] text-black font-medium">Sesi terlaksana (${membersList.length} Petugas)</div>`;
           let photoHtmlItems = '';
           photosList.forEach(pSrc => {
-            photoHtmlItems += `<img src="${pSrc}" class="w-20 h-20 object-cover rounded border border-slate-400">`;
+            photoHtmlItems += `<img src="${pSrc}" class="w-16 h-16 object-cover rounded border border-slate-400">`;
           });
           if (photoHtmlItems) {
             ketHtml += `<div class="mt-1"><span class="text-[9px] font-bold text-slate-700 block mb-0.5">Foto:</span><div class="flex flex-wrap gap-1">${photoHtmlItems}</div></div>`;
@@ -1019,18 +1112,18 @@
             <div class="mt-3">
               <table class="w-full border-collapse border border-black text-[10px]" style="table-layout: fixed;">
                 <thead>
-                  <tr class="bg-[#00FF00] text-black text-center font-bold">
+                  <tr style="background-color: #22c55e !important; color: black !important;" class="text-center font-bold">
                     <th class="border border-black p-1.5 w-[8%]" rowspan="2">NO</th>
                     <th class="border border-black p-1.5 w-[15%]" rowspan="2">HARI/TANGGAL</th>
                     <th class="border border-black p-1.5 w-[34%]" rowspan="2">RENCANA KERJA</th>
                     <th class="border border-black p-1" colspan="2">REALISASI</th>
                     <th class="border border-black p-1.5 w-[29%]" rowspan="2">KETERANGAN</th>
                   </tr>
-                  <tr class="bg-[#00FF00] text-black text-center font-bold text-[10px]">
+                  <tr style="background-color: #22c55e !important; color: black !important;" class="text-center font-bold text-[10px]">
                     <th class="border border-black p-1 w-[7%]">YA</th>
                     <th class="border border-black p-1 w-[7%]">TIDAK</th>
                   </tr>
-                  <tr class="bg-[#00FF00] text-black text-center font-bold text-[9px]">
+                  <tr style="background-color: #22c55e !important; color: black !important;" class="text-center font-bold text-[9px]">
                     <th class="border border-black p-0.5">1</th>
                     <th class="border border-black p-0.5">2</th>
                     <th class="border border-black p-0.5">3</th>
@@ -1049,42 +1142,6 @@
       }
 
       container.innerHTML = allActivitiesHtml;
-    }
-
-    function downloadPdfFile() {
-      const element = document.getElementById('pdf-export-container');
-      if (!element || element.innerHTML.trim() === '') {
-        alert("Harap tunggu hingga preview selesai dimuat.");
-        return;
-      }
-
-      const btn = document.getElementById('download-pdf-btn');
-      if (btn) {
-        btn.disabled = true;
-        btn.innerHTML = '<span>⏳</span> <span>Memproses PDF...</span>';
-      }
-
-      const opt = {
-        margin:       0,
-        filename:     `Program_Dan_Realisasi_Kerja_${stationName}.pdf`,
-        image:        { type: 'jpeg', quality: 0.95 },
-        html2canvas:  { scale: 1, useCORS: true, logging: false, letterRendering: true },
-        jsPDF:        { unit: 'mm', format: 'a5', orientation: 'landscape' }
-      };
-
-      html2pdf().from(element).set(opt).save().then(() => {
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = '<span>📥</span> <span>Download PDF</span>';
-        }
-      }).catch(err => {
-        console.error(err);
-        alert("Terjadi kesalahan saat mengunduh PDF.");
-        if (btn) {
-          btn.disabled = false;
-          btn.innerHTML = '<span>📥</span> <span>Download PDF</span>';
-        }
-      });
     }
 
     // ---------------------------------------------------------
@@ -1243,7 +1300,7 @@
       currentSignaturesObj = {};
     }
 
-    function saveNewSession() {
+    async function saveNewSession() {
       if (!activeKegId) return;
       const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
       const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
@@ -1288,19 +1345,19 @@
         });
       }
 
-      localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+      await cloudSet('garut_unified_db_notes_v6', state);
       closeModal();
       initView();
       renderDashboardPdfPreview();
     }
 
-    function deleteSession(kegId, sessionId) {
-      checkLockAndRun(() => {
+    async function deleteSession(kegId, sessionId) {
+      checkLockAndRun(async () => {
         if (confirm("Hapus sesi kegiatan ini?")) {
           if (state[kegId]) {
             state[kegId] = state[kegId].filter(s => (s.id || state[kegId].indexOf(s)) != sessionId);
             if (state[kegId].length === 0) delete state[kegId];
-            localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+            await cloudSet('garut_unified_db_notes_v6', state);
             initView();
             renderDashboardPdfPreview();
           }
@@ -1314,6 +1371,8 @@
     function openSettingsModal() {
       checkLockAndRun(() => {
         document.getElementById('settings-station-name').value = stationName;
+        document.getElementById('settings-supabase-url').value = supabaseUrl;
+        document.getElementById('settings-supabase-key').value = supabaseKey;
         renderSettingsData();
         document.getElementById('settings-modal').classList.remove('hidden');
       });
@@ -1323,7 +1382,7 @@
       document.getElementById('settings-modal').classList.add('hidden');
     }
 
-    function changePinCode() {
+    async function changePinCode() {
       const oldInput = prompt("Masukkan PIN Lama Anda:");
       if (oldInput === null) return;
       if (oldInput !== currentPin) {
@@ -1338,8 +1397,8 @@
         return;
       }
       currentPin = newInput.trim();
-      localStorage.setItem('garut_app_pin_v6', currentPin);
-      alert("PIN Keamanan universal berhasil diperbarui!");
+      await cloudSet('garut_app_pin_v6', currentPin);
+      alert("PIN Keamanan berhasil diperbarui ke cloud!");
     }
 
     function renderSettingsData() {
@@ -1381,14 +1440,14 @@
       orangContainer.innerHTML = orangHtml || '<p class="text-[11px] text-slate-500 italic p-2 col-span-2">Belum ada anggota.</p>';
     }
 
-    function addNewActivity() {
+    async function addNewActivity() {
       const title = document.getElementById('new-keg-title').value.trim();
       const desc = document.getElementById('new-keg-desc').value.trim();
       if (!title) return alert("Nama kegiatan tidak boleh kosong!");
 
       const newId = "keg_" + Date.now();
       kegiatanList.push({ id: newId, title: title, desc: desc || "-" });
-      localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
+      await cloudSet('garut_kegiatan_list_v6', kegiatanList);
       
       document.getElementById('new-keg-title').value = '';
       document.getElementById('new-keg-desc').value = '';
@@ -1397,7 +1456,7 @@
       initDashboardPdfDropdown();
     }
 
-    function editActivity(kegId) {
+    async function editActivity(kegId) {
       const keg = kegiatanList.find(k => k.id === kegId);
       if(!keg) return;
 
@@ -1409,27 +1468,27 @@
       keg.title = newTitle.trim();
       keg.desc = newDesc.trim() || "-";
 
-      localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
+      await cloudSet('garut_kegiatan_list_v6', kegiatanList);
       renderSettingsData();
       initView();
       initDashboardPdfDropdown();
     }
 
-    function deleteActivity(kegId) {
+    async function deleteActivity(kegId) {
       if(confirm("Yakin ingin menghapus kegiatan ini? Seluruh riwayat sesi juga akan terhapus!")) {
         kegiatanList = kegiatanList.filter(k => k.id !== kegId);
         if(state[kegId]) {
           delete state[kegId];
-          localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+          await cloudSet('garut_unified_db_notes_v6', state);
         }
-        localStorage.setItem('garut_kegiatan_list_v6', JSON.stringify(kegiatanList));
+        await cloudSet('garut_kegiatan_list_v6', kegiatanList);
         renderSettingsData();
         initView();
         initDashboardPdfDropdown();
       }
     }
 
-    function addNewMember() {
+    async function addNewMember() {
       const shortName = document.getElementById('new-member-name').value.trim();
       const fullName = document.getElementById('new-member-fullname').value.trim();
       if (!shortName) return alert("Nama panggilan tidak boleh kosong!");
@@ -1438,8 +1497,8 @@
       orang.push(shortName);
       dashboardFullNames[shortName] = fullName ? fullName.toUpperCase() : shortName.toUpperCase();
 
-      localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
-      localStorage.setItem('garut_fullnames_v6', JSON.stringify(dashboardFullNames));
+      await cloudSet('garut_orang_list_v6', orang);
+      await cloudSet('garut_fullnames_v6', dashboardFullNames);
 
       document.getElementById('new-member-name').value = '';
       document.getElementById('new-member-fullname').value = '';
@@ -1447,7 +1506,7 @@
       initView();
     }
 
-    function editMember(oldShortName) {
+    async function editMember(oldShortName) {
       const newShort = prompt("Ubah Nama Panggilan:", oldShortName);
       if (!newShort) return; 
       const oldFull = dashboardFullNames[oldShortName] || oldShortName;
@@ -1476,32 +1535,32 @@
             }
           });
         }
-        localStorage.setItem('garut_unified_db_notes_v6', JSON.stringify(state));
+        await cloudSet('garut_unified_db_notes_v6', state);
       } else {
         dashboardFullNames[oldShortName] = finalFull;
       }
 
-      localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
-      localStorage.setItem('garut_fullnames_v6', JSON.stringify(dashboardFullNames));
+      await cloudSet('garut_orang_list_v6', orang);
+      await cloudSet('garut_fullnames_v6', dashboardFullNames);
       renderSettingsData();
       initView();
     }
 
-    function deleteMember(shortName) {
+    async function deleteMember(shortName) {
       if(confirm(`Yakin ingin menghapus "${shortName}"?`)) {
         orang = orang.filter(o => o !== shortName);
         delete dashboardFullNames[shortName];
-        localStorage.setItem('garut_orang_list_v6', JSON.stringify(orang));
-        localStorage.setItem('garut_fullnames_v6', JSON.stringify(dashboardFullNames));
+        await cloudSet('garut_orang_list_v6', orang);
+        await cloudSet('garut_fullnames_v6', dashboardFullNames);
         renderSettingsData();
         initView();
       }
     }
 
-    function resetData() {
+    async function resetData() {
       if (confirm('Konfirmasi: Reset seluruh data sesi kegiatan?')) {
-        localStorage.removeItem('garut_unified_db_notes_v6');
         state = {};
+        await cloudSet('garut_unified_db_notes_v6', state);
         initView();
         initDashboardPdfDropdown();
         alert("Data sesi berhasil direset.");
