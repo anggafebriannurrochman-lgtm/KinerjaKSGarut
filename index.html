@@ -245,7 +245,6 @@
   </div>
 
   <script>
-    // Kegiatan telah ditukar posisinya: Pelatihan Mental (keg_4) dan Coaching Teknis (keg_5)
     const kegiatanList = [
       { id: "keg_0", title: "Safety Talk", desc: "Briefing keselamatan kerja materi IBPR." },
       { id: "keg_1", title: "Diskusi Studi Kasus", desc: "Pembedahan kasus operasional." },
@@ -257,7 +256,6 @@
       { id: "keg_7", title: "Penilaian Cara Kerja & Komunikasi", desc: "Peningkatan keterampilan public speaking dan pola berfikir" }
     ];
     
-    // Daftar kegiatan mingguan yang masuk ke dalam grafik persentase mingguan
     const weeklyKegList = [
       { id: "keg_0", label: "Safety Talk", color: "#FF6600" },
       { id: "keg_1", label: "Studi Kasus", color: "#3b82f6" },
@@ -517,7 +515,6 @@
       const containerBox = document.getElementById('modal-checkboxes-orang');
       containerBox.innerHTML = '';
       
-      // Khusus Leadership (keg_6) hanya menampilkan Hadi dan Fikri
       const targetOrang = (kegId === "keg_6") ? ["Hadi", "Fikri"] : orang;
 
       targetOrang.forEach(o => {
@@ -629,7 +626,6 @@
 
         totalSessionsAll += filteredSessions.length;
 
-        // Kegiatan mingguan mencakup keg_0 s.d. keg_4
         const isWeeklyKeg = ["keg_0", "keg_1", "keg_2", "keg_3", "keg_4"].includes(keg.id);
 
         let tableRowsHtml = '';
@@ -743,27 +739,17 @@
             let targetNeeded = 1;
             let isApplicable = true;
 
-            // Target Spesifik Bulanan Baru
             if (keg.id === "keg_5") {
-              // Coaching Teknis: 2x dalam 1 bulan
-              targetNeeded = 2;
+              targetNeeded = 2; // Coaching Teknis: 2x per bulan
             } else if (keg.id === "keg_6") {
-              // Leadership: Khusus Hadi & Fikri, 2x dalam 1 bulan
-              targetNeeded = 2;
+              targetNeeded = 2; // Leadership: 2x per bulan khusus Hadi & Fikri
               isApplicable = (o === "Hadi" || o === "Fikri");
             } else if (keg.id === "keg_7") {
-              // Penilaian Cara Kerja & Komunikasi: 1x dalam 1 bulan
-              targetNeeded = 1;
+              targetNeeded = 1; // Komunikasi: 1x per bulan
             }
 
+            // Jika tidak ada target untuk petugas tersebut pada kegiatan ini, jangan tampilkan dalam tabel
             if (!isApplicable) {
-              tableRowsHtml += `
-                <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
-                  <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o]}</td>
-                  <td class="p-2.5 text-center text-slate-500 font-bold text-[11px]">- (Khusus Hadi & Fikri)</td>
-                  <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-500 font-bold text-[10px]">N/A</span></td>
-                </tr>
-              `;
               return;
             }
 
