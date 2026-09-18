@@ -491,11 +491,8 @@
       location.reload();
     }
 
-    async function cloudGet(key, defaultVal) {
-      if (!supabaseClient) {
-        let local = localStorage.getItem(key);
-        return local ? JSON.parse(local) : defaultVal;
-      }
+    async function cloudGetDirect(key, defaultVal) {
+      if (!supabaseClient) return defaultVal;
       try {
         let { data, error } = await supabaseClient
           .from('app_storage')
@@ -505,8 +502,7 @@
         if (error || !data) return defaultVal;
         return data.value;
       } catch (e) {
-        let local = localStorage.getItem(key);
-        return local ? JSON.parse(local) : defaultVal;
+        return defaultVal;
       }
     }
 
@@ -523,7 +519,7 @@
     }
 
     // ---------------------------------------------------------
-    // INISIALISASI VARIABEL & STATE APLIKASI (SINGLE SOURCE OF TRUTH)
+    // INISIALISASI VARIABEL & STATE APLIKASI (LOCAL-FIRST)
     // ---------------------------------------------------------
     const DEFAULT_PIN = "1234";
     let currentPin = DEFAULT_PIN;
@@ -569,12 +565,13 @@
     let currentSignaturesObj = {};
 
     window.addEventListener('DOMContentLoaded', async () => {
-      currentPin = await cloudGet('garut_app_pin_v6', DEFAULT_PIN);
-      stationName = await cloudGet('garut_station_name_v6', "STASIUN GARUT");
-      kegiatanList = await cloudGet('garut_kegiatan_list_v6', defaultKegiatanList);
-      orang = await cloudGet('garut_orang_list_v6', defaultOrang);
-      dashboardFullNames = await cloudGet('garut_fullnames_v6', defaultFullNames);
-      state = await cloudGet('garut_unified_db_notes_v6', {});
+      // 1. Muat instan dari localStorage agar UI langsung tampil tanpa jeda (mencegah kedip / hilang)
+      currentPin = localStorage.getItem('garut_app_pin_v6') || DEFAULT_PIN;
+      stationName = localStorage.getItem('garut_station_name_v6') || "STASIUN GARUT";
+      kegiatanList = JSON.parse(localStorage.getItem('garut_kegiatan_list_v6') || JSON.stringify(defaultKegiatanList));
+      orang = JSON.parse(localStorage.getItem('garut_orang_list_v6') || JSON.stringify(defaultOrang));
+      dashboardFullNames = JSON.parse(localStorage.getItem('garut_fullnames_v6') || JSON.stringify(defaultFullNames));
+      state = JSON.parse(localStorage.getItem('garut_unified_db_notes_v6') || '{}');
 
       const now = new Date();
       document.getElementById('filter-bulan').value = now.getMonth();
@@ -590,7 +587,34 @@
       updateStationHeaderUI();
       updateCloudStatusUI();
       initDashboardPdfDropdown();
-      initView();
+      initView(); // Render langsung secara instan
+
+      // 2. Ambil data terbaru dari Supabase di background (stale-while-revalidate)
+      if (supabaseClient) {
+        try {
+          const [pinCloud, stationCloud, kegCloud, orangCloud, fnCloud, stateCloud] = await Promise.all([
+            cloudGetDirect('garut_app_pin_v6', DEFAULT_PIN),
+            cloudGetDirect('garut_station_name_v6', "STASIUN GARUT"),
+            cloudGetDirect('garut_kegiatan_list_v6', defaultKegiatanList),
+            cloudGetDirect('garut_orang_list_v6', defaultOrang),
+            cloudGetDirect('garut_fullnames_v6', defaultFullNames),
+            cloudGetDirect('garut_unified_db_notes_v6', {})
+          ]);
+
+          currentPin = pinCloud;
+          stationName = stationCloud;
+          kegiatanList = kegCloud;
+          orang = orangCloud;
+          dashboardFullNames = fnCloud;
+          state = stateCloud;
+
+          updateStationHeaderUI();
+          initDashboardPdfDropdown();
+          initView(); // Perbarui dengan data cloud terbaru secara mulus
+        } catch (e) {
+          console.error("Background sync error:", e);
+        }
+      }
     });
 
     function updateCloudStatusUI() {
@@ -1576,7 +1600,7 @@
     }
 
     // ---------------------------------------------------------
-    // DASHBOARD & CHART RENDER
+    // DASHBOARD & CHART RENDER (DIPERHALUS TANPA FLICKER)
     // ---------------------------------------------------------
     function renderDashboard() {
       const containerStats = document.getElementById('kegiatan-stats-container');
@@ -1758,36 +1782,35 @@
 
     function renderPersonCharts(filterBulan, filterTahun) {
       const container = document.getElementById('petugas-charts-container');
-      container.innerHTML = '';
-
-      Object.keys(personChartInstances).forEach(key => {
-        if (personChartInstances[key]) personChartInstances[key].destroy();
-      });
-      personChartInstances = {};
-
+      
       let dynamicChartKegiatan = kegiatanList.filter(k => !["keg_5", "keg_6", "keg_7"].includes(k.id));
       let mappedWeeklyKeg = dynamicChartKegiatan.map((k, idx) => ({
         id: k.id, label: k.title, color: chartColors[idx % chartColors.length]
       }));
 
-      orang.forEach(o => {
-        const canvasId = `canvas-chart-${o}`;
-        container.innerHTML += `
-          <div class="bg-slate-950/60 border border-slate-800/80 p-3 rounded-2xl space-y-2 shadow-inner">
-            <div class="flex justify-between items-center px-1">
-              <h4 class="font-extrabold text-white text-xs tracking-wide truncate max-w-[170px]">${dashboardFullNames[o] || o}</h4>
-              <span class="text-[9px] text-orange-400 bg-orange-950/60 border border-orange-800/40 px-2 py-0.5 rounded font-bold">4 Pekan</span>
+      // Buat elemen kerangka kanvas hanya sekali jika belum ada (mencegah flickering / kedipan DOM)
+      if (container.children.length === 0) {
+        orang.forEach(o => {
+          const canvasId = `canvas-chart-${o}`;
+          container.innerHTML += `
+            <div class="bg-slate-950/60 border border-slate-800/80 p-3 rounded-2xl space-y-2 shadow-inner">
+              <div class="flex justify-between items-center px-1">
+                <h4 class="font-extrabold text-white text-xs tracking-wide truncate max-w-[170px]">${dashboardFullNames[o] || o}</h4>
+                <span class="text-[9px] text-orange-400 bg-orange-950/60 border border-orange-800/40 px-2 py-0.5 rounded font-bold">4 Pekan</span>
+              </div>
+              <div class="relative h-36 w-full">
+                <canvas id="${canvasId}"></canvas>
+              </div>
             </div>
-            <div class="relative h-36 w-full">
-              <canvas id="${canvasId}"></canvas>
-            </div>
-          </div>
-        `;
-      });
+          `;
+        });
+      }
 
       orang.forEach(o => {
         const canvasId = `canvas-chart-${o}`;
-        const ctx = document.getElementById(canvasId).getContext('2d');
+        const canvasEl = document.getElementById(canvasId);
+        if (!canvasEl) return;
+        const ctx = canvasEl.getContext('2d');
 
         const datasets = mappedWeeklyKeg.map(keg => {
           const dataWeeks = [1, 2, 3, 4].map(w => {
@@ -1806,32 +1829,38 @@
           return { label: keg.label, data: dataWeeks, backgroundColor: keg.color, borderRadius: 3, borderSkipped: false };
         });
 
-        personChartInstances[o] = new Chart(ctx, {
-          type: 'bar',
-          data: { labels: ['M1', 'M2', 'M3', 'M4'], datasets: datasets },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { color: '#94a3b8', boxWidth: 6, boxHeight: 6, font: { size: 8, weight: 'bold' }, padding: 4 }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                ticks: { callback: function(value) { return value + '%'; }, color: '#94a3b8', font: { size: 8, weight: 'bold' }, stepSize: 50 },
-                grid: { color: '#1e293b' }
+        // Update chart yang sudah ada secara mulus tanpa destroy/re-create kanvas
+        if (personChartInstances[o]) {
+          personChartInstances[o].data.datasets = datasets;
+          personChartInstances[o].update('none');
+        } else {
+          personChartInstances[o] = new Chart(ctx, {
+            type: 'bar',
+            data: { labels: ['M1', 'M2', 'M3', 'M4'], datasets: datasets },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  position: 'bottom',
+                  labels: { color: '#94a3b8', boxWidth: 6, boxHeight: 6, font: { size: 8, weight: 'bold' }, padding: 4 }
+                }
               },
-              x: {
-                ticks: { color: '#94a3b8', font: { size: 9, weight: 'bold' } },
-                grid: { display: false }
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 100,
+                  ticks: { callback: function(value) { return value + '%'; }, color: '#94a3b8', font: { size: 8, weight: 'bold' }, stepSize: 50 },
+                  grid: { color: '#1e293b' }
+                },
+                x: {
+                  ticks: { color: '#94a3b8', font: { size: 9, weight: 'bold' } },
+                  grid: { display: false }
+                }
               }
             }
-          }
-        });
+          });
+        }
       });
     }
   </script>
