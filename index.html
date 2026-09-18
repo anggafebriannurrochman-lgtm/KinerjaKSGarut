@@ -523,9 +523,10 @@
     }
 
     // ---------------------------------------------------------
-    // INISIALISASI VARIABEL & STATE APLIKASI
+    // INISIALISASI VARIABEL & STATE APLIKASI (SINGLE SOURCE OF TRUTH)
     // ---------------------------------------------------------
-    let currentPin = "1234";
+    const DEFAULT_PIN = "1234";
+    let currentPin = DEFAULT_PIN;
     let stationName = "STASIUN GARUT";
     let kegiatanList = [];
     let orang = [];
@@ -568,7 +569,7 @@
     let currentSignaturesObj = {};
 
     window.addEventListener('DOMContentLoaded', async () => {
-      currentPin = await cloudGet('garut_app_pin_v6', "1789");
+      currentPin = await cloudGet('garut_app_pin_v6', DEFAULT_PIN);
       stationName = await cloudGet('garut_station_name_v6', "STASIUN GARUT");
       kegiatanList = await cloudGet('garut_kegiatan_list_v6', defaultKegiatanList);
       orang = await cloudGet('garut_orang_list_v6', defaultOrang);
