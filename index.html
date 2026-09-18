@@ -7,8 +7,6 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <!-- Library Supabase JS Client -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -118,7 +116,7 @@
         </button>
       </div>
 
-      <!-- Tombol Kunci & Status Cloud -->
+      <!-- Tombol Kunci & Status Lokal -->
       <div class="flex flex-col items-center sm:items-end gap-1 px-1 w-full sm:w-auto">
         <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer">
           <span>🔒</span> <span id="system-lock-label">Sistem Terkunci</span>
@@ -386,26 +384,13 @@
           <div class="w-8 h-8 rounded-xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50">⚙️</div>
           <div>
             <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase">Panel Pengaturan</span>
-            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data, Supabase Cloud & PIN</h3>
+            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data & PIN (Mode Lokal)</h3>
           </div>
         </div>
         <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition cursor-pointer">✕</button>
       </div>
 
       <div class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
-        
-        <!-- PENGATURAN KONEKSI SUPABASE CLOUD -->
-        <div class="bg-slate-950/70 p-4 rounded-2xl border border-orange-800/50 space-y-3">
-          <div>
-            <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>☁️</span> Konfigurasi Supabase Cloud Database</h4>
-            <p class="text-[10px] text-slate-400 mt-1">Masukkan URL dan Anon Key Supabase Anda agar data tersimpan online & tidak hilang saat refresh.</p>
-          </div>
-          <div class="space-y-2">
-            <input type="text" id="settings-supabase-url" placeholder="Supabase Project URL (https://xxx.supabase.co)" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
-            <input type="password" id="settings-supabase-key" placeholder="Supabase Anon / Public Key" class="w-full text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
-            <button onclick="saveSupabaseConfig()" class="w-full py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs transition shadow-md cursor-pointer">Simpan & Hubungkan Supabase</button>
-          </div>
-        </div>
 
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
@@ -468,54 +453,15 @@
 
   <script>
     // ---------------------------------------------------------
-    // KONEKSI & INISIALISASI SUPABASE CLOUD (ANTI DATA HILANG)
+    // PENYIMPANAN LOKAL (LOCAL STORAGE UTAMA)
     // ---------------------------------------------------------
-    let supabaseUrl = localStorage.getItem('garut_supabase_url') || "";
-    let supabaseKey = localStorage.getItem('garut_supabase_key') || "";
-    let supabaseClient = null;
-
-    if (supabaseUrl && supabaseKey && window.supabase) {
-      supabaseClient = window.supabase.createClient(supabaseUrl, supabaseKey);
+    function cloudGetDirect(key, defaultVal) {
+      const val = localStorage.getItem(key);
+      return val ? JSON.parse(val) : defaultVal;
     }
 
-    function saveSupabaseConfig() {
-      const url = document.getElementById('settings-supabase-url').value.trim();
-      const key = document.getElementById('settings-supabase-key').value.trim();
-      if (!url || !key) {
-        alert("URL dan Anon Key tidak boleh kosong!");
-        return;
-      }
-      localStorage.setItem('garut_supabase_url', url);
-      localStorage.setItem('garut_supabase_key', key);
-      alert("Konfigurasi Supabase berhasil disimpan! Halaman akan dimuat ulang.");
-      location.reload();
-    }
-
-    async function cloudGetDirect(key, defaultVal) {
-      if (!supabaseClient) return defaultVal;
-      try {
-        let { data, error } = await supabaseClient
-          .from('app_storage')
-          .select('value')
-          .eq('key', key)
-          .single();
-        if (error || !data) return defaultVal;
-        return data.value;
-      } catch (e) {
-        return defaultVal;
-      }
-    }
-
-    async function cloudSet(key, value) {
+    function cloudSet(key, value) {
       localStorage.setItem(key, JSON.stringify(value));
-      if (!supabaseClient) return;
-      try {
-        await supabaseClient
-          .from('app_storage')
-          .upsert({ key: key, value: value });
-      } catch (e) {
-        console.error("Gagal sinkron ke Supabase:", e);
-      }
     }
 
     // ---------------------------------------------------------
@@ -564,8 +510,8 @@
     let sigCache = {}; 
     let currentSignaturesObj = {};
 
-    window.addEventListener('DOMContentLoaded', async () => {
-      // 1. Muat instan dari localStorage agar UI langsung tampil tanpa jeda (mencegah kedip / hilang)
+    window.addEventListener('DOMContentLoaded', () => {
+      // Muat data dari localStorage
       currentPin = localStorage.getItem('garut_app_pin_v6') || DEFAULT_PIN;
       stationName = localStorage.getItem('garut_station_name_v6') || "STASIUN GARUT";
       kegiatanList = JSON.parse(localStorage.getItem('garut_kegiatan_list_v6') || JSON.stringify(defaultKegiatanList));
@@ -587,43 +533,14 @@
       updateStationHeaderUI();
       updateCloudStatusUI();
       initDashboardPdfDropdown();
-      initView(); // Render langsung secara instan
-
-      // 2. Ambil data terbaru dari Supabase di background (stale-while-revalidate)
-      if (supabaseClient) {
-        try {
-          const [pinCloud, stationCloud, kegCloud, orangCloud, fnCloud, stateCloud] = await Promise.all([
-            cloudGetDirect('garut_app_pin_v6', DEFAULT_PIN),
-            cloudGetDirect('garut_station_name_v6', "STASIUN GARUT"),
-            cloudGetDirect('garut_kegiatan_list_v6', defaultKegiatanList),
-            cloudGetDirect('garut_orang_list_v6', defaultOrang),
-            cloudGetDirect('garut_fullnames_v6', defaultFullNames),
-            cloudGetDirect('garut_unified_db_notes_v6', {})
-          ]);
-
-          currentPin = pinCloud;
-          stationName = stationCloud;
-          kegiatanList = kegCloud;
-          orang = orangCloud;
-          dashboardFullNames = fnCloud;
-          state = stateCloud;
-
-          updateStationHeaderUI();
-          initDashboardPdfDropdown();
-          initView(); // Perbarui dengan data cloud terbaru secara mulus
-        } catch (e) {
-          console.error("Background sync error:", e);
-        }
-      }
+      initView();
     });
 
     function updateCloudStatusUI() {
       const indicatorDot = document.getElementById('indicator-dot');
       const indicatorText = document.getElementById('indicator-text');
-      if (supabaseClient) {
-        if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
-        if (indicatorText) indicatorText.innerText = isSystemUnlocked ? "Supabase Online & Unlocked" : "Supabase Terhubung (Terkunci)";
-      }
+      if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-slate-500 flex-shrink-0";
+      if (indicatorText) indicatorText.innerText = isSystemUnlocked ? "Mode Lokal (Unlocked)" : "Mode Lokal (Terkunci)";
     }
 
     function updateStationHeaderUI() {
@@ -631,16 +548,16 @@
       if (headerEl) headerEl.innerText = stationName;
     }
 
-    async function saveStationName() {
+    function saveStationName() {
       const inputVal = document.getElementById('settings-station-name').value.trim();
       if (!inputVal) {
         alert("Nama stasiun tidak boleh kosong!");
         return;
       }
       stationName = inputVal.toUpperCase();
-      await cloudSet('garut_station_name_v6', stationName);
+      cloudSet('garut_station_name_v6', stationName);
       updateStationHeaderUI();
-      alert("Nama stasiun berhasil diperbarui ke cloud!");
+      alert("Nama stasiun berhasil diperbarui!");
     }
 
     function switchTab(tabName) {
@@ -707,13 +624,13 @@
         if (label) label.innerText = "Sistem Terbuka";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔓";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
-        if (indicatorText) indicatorText.innerText = supabaseClient ? "Supabase Online & Unlocked" : "Sistem Online (Unlocked)";
+        if (indicatorText) indicatorText.innerText = "Mode Lokal (Unlocked)";
       } else {
         btn.className = "w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer";
         if (label) label.innerText = "Sistem Terkunci";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔒";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0";
-        if (indicatorText) indicatorText.innerText = supabaseClient ? "Supabase Terhubung (Terkunci)" : "Sistem Terkunci (View Only)";
+        if (indicatorText) indicatorText.innerText = "Mode Lokal (Terkunci)";
       }
       initView();
     }
@@ -1331,7 +1248,7 @@
       currentSignaturesObj = {};
     }
 
-    async function saveNewSession() {
+    function saveNewSession() {
       if (!activeKegId) return;
       const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
       const selectedMembers = Array.from(checkedBoxes).map(cb => cb.value);
@@ -1376,19 +1293,19 @@
         });
       }
 
-      await cloudSet('garut_unified_db_notes_v6', state);
+      cloudSet('garut_unified_db_notes_v6', state);
       closeModal();
       initView();
       renderDashboardPdfPreview();
     }
 
-    async function deleteSession(kegId, sessionId) {
-      checkLockAndRun(async () => {
+    function deleteSession(kegId, sessionId) {
+      checkLockAndRun(() => {
         if (confirm("Hapus sesi kegiatan ini?")) {
           if (state[kegId]) {
             state[kegId] = state[kegId].filter(s => (s.id || state[kegId].indexOf(s)) != sessionId);
             if (state[kegId].length === 0) delete state[kegId];
-            await cloudSet('garut_unified_db_notes_v6', state);
+            cloudSet('garut_unified_db_notes_v6', state);
             initView();
             renderDashboardPdfPreview();
           }
@@ -1402,8 +1319,6 @@
     function openSettingsModal() {
       checkLockAndRun(() => {
         document.getElementById('settings-station-name').value = stationName;
-        document.getElementById('settings-supabase-url').value = supabaseUrl;
-        document.getElementById('settings-supabase-key').value = supabaseKey;
         renderSettingsData();
         document.getElementById('settings-modal').classList.remove('hidden');
       });
@@ -1413,7 +1328,7 @@
       document.getElementById('settings-modal').classList.add('hidden');
     }
 
-    async function changePinCode() {
+    function changePinCode() {
       const oldInput = prompt("Masukkan PIN Lama Anda:");
       if (oldInput === null) return;
       if (oldInput !== currentPin) {
@@ -1428,8 +1343,8 @@
         return;
       }
       currentPin = newInput.trim();
-      await cloudSet('garut_app_pin_v6', currentPin);
-      alert("PIN Keamanan berhasil diperbarui ke cloud!");
+      cloudSet('garut_app_pin_v6', currentPin);
+      alert("PIN Keamanan berhasil diperbarui!");
     }
 
     function renderSettingsData() {
@@ -1471,14 +1386,14 @@
       orangContainer.innerHTML = orangHtml || '<p class="text-[11px] text-slate-500 italic p-2 col-span-2">Belum ada anggota.</p>';
     }
 
-    async function addNewActivity() {
+    function addNewActivity() {
       const title = document.getElementById('new-keg-title').value.trim();
       const desc = document.getElementById('new-keg-desc').value.trim();
       if (!title) return alert("Nama kegiatan tidak boleh kosong!");
 
       const newId = "keg_" + Date.now();
       kegiatanList.push({ id: newId, title: title, desc: desc || "-" });
-      await cloudSet('garut_kegiatan_list_v6', kegiatanList);
+      cloudSet('garut_kegiatan_list_v6', kegiatanList);
       
       document.getElementById('new-keg-title').value = '';
       document.getElementById('new-keg-desc').value = '';
@@ -1487,7 +1402,7 @@
       initDashboardPdfDropdown();
     }
 
-    async function editActivity(kegId) {
+    function editActivity(kegId) {
       const keg = kegiatanList.find(k => k.id === kegId);
       if(!keg) return;
 
@@ -1499,27 +1414,27 @@
       keg.title = newTitle.trim();
       keg.desc = newDesc.trim() || "-";
 
-      await cloudSet('garut_kegiatan_list_v6', kegiatanList);
+      cloudSet('garut_kegiatan_list_v6', kegiatanList);
       renderSettingsData();
       initView();
       initDashboardPdfDropdown();
     }
 
-    async function deleteActivity(kegId) {
+    function deleteActivity(kegId) {
       if(confirm("Yakin ingin menghapus kegiatan ini? Seluruh riwayat sesi juga akan terhapus!")) {
         kegiatanList = kegiatanList.filter(k => k.id !== kegId);
         if(state[kegId]) {
           delete state[kegId];
-          await cloudSet('garut_unified_db_notes_v6', state);
+          cloudSet('garut_unified_db_notes_v6', state);
         }
-        await cloudSet('garut_kegiatan_list_v6', kegiatanList);
+        cloudSet('garut_kegiatan_list_v6', kegiatanList);
         renderSettingsData();
         initView();
         initDashboardPdfDropdown();
       }
     }
 
-    async function addNewMember() {
+    function addNewMember() {
       const shortName = document.getElementById('new-member-name').value.trim();
       const fullName = document.getElementById('new-member-fullname').value.trim();
       if (!shortName) return alert("Nama panggilan tidak boleh kosong!");
@@ -1528,8 +1443,8 @@
       orang.push(shortName);
       dashboardFullNames[shortName] = fullName ? fullName.toUpperCase() : shortName.toUpperCase();
 
-      await cloudSet('garut_orang_list_v6', orang);
-      await cloudSet('garut_fullnames_v6', dashboardFullNames);
+      cloudSet('garut_orang_list_v6', orang);
+      cloudSet('garut_fullnames_v6', dashboardFullNames);
 
       document.getElementById('new-member-name').value = '';
       document.getElementById('new-member-fullname').value = '';
@@ -1537,7 +1452,7 @@
       initView();
     }
 
-    async function editMember(oldShortName) {
+    function editMember(oldShortName) {
       const newShort = prompt("Ubah Nama Panggilan:", oldShortName);
       if (!newShort) return; 
       const oldFull = dashboardFullNames[oldShortName] || oldShortName;
@@ -1566,32 +1481,32 @@
             }
           });
         }
-        await cloudSet('garut_unified_db_notes_v6', state);
+        cloudSet('garut_unified_db_notes_v6', state);
       } else {
         dashboardFullNames[oldShortName] = finalFull;
       }
 
-      await cloudSet('garut_orang_list_v6', orang);
-      await cloudSet('garut_fullnames_v6', dashboardFullNames);
+      cloudSet('garut_orang_list_v6', orang);
+      cloudSet('garut_fullnames_v6', dashboardFullNames);
       renderSettingsData();
       initView();
     }
 
-    async function deleteMember(shortName) {
+    function deleteMember(shortName) {
       if(confirm(`Yakin ingin menghapus "${shortName}"?`)) {
         orang = orang.filter(o => o !== shortName);
         delete dashboardFullNames[shortName];
-        await cloudSet('garut_orang_list_v6', orang);
-        await cloudSet('garut_fullnames_v6', dashboardFullNames);
+        cloudSet('garut_orang_list_v6', orang);
+        cloudSet('garut_fullnames_v6', dashboardFullNames);
         renderSettingsData();
         initView();
       }
     }
 
-    async function resetData() {
+    function resetData() {
       if (confirm('Konfirmasi: Reset seluruh data sesi kegiatan?')) {
         state = {};
-        await cloudSet('garut_unified_db_notes_v6', state);
+        cloudSet('garut_unified_db_notes_v6', state);
         initView();
         initDashboardPdfDropdown();
         alert("Data sesi berhasil direset.");
@@ -1788,7 +1703,6 @@
         id: k.id, label: k.title, color: chartColors[idx % chartColors.length]
       }));
 
-      // Buat elemen kerangka kanvas hanya sekali jika belum ada (mencegah flickering / kedipan DOM)
       if (container.children.length === 0) {
         orang.forEach(o => {
           const canvasId = `canvas-chart-${o}`;
@@ -1829,7 +1743,6 @@
           return { label: keg.label, data: dataWeeks, backgroundColor: keg.color, borderRadius: 3, borderSkipped: false };
         });
 
-        // Update chart yang sudah ada secara mulus tanpa destroy/re-create kanvas
         if (personChartInstances[o]) {
           personChartInstances[o].data.datasets = datasets;
           personChartInstances[o].update('none');
