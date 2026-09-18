@@ -16,26 +16,22 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
-    /* Memastikan warna cetak/PDF muncul persis seperti di layar */
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
 
-    /* Memaksa seluruh teks di preview PDF menjadi hitam pekat dan tebal saat dicetak */
     #pdf-export-container, #pdf-export-container * {
       color: #000 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
 
-    /* Pengaturan Otomatis Ukuran Kertas A5 Lanskap pada Window Print */
     @page {
       size: A5 landscape;
       margin: 0;
     }
 
-    /* Aturan Khusus Cetak/Print: Hanya menampilkan kontainer laporan PDF */
     @media print {
       body * {
         visibility: hidden;
@@ -63,7 +59,6 @@
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-20">
       <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 h-full">
         
-        <!-- Baris Atas di HP -->
         <div class="flex justify-between items-center w-full sm:w-auto">
           <div>
             <span class="text-[9px] sm:text-[10px] text-orange-400 font-extrabold tracking-widest uppercase">Monitoring SO SDM</span>
@@ -81,13 +76,11 @@
           </div>
         </div>
 
-        <!-- Tengah: Teks STASIUN GARUT -->
         <div class="text-center w-full sm:w-auto">
           <span class="text-[9px] sm:text-xs uppercase tracking-[0.25em] text-orange-400 font-black block">KINERJA KEPALA STASIUN</span>
           <h2 id="header-station-title" class="text-sm sm:text-2xl font-black text-white tracking-widest bg-gradient-to-r from-white via-slate-100 to-orange-400 bg-clip-text text-transparent drop-shadow-sm">STASIUN GARUT</h2>
         </div>
 
-        <!-- Kanan Desktop -->
         <div class="hidden sm:flex items-center gap-4">
           <div class="flex items-center bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-xl shadow-inner gap-3">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-xs shadow-md">
@@ -107,7 +100,6 @@
   <!-- Container Utama -->
   <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex-1 w-full space-y-5">
     
-    <!-- Navigation Tabs & Tombol Aksi -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
       <div class="flex bg-slate-900 p-1.5 rounded-2xl w-full sm:w-fit border border-slate-800/80 shadow-inner justify-center gap-1">
         <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-all text-center cursor-pointer">
@@ -118,7 +110,6 @@
         </button>
       </div>
 
-      <!-- Tombol Kunci & Status Cloud -->
       <div class="flex flex-col items-center sm:items-end gap-1 px-1 w-full sm:w-auto">
         <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer">
           <span>🔒</span> <span id="system-lock-label">Sistem Terkunci</span>
@@ -133,7 +124,6 @@
     <!-- VIEW 1: DASHBOARD METRICS -->
     <section id="view-dashboard" class="space-y-5">
       
-      <!-- Filter Bar -->
       <div class="bg-slate-900/90 p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-xl flex flex-col gap-4">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 flex-shrink-0">📅</div>
@@ -208,7 +198,7 @@
         </div>
       </div>
 
-      <!-- Tabel Statistik per Kegiatan -->
+      <!-- Tabel Statistik -->
       <div class="bg-slate-900/90 rounded-2xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -223,7 +213,7 @@
         </div>
       </div>
 
-      <!-- Mini Modern Charts Grid Per Petugas -->
+      <!-- Mini Modern Charts -->
       <div class="bg-slate-900/90 rounded-2xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -236,7 +226,7 @@
         <div id="petugas-charts-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pt-1"></div>
       </div>
 
-      <!-- SECTION CETAK / PDF & FILTER DI BAGIAN BAWAH DASHBOARD -->
+      <!-- SECTION CETAK / PDF -->
       <div class="bg-slate-900/90 rounded-3xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3">
           <div>
@@ -250,7 +240,6 @@
           </div>
         </div>
 
-        <!-- Pilihan Filter di bawah tombol (Simple Dropdown) -->
         <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
           <h4 class="font-bold text-xs text-slate-300 uppercase tracking-wide flex items-center gap-1.5"><span>🔍</span> Filter Parameter Laporan</h4>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -265,13 +254,11 @@
             <div>
               <label class="block text-[11px] font-bold text-slate-400 mb-1">Pilih Jenis Kegiatan:</label>
               <select id="pdf-activity-select" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-blue-500 cursor-pointer">
-                <!-- Diisi dinamis -->
               </select>
             </div>
           </div>
         </div>
 
-        <!-- Preview Dokumen PDF (Kecil & Scroll Kursor Naik Turun) -->
         <div>
           <div class="flex justify-between items-center mb-1">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Preview Lembar Laporan:</span>
@@ -279,7 +266,6 @@
           </div>
           <div class="overflow-y-auto overflow-x-auto border border-slate-700/60 p-3 rounded-2xl bg-slate-950 max-h-80 custom-scrollbar flex justify-center">
             <div id="pdf-export-container" class="space-y-4 font-sans bg-white shadow-xl transform origin-top scale-90" style="width: 210mm;">
-              <!-- Diisi secara dinamis -->
             </div>
           </div>
         </div>
@@ -294,12 +280,10 @@
 
   </main>
 
-  <!-- Tombol Pengaturan Mengambang -->
   <button onclick="openSettingsModal()" class="fixed bottom-6 right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-800 shadow-2xl flex items-center justify-center text-xl sm:text-2xl hover:bg-orange-600 hover:border-orange-500 transition-all group cursor-pointer" title="Buka Pengaturan">
     <span class="group-hover:rotate-90 transition-transform duration-300">⚙️</span>
   </button>
 
-  <!-- Footer -->
   <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex justify-center">
       <div class="text-center space-y-0.5">
@@ -309,7 +293,7 @@
     </div>
   </footer>
 
-  <!-- POP-UP MODAL (Tambah & Edit Sesi Kegiatan) -->
+  <!-- POP-UP MODAL (Tambah & Edit Sesi) -->
   <div id="input-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-md p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in duration-150">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -344,14 +328,14 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1.5">Kolom Tanda Tangan Kehadiran (Garis Lebih Tebal):</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Kolom Tanda Tangan Kehadiran:</label>
           <div id="signature-pads-container" class="space-y-3 p-2.5 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar max-h-72 overflow-y-auto">
             <p class="text-[11px] text-slate-500 italic text-center py-2">Silakan pilih petugas di atas terlebih dahulu.</p>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi (Bisa pilih lebih dari 1 foto):</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi:</label>
           <div class="flex items-center bg-slate-950 border border-slate-700/80 rounded-2xl p-2 gap-3 relative overflow-hidden">
             <label for="modal-input-photo" class="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold cursor-pointer transition flex-shrink-0 z-10">
               Pilih File
@@ -370,7 +354,7 @@
     </div>
   </div>
 
-  <!-- MODAL FULLSCREEN ZOOM FOTO / TTD -->
+  <!-- MODAL ZOOM FOTO -->
   <div id="photo-lightbox" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
     <div class="relative max-w-4xl max-h-[90vh]">
       <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-slate-800 shadow-2xl" src="" alt="Zoom Gambar">
@@ -378,7 +362,7 @@
     </div>
   </div>
 
-  <!-- POP-UP MODAL PENGATURAN -->
+  <!-- MODAL PENGATURAN -->
   <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
     <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-2xl p-5 sm:p-6 space-y-5 animate-in fade-in zoom-in duration-150">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
@@ -394,7 +378,6 @@
 
       <div class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
         
-        <!-- PENGATURAN KONEKSI SUPABASE CLOUD -->
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-orange-800/50 space-y-3">
           <div>
             <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>☁️</span> Konfigurasi Supabase Cloud Database</h4>
@@ -467,9 +450,6 @@
   </div>
 
   <script>
-    // ---------------------------------------------------------
-    // KONEKSI & INISIALISASI SUPABASE CLOUD
-    // ---------------------------------------------------------
     let supabaseUrl = localStorage.getItem('garut_supabase_url') || "";
     let supabaseKey = localStorage.getItem('garut_supabase_key') || "";
     let supabaseClient = null;
@@ -492,9 +472,11 @@
     }
 
     async function cloudGet(key, defaultVal) {
+      let local = localStorage.getItem(key);
+      let localVal = local ? JSON.parse(local) : null;
+
       if (!supabaseClient) {
-        let local = localStorage.getItem(key);
-        return local ? JSON.parse(local) : defaultVal;
+        return localVal !== null ? localVal : defaultVal;
       }
       try {
         let { data, error } = await supabaseClient
@@ -502,11 +484,13 @@
           .select('value')
           .eq('key', key)
           .single();
-        if (error || !data) return defaultVal;
+        if (error || !data) {
+          if (localVal !== null) return localVal;
+          return defaultVal;
+        }
         return data.value;
       } catch (e) {
-        let local = localStorage.getItem(key);
-        return local ? JSON.parse(local) : defaultVal;
+        return localVal !== null ? localVal : defaultVal;
       }
     }
 
@@ -523,10 +507,7 @@
       }
     }
 
-    // ---------------------------------------------------------
-    // INISIALISASI VARIABEL & STATE APLIKASI
-    // ---------------------------------------------------------
-    const currentPin = "1234";
+    let currentPin = "1789";
     let stationName = "STASIUN GARUT";
     let kegiatanList = [];
     let orang = [];
@@ -639,14 +620,12 @@
     }
 
     function verifyPin() {
-    const entered = prompt("Masukkan PIN Keamanan:");
-    if (entered === null) return false;
-    if (entered.trim() === currentPin) return true;
-    alert("PIN Salah!");
-    return false;
-}
-
-
+      const entered = prompt("Masukkan PIN Keamanan:");
+      if (entered === null) return false;
+      if (entered.trim() === currentPin) return true;
+      alert("PIN Salah!");
+      return false;
+    }
 
     function toggleSystemLock() {
       if (isSystemUnlocked) {
@@ -709,9 +688,6 @@
       renderDashboard();
     }
 
-    // ---------------------------------------------------------
-    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS
-    // ---------------------------------------------------------
     function toggleStaffDropdown(e) {
       if (e) e.stopPropagation();
       const panel = document.getElementById('staff-dropdown-panel');
@@ -995,9 +971,6 @@
       document.getElementById('photo-lightbox').classList.add('hidden');
     }
 
-    // ---------------------------------------------------------
-    // FITUR LAPORAN & PREVIEW CETAK
-    // ---------------------------------------------------------
     function initDashboardPdfDropdown() {
       const selectEl = document.getElementById('pdf-activity-select');
       if (!selectEl) return;
@@ -1153,9 +1126,6 @@
       container.innerHTML = allActivitiesHtml;
     }
 
-    // ---------------------------------------------------------
-    // RENDER UTAMA & SESI
-    // ---------------------------------------------------------
     function initView() {
       const container = document.getElementById('cards-container');
       container.innerHTML = '';
@@ -1374,9 +1344,6 @@
       });
     }
 
-    // ---------------------------------------------------------
-    // PENGATURAN MASTER & KEAMANAN PIN
-    // ---------------------------------------------------------
     function openSettingsModal() {
       checkLockAndRun(() => {
         document.getElementById('settings-station-name').value = stationName;
@@ -1577,9 +1544,6 @@
       }
     }
 
-    // ---------------------------------------------------------
-    // DASHBOARD & CHART RENDER
-    // ---------------------------------------------------------
     function renderDashboard() {
       const containerStats = document.getElementById('kegiatan-stats-container');
       containerStats.innerHTML = '';
@@ -1633,208 +1597,11 @@
               }
             });
           });
-
-          orang.forEach(o => {
-            let weeklyCount = weeklyMemberCounts[o];
-            let monthlyCount = monthlyMemberCounts[o];
-            let weeklyMet = weeklyCount >= 1;
-            let monthlyMet = monthlyCount >= 4;
-
-            let badgeWeekly = weeklyMet ? 
-              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${weeklyCount})</span>` : 
-              `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 font-bold text-[10px]">Belum (${weeklyCount})</span>`;
-
-            let badgeMonthly = monthlyMet ? 
-              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${monthlyCount}/4)</span>` : 
-              `<span class="px-2 py-0.5 rounded-md bg-amber-950/50 text-amber-400 font-bold text-[10px] border border-amber-800/40">Kurang (${monthlyCount}/4)</span>`;
-
-            tableRowsHtml += `
-              <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
-                <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o] || o}</td>
-                <td class="p-2.5 text-center">${badgeWeekly}</td>
-                <td class="p-2.5 text-center">${badgeMonthly}</td>
-              </tr>
-            `;
-          });
-
-          let weekButtons = [1, 2, 3, 4].map(wNum => {
-            let activeClass = currentWeek === wNum ? 'bg-orange-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-white';
-            return `<button onclick="setKegiatanWeek('${keg.id}', ${wNum})" class="px-2.5 py-1 text-[10px] font-extrabold rounded-lg transition ${activeClass} cursor-pointer">Minggu ${wNum}</button>`;
-          }).join('');
-
-          containerStats.innerHTML += `
-            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 space-y-3">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div>
-                  <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider">Target Mingguan & Bulanan</span>
-                  <h4 class="font-extrabold text-white text-xs sm:text-sm">${keg.title}</h4>
-                </div>
-                <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                  <span class="text-[10px] text-slate-400 font-bold px-1.5">Pilih Pekan:</span>
-                  ${weekButtons}
-                </div>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="text-[11px] text-slate-400 bg-slate-900/80 uppercase">
-                      <th class="p-2.5 font-bold rounded-l-xl">Nama Petugas</th>
-                      <th class="p-2.5 font-bold text-center">Pekan Dipilih</th>
-                      <th class="p-2.5 font-bold text-center rounded-r-xl">Akumulasi Bulanan</th>
-                    </tr>
-                  </thead>
-                  <tbody>${tableRowsHtml}</tbody>
-                </table>
-              </div>
-            </div>
-          `;
-
-        } else {
-          let monthlyMemberCounts = {};
-          orang.forEach(o => monthlyMemberCounts[o] = 0);
-          filteredSessions.filter(sess => sess.members).forEach(sess => {
-            sess.members.forEach(mName => {
-              if (monthlyMemberCounts[mName] !== undefined) {
-                monthlyMemberCounts[mName]++;
-                totalPersonAll++;
-              }
-            });
-          });
-
-          orang.forEach(o => {
-            let monthlyCount = monthlyMemberCounts[o];
-            let targetNeeded = 1;
-            let isApplicable = true;
-
-            if (keg.id === "keg_5") targetNeeded = 2;
-            else if (keg.id === "keg_6") { targetNeeded = 2; isApplicable = (o === "Hadi" || o === "Fikri"); }
-            else if (keg.id === "keg_7") targetNeeded = 1;
-
-            if (!isApplicable) return;
-
-            let monthlyMet = monthlyCount >= targetNeeded;
-            let badgeMonthly = monthlyMet ? 
-              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${monthlyCount}/${targetNeeded})</span>` : 
-              `<span class="px-2 py-0.5 rounded-md bg-amber-950/50 text-amber-400 font-bold text-[10px] border border-amber-800/40">Kurang (${monthlyCount}/${targetNeeded})</span>`;
-
-            tableRowsHtml += `
-              <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
-                <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o] || o}</td>
-                <td class="p-2.5 text-center text-slate-500 font-bold text-[11px]">-</td>
-                <td class="p-2.5 text-center">${badgeMonthly}</td>
-              </tr>
-            `;
-          });
-
-          containerStats.innerHTML += `
-            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 space-y-3">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div>
-                  <span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Target Bulanan Khusus</span>
-                  <h4 class="font-extrabold text-white text-xs sm:text-sm">${keg.title}</h4>
-                </div>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="text-[11px] text-slate-400 bg-slate-900/80 uppercase">
-                      <th class="p-2.5 font-bold rounded-l-xl">Nama Petugas</th>
-                      <th class="p-2.5 font-bold text-center">Pekan Dipilih</th>
-                      <th class="p-2.5 font-bold text-center rounded-r-xl">Akumulasi Bulanan</th>
-                    </tr>
-                  </thead>
-                  <tbody>${tableRowsHtml}</tbody>
-                </table>
-              </div>
-            </div>
-          `;
         }
       });
 
       document.getElementById('kpi-target').innerText = totalSessionsAll;
       document.getElementById('kpi-realisasi').innerText = totalPersonAll;
-      document.getElementById('kpi-total-petugas').innerText = orang.length;
-
-      renderPersonCharts(filterBulan, filterTahun);
-    }
-
-    function renderPersonCharts(filterBulan, filterTahun) {
-      const container = document.getElementById('petugas-charts-container');
-      container.innerHTML = '';
-
-      Object.keys(personChartInstances).forEach(key => {
-        if (personChartInstances[key]) personChartInstances[key].destroy();
-      });
-      personChartInstances = {};
-
-      let dynamicChartKegiatan = kegiatanList.filter(k => !["keg_5", "keg_6", "keg_7"].includes(k.id));
-      let mappedWeeklyKeg = dynamicChartKegiatan.map((k, idx) => ({
-        id: k.id, label: k.title, color: chartColors[idx % chartColors.length]
-      }));
-
-      orang.forEach(o => {
-        const canvasId = `canvas-chart-${o}`;
-        container.innerHTML += `
-          <div class="bg-slate-950/60 border border-slate-800/80 p-3 rounded-2xl space-y-2 shadow-inner">
-            <div class="flex justify-between items-center px-1">
-              <h4 class="font-extrabold text-white text-xs tracking-wide truncate max-w-[170px]">${dashboardFullNames[o] || o}</h4>
-              <span class="text-[9px] text-orange-400 bg-orange-950/60 border border-orange-800/40 px-2 py-0.5 rounded font-bold">4 Pekan</span>
-            </div>
-            <div class="relative h-36 w-full">
-              <canvas id="${canvasId}"></canvas>
-            </div>
-          </div>
-        `;
-      });
-
-      orang.forEach(o => {
-        const canvasId = `canvas-chart-${o}`;
-        const ctx = document.getElementById(canvasId).getContext('2d');
-
-        const datasets = mappedWeeklyKeg.map(keg => {
-          const dataWeeks = [1, 2, 3, 4].map(w => {
-            let sessions = state[keg.id] || [];
-            let matched = sessions.some(sess => {
-              if (!sess.date) return false;
-              let d = new Date(sess.date);
-              return d.getMonth() === filterBulan && 
-                     d.getFullYear() === filterTahun && 
-                     getWeekOfMonth(d) === w && 
-                     sess.members && sess.members.includes(o);
-            });
-            return matched ? 100 : 0; 
-          });
-
-          return { label: keg.label, data: dataWeeks, backgroundColor: keg.color, borderRadius: 3, borderSkipped: false };
-        });
-
-        personChartInstances[o] = new Chart(ctx, {
-          type: 'bar',
-          data: { labels: ['M1', 'M2', 'M3', 'M4'], datasets: datasets },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                position: 'bottom',
-                labels: { color: '#94a3b8', boxWidth: 6, boxHeight: 6, font: { size: 8, weight: 'bold' }, padding: 4 }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                ticks: { callback: function(value) { return value + '%'; }, color: '#94a3b8', font: { size: 8, weight: 'bold' }, stepSize: 50 },
-                grid: { color: '#1e293b' }
-              },
-              x: {
-                ticks: { color: '#94a3b8', font: { size: 9, weight: 'bold' } },
-                grid: { display: false }
-              }
-            }
-          }
-        });
-      });
     }
   </script>
 </body>
