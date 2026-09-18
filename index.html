@@ -7,6 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
   <script src="https://tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     body { font-family: 'Plus Jakarta Sans', sans-serif; }
@@ -14,26 +15,22 @@
     .custom-scrollbar::-webkit-scrollbar-track { background: #0f172a; }
     .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
 
-    /* Memastikan warna cetak/PDF muncul persis seperti di layar */
     * {
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
 
-    /* Memaksa seluruh teks di preview PDF menjadi hitam pekat dan tebal saat dicetak */
     #pdf-export-container, #pdf-export-container * {
       color: #000 !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
 
-    /* Pengaturan Otomatis Ukuran Kertas A5 Lanskap pada Window Print */
     @page {
       size: A5 landscape;
       margin: 0;
     }
 
-    /* Aturan Khusus Cetak/Print: Hanya menampilkan kontainer laporan PDF */
     @media print {
       body * {
         visibility: hidden;
@@ -61,7 +58,6 @@
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-3 sm:py-0 sm:h-20">
       <div class="flex flex-col sm:flex-row justify-between items-center gap-2 sm:gap-4 h-full">
         
-        <!-- Baris Atas di HP -->
         <div class="flex justify-between items-center w-full sm:w-auto">
           <div>
             <span class="text-[9px] sm:text-[10px] text-orange-400 font-extrabold tracking-widest uppercase">Monitoring SO SDM</span>
@@ -79,13 +75,11 @@
           </div>
         </div>
 
-        <!-- Tengah: Teks STASIUN GARUT -->
         <div class="text-center w-full sm:w-auto">
           <span class="text-[9px] sm:text-xs uppercase tracking-[0.25em] text-orange-400 font-black block">KINERJA KEPALA STASIUN</span>
           <h2 id="header-station-title" class="text-sm sm:text-2xl font-black text-white tracking-widest bg-gradient-to-r from-white via-slate-100 to-orange-400 bg-clip-text text-transparent drop-shadow-sm">STASIUN GARUT</h2>
         </div>
 
-        <!-- Kanan Desktop -->
         <div class="hidden sm:flex items-center gap-4">
           <div class="flex items-center bg-slate-950/80 border border-slate-800 px-3.5 py-2 rounded-xl shadow-inner gap-3">
             <div class="w-8 h-8 rounded-full bg-gradient-to-tr from-orange-600 to-amber-500 flex items-center justify-center text-white font-black text-xs shadow-md">
@@ -105,7 +99,6 @@
   <!-- Container Utama -->
   <main class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 flex-1 w-full space-y-5">
     
-    <!-- Navigation Tabs & Tombol Aksi -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
       <div class="flex bg-slate-900 p-1.5 rounded-2xl w-full sm:w-fit border border-slate-800/80 shadow-inner justify-center gap-1">
         <button onclick="switchTab('dashboard')" id="tab-dashboard" class="flex-1 sm:flex-initial px-4 sm:px-6 py-2.5 text-xs font-bold rounded-xl bg-orange-600 text-white shadow-lg shadow-orange-600/30 transition-all text-center cursor-pointer">
@@ -116,14 +109,13 @@
         </button>
       </div>
 
-      <!-- Tombol Kunci & Status Lokal -->
       <div class="flex flex-col items-center sm:items-end gap-1 px-1 w-full sm:w-auto">
         <button onclick="toggleSystemLock()" id="system-lock-btn" title="Klik untuk mengubah status kunci" class="w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer">
           <span>🔒</span> <span id="system-lock-label">Sistem Terkunci</span>
         </button>
         <div id="system-status-indicator" class="text-[11px] sm:text-xs text-slate-400 flex items-center gap-2 font-medium px-1">
-          <span id="indicator-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0"></span> 
-          <span id="indicator-text">Sistem Terkunci (View Only)</span>
+          <span id="indicator-dot" class="inline-block w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse flex-shrink-0"></span> 
+          <span id="indicator-text">Supabase Terhubung (Terkunci)</span>
         </div>
       </div>
     </div>
@@ -131,7 +123,6 @@
     <!-- VIEW 1: DASHBOARD METRICS -->
     <section id="view-dashboard" class="space-y-5">
       
-      <!-- Filter Bar -->
       <div class="bg-slate-900/90 p-4 sm:p-5 rounded-3xl border border-slate-800 shadow-xl flex flex-col gap-4">
         <div class="flex items-center gap-3">
           <div class="w-9 h-9 sm:w-10 sm:h-10 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 flex-shrink-0">📅</div>
@@ -196,7 +187,6 @@
           </div>
           <div class="w-10 h-10 sm:w-12 sm:h-12 rounded-2xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50 shadow-inner flex-shrink-0 text-sm">⚡</div>
         </div>
-        
         <div class="bg-slate-900/90 p-4 sm:p-5 rounded-2xl shadow-xl border border-slate-800 flex items-center justify-between">
           <div>
             <p class="text-[11px] sm:text-xs font-semibold text-slate-400">Total Petugas</p>
@@ -206,7 +196,7 @@
         </div>
       </div>
 
-      <!-- Tabel Statistik per Kegiatan -->
+      <!-- Tabel Statistik -->
       <div class="bg-slate-900/90 rounded-2xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
@@ -215,40 +205,35 @@
           </div>
           <span class="text-[10px] text-orange-400 bg-orange-950/50 border border-orange-800/50 px-2.5 py-1 rounded-full font-bold">Target Spesifik</span>
         </div>
-        
         <div class="overflow-x-auto custom-scrollbar">
           <div id="kegiatan-stats-container" class="space-y-6"></div>
         </div>
       </div>
 
-      <!-- Mini Modern Charts Grid Per Petugas -->
+      <!-- Mini Charts -->
       <div class="bg-slate-900/90 rounded-2xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <div>
             <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">Mini Chart Progress Mingguan per Petugas (4 Pekan)</h3>
-            <p class="text-[10px] text-slate-400">Grafik modern persentase pencapaian aktivitas kegiatan per minggu (Minggu 1 - 4)</p>
+            <p class="text-[10px] text-slate-400">Grafik modern persentase pencapaian aktivitas kegiatan per minggu</p>
           </div>
           <span class="text-[10px] text-emerald-400 bg-emerald-950/50 border border-emerald-800/50 px-2.5 py-1 rounded-full font-bold">Modern Compact View</span>
         </div>
-        
         <div id="petugas-charts-container" class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 sm:gap-4 pt-1"></div>
       </div>
 
-      <!-- SECTION CETAK / PDF & FILTER DI BAGIAN BAWAH DASHBOARD -->
+      <!-- Cetak / PDF -->
       <div class="bg-slate-900/90 rounded-3xl shadow-xl border border-slate-800 p-4 sm:p-6 space-y-4">
         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-slate-800 pb-3">
           <div>
             <h3 class="font-extrabold text-slate-200 text-xs sm:text-sm">📄 Cetak Laporan / Simpan PDF</h3>
             <p class="text-[10px] text-slate-400">Atur filter waktu dan jenis kegiatan di bawah ini lalu klik cetak</p>
           </div>
-          <div class="flex gap-2 w-full sm:w-auto">
-            <button onclick="window.print()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2">
-              <span>🖨️</span> <span>Cetak Dokumen (A5 Lanskap)</span>
-            </button>
-          </div>
+          <button onclick="window.print()" class="w-full sm:w-auto px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white font-extrabold text-xs rounded-2xl transition shadow-lg shadow-blue-600/30 cursor-pointer flex items-center justify-center gap-2">
+            <span>🖨️</span> <span>Cetak Dokumen (A5 Lanskap)</span>
+          </button>
         </div>
 
-        <!-- Pilihan Filter di bawah tombol (Simple Dropdown) -->
         <div class="bg-slate-950 p-4 rounded-2xl border border-slate-800 space-y-3">
           <h4 class="font-bold text-xs text-slate-300 uppercase tracking-wide flex items-center gap-1.5"><span>🔍</span> Filter Parameter Laporan</h4>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -262,27 +247,21 @@
             </div>
             <div>
               <label class="block text-[11px] font-bold text-slate-400 mb-1">Pilih Jenis Kegiatan:</label>
-              <select id="pdf-activity-select" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-blue-500 cursor-pointer">
-                <!-- Diisi dinamis -->
-              </select>
+              <select id="pdf-activity-select" onchange="renderDashboardPdfPreview()" class="text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl text-slate-200 font-bold w-full outline-none focus:border-blue-500 cursor-pointer"></select>
             </div>
           </div>
         </div>
 
-        <!-- Preview Dokumen PDF (Kecil & Scroll Kursor Naik Turun) -->
         <div>
           <div class="flex justify-between items-center mb-1">
             <span class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Preview Lembar Laporan:</span>
             <span class="text-[10px] text-slate-500 italic">Gunakan kursor (scroll) naik-turun untuk melihat isi preview</span>
           </div>
           <div class="overflow-y-auto overflow-x-auto border border-slate-700/60 p-3 rounded-2xl bg-slate-950 max-h-80 custom-scrollbar flex justify-center">
-            <div id="pdf-export-container" class="space-y-4 font-sans bg-white shadow-xl transform origin-top scale-90" style="width: 210mm;">
-              <!-- Diisi secara dinamis -->
-            </div>
+            <div id="pdf-export-container" class="space-y-4 font-sans bg-white shadow-xl transform origin-top scale-90" style="width: 210mm;"></div>
           </div>
         </div>
       </div>
-
     </section>
 
     <!-- VIEW 2: DAFTAR KEGIATAN -->
@@ -292,12 +271,10 @@
 
   </main>
 
-  <!-- Tombol Pengaturan Mengambang -->
   <button onclick="openSettingsModal()" class="fixed bottom-6 right-6 z-40 w-12 h-12 sm:w-14 sm:h-14 rounded-full bg-slate-900/90 backdrop-blur-md border border-slate-800 shadow-2xl flex items-center justify-center text-xl sm:text-2xl hover:bg-orange-600 hover:border-orange-500 transition-all group cursor-pointer" title="Buka Pengaturan">
     <span class="group-hover:rotate-90 transition-transform duration-300">⚙️</span>
   </button>
 
-  <!-- Footer -->
   <footer class="bg-slate-900/80 border-t border-slate-800/80 py-6 mt-10">
     <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 flex justify-center">
       <div class="text-center space-y-0.5">
@@ -307,9 +284,9 @@
     </div>
   </footer>
 
-  <!-- POP-UP MODAL (Tambah & Edit Sesi Kegiatan) -->
+  <!-- MODAL TAMBAH & EDIT SESI -->
   <div id="input-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-md p-5 sm:p-6 space-y-4 animate-in fade-in zoom-in duration-150">
+    <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-md p-5 sm:p-6 space-y-4">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <div>
           <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase" id="modal-subtitle">Form Pelaksanaan</span>
@@ -342,18 +319,16 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1.5">Kolom Tanda Tangan Kehadiran (Garis Lebih Tebal):</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1.5">Kolom Tanda Tangan Kehadiran:</label>
           <div id="signature-pads-container" class="space-y-3 p-2.5 bg-slate-950 border border-slate-700/80 rounded-2xl custom-scrollbar max-h-72 overflow-y-auto">
             <p class="text-[11px] text-slate-500 italic text-center py-2">Silakan pilih petugas di atas terlebih dahulu.</p>
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi (Bisa pilih lebih dari 1 foto):</label>
+          <label class="block text-xs font-bold text-slate-300 mb-1">Foto Dokumentasi:</label>
           <div class="flex items-center bg-slate-950 border border-slate-700/80 rounded-2xl p-2 gap-3 relative overflow-hidden">
-            <label for="modal-input-photo" class="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold cursor-pointer transition flex-shrink-0 z-10">
-              Pilih File
-            </label>
+            <label for="modal-input-photo" class="px-3 py-1.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-[11px] font-bold cursor-pointer transition flex-shrink-0 z-10">Pilih File</label>
             <span id="file-chosen-text" class="text-xs text-slate-400 truncate z-10 pointer-events-none">Tidak ada file yang dipilih</span>
             <input type="file" id="modal-input-photo" accept="image/*" multiple onchange="previewImages(event)" class="absolute inset-0 opacity-0 cursor-pointer z-20">
           </div>
@@ -368,79 +343,70 @@
     </div>
   </div>
 
-  <!-- MODAL FULLSCREEN ZOOM FOTO / TTD -->
+  <!-- LIGHTBOX FOTO -->
   <div id="photo-lightbox" class="fixed inset-0 bg-slate-950/90 backdrop-blur-md z-50 hidden flex items-center justify-center p-4" onclick="closeLightbox()">
     <div class="relative max-w-4xl max-h-[90vh]">
-      <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-slate-800 shadow-2xl" src="" alt="Zoom Gambar">
+      <img id="lightbox-img" class="max-w-full max-h-[85vh] object-contain rounded-2xl border border-slate-800 shadow-2xl" src="" alt="Zoom">
       <p class="text-center text-xs text-slate-400 mt-2 font-bold">Klik di mana saja untuk menutup</p>
     </div>
   </div>
 
-  <!-- POP-UP MODAL PENGATURAN -->
+  <!-- MODAL PENGATURAN -->
   <div id="settings-modal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-3 sm:p-4">
-    <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-2xl p-5 sm:p-6 space-y-5 animate-in fade-in zoom-in duration-150">
+    <div class="bg-slate-900 rounded-3xl shadow-2xl border border-slate-800 w-full max-w-2xl p-5 sm:p-6 space-y-5">
       <div class="flex justify-between items-center border-b border-slate-800 pb-3">
         <div class="flex items-center gap-2.5">
           <div class="w-8 h-8 rounded-xl bg-orange-950/80 text-orange-400 flex items-center justify-center font-bold border border-orange-800/50">⚙️</div>
           <div>
             <span class="text-[10px] text-orange-400 font-bold tracking-widest uppercase">Panel Pengaturan</span>
-            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data & PIN (Mode Lokal)</h3>
+            <h3 class="font-extrabold text-slate-100 text-sm sm:text-base">Kelola Master Data & PIN (Supabase Cloud)</h3>
           </div>
         </div>
         <button onclick="closeSettingsModal()" class="w-8 h-8 rounded-full bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold transition cursor-pointer">✕</button>
       </div>
 
       <div class="space-y-6 max-h-[65vh] overflow-y-auto custom-scrollbar pr-1">
-
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
-            <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider flex items-center gap-1.5"><span>1️⃣</span> Master Kegiatan</h4>
-            <p class="text-[10px] text-slate-400 mt-1">Tambah, Edit, atau Hapus kegiatan.</p>
+            <h4 class="font-extrabold text-xs text-orange-400 uppercase tracking-wider">1️⃣ Master Kegiatan</h4>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
-            <input type="text" id="new-keg-title" placeholder="Nama Kegiatan Baru" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold transition">
-            <input type="text" id="new-keg-desc" placeholder="Deskripsi Singkat" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 transition">
-            <button onclick="addNewActivity()" class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">+ Tambah</button>
+            <input type="text" id="new-keg-title" placeholder="Nama Kegiatan Baru" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200 font-bold">
+            <input type="text" id="new-keg-desc" placeholder="Deskripsi Singkat" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-orange-500 text-slate-200">
+            <button onclick="addNewActivity()" class="px-4 py-2.5 rounded-xl bg-orange-600 hover:bg-orange-500 text-white font-bold text-xs transition cursor-pointer whitespace-nowrap">+ Tambah</button>
           </div>
           <div class="mt-2 space-y-2" id="settings-kegiatan-list"></div>
         </div>
 
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
-            <h4 class="font-extrabold text-xs text-emerald-400 uppercase tracking-wider flex items-center gap-1.5"><span>2️⃣</span> Master Anggota / Petugas</h4>
-            <p class="text-[10px] text-slate-400 mt-1">Kelola data petugas (dashboardFullNames & orang).</p>
+            <h4 class="font-extrabold text-xs text-emerald-400 uppercase tracking-wider">2️⃣ Master Anggota / Petugas</h4>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
-            <input type="text" id="new-member-name" placeholder="Panggilan (Contoh: Budi)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200 font-bold transition">
-            <input type="text" id="new-member-fullname" placeholder="Nama Lengkap (Contoh: BUDI S)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200 transition">
-            <button onclick="addNewMember()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">+ Tambah</button>
+            <input type="text" id="new-member-name" placeholder="Panggilan (Contoh: Budi)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200 font-bold">
+            <input type="text" id="new-member-fullname" placeholder="Nama Lengkap (Contoh: BUDI S)" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-emerald-500 text-slate-200">
+            <button onclick="addNewMember()" class="px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition cursor-pointer whitespace-nowrap">+ Tambah</button>
           </div>
           <div class="mt-2 space-y-2 grid grid-cols-1 sm:grid-cols-2 gap-2" id="settings-orang-list"></div>
         </div>
 
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-3">
           <div>
-            <h4 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider flex items-center gap-1.5"><span>3️⃣</span> Identitas Stasiun</h4>
-            <p class="text-[10px] text-slate-400 mt-1">Ubah nama stasiun yang tampil di bagian tengah atas header.</p>
+            <h4 class="font-extrabold text-xs text-amber-400 uppercase tracking-wider">3️⃣ Identitas Stasiun</h4>
           </div>
           <div class="flex flex-col sm:flex-row gap-2">
-            <input type="text" id="settings-station-name" placeholder="Contoh: STASIUN GARUT" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-amber-500 text-slate-200 font-bold transition">
-            <button onclick="saveStationName()" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition shadow-md cursor-pointer whitespace-nowrap">Simpan Nama</button>
+            <input type="text" id="settings-station-name" placeholder="STASIUN GARUT" class="flex-1 text-xs p-2.5 bg-slate-900 border border-slate-700 rounded-xl outline-none focus:border-amber-500 text-slate-200 font-bold">
+            <button onclick="saveStationName()" class="px-4 py-2.5 rounded-xl bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs transition cursor-pointer whitespace-nowrap">Simpan Nama</button>
           </div>
         </div>
 
         <div class="bg-slate-950/70 p-4 rounded-2xl border border-slate-800 space-y-4">
           <div>
-            <h4 class="font-extrabold text-xs text-rose-400 uppercase tracking-wider flex items-center gap-1.5"><span>4️⃣</span> Keamanan & Reset Data</h4>
-            <p class="text-[10px] text-slate-400 mt-1">Ubah PIN keamanan universal atau lakukan reset seluruh sesi kegiatan.</p>
+            <h4 class="font-extrabold text-xs text-rose-400 uppercase tracking-wider">4️⃣ Keamanan & Reset Data</h4>
           </div>
           <div class="flex flex-col sm:flex-row gap-2.5">
-            <button onclick="changePinCode()" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
-              <span>🔑 Ubah PIN Keamanan</span>
-            </button>
-            <button onclick="resetData()" class="flex-1 py-3 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-800/80 font-bold text-xs transition shadow-md cursor-pointer flex items-center justify-center gap-2">
-              <span>🗑️ Reset Seluruh Data Sesi</span>
-            </button>
+            <button onclick="changePinCode()" class="flex-1 py-3 px-4 rounded-xl bg-blue-600 hover:bg-blue-500 text-white font-bold text-xs transition cursor-pointer">🔑 Ubah PIN Keamanan</button>
+            <button onclick="resetData()" class="flex-1 py-3 px-4 rounded-xl bg-rose-950/60 hover:bg-rose-900 text-rose-400 border border-rose-800 font-bold text-xs transition cursor-pointer">🗑️ Reset Seluruh Data</button>
           </div>
         </div>
       </div>
@@ -452,21 +418,58 @@
   </div>
 
   <script>
-    // ---------------------------------------------------------
-    // PENYIMPANAN LOKAL (LOCAL STORAGE UTAMA)
-    // ---------------------------------------------------------
+    // Konfigurasi Supabase
+    const SUPABASE_URL = 'https://mtexscokpghpukjeoqjd.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_xtreeOSCRJELI6LxlRTDSg_YDPDFjto';
+    let supabaseClient = null;
+    let isSupabaseConnected = false;
+
+    try {
+      if (window.supabase) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+        isSupabaseConnected = true;
+      }
+    } catch (e) {
+      console.error("Gagal menginisialisasi Supabase:", e);
+    }
+
+    // Fungsi Penyimpanan Hybrid (Supabase + LocalStorage Fallback)
     function cloudGetDirect(key, defaultVal) {
       const val = localStorage.getItem(key);
       return val ? JSON.parse(val) : defaultVal;
     }
 
-    function cloudSet(key, value) {
-      localStorage.setItem(key, JSON.stringify(value));
+    async function cloudGetAsync(key, defaultVal) {
+      if (isSupabaseConnected && supabaseClient) {
+        try {
+          const { data, error } = await supabaseClient
+            .from('app_data')
+            .select('value')
+            .eq('key', key)
+            .single();
+          if (!error && data && data.value !== undefined) {
+            localStorage.setItem(key, JSON.stringify(data.value));
+            return data.value;
+          }
+        } catch (err) {
+          console.warn("Supabase fetch error for", key, err);
+        }
+      }
+      return cloudGetDirect(key, defaultVal);
     }
 
-    // ---------------------------------------------------------
-    // INISIALISASI VARIABEL & STATE APLIKASI (LOCAL-FIRST)
-    // ---------------------------------------------------------
+    function cloudSet(key, value) {
+      localStorage.setItem(key, JSON.stringify(value));
+      if (isSupabaseConnected && supabaseClient) {
+        supabaseClient
+          .from('app_data')
+          .upsert({ key: key, value: value })
+          .then(({ error }) => {
+            if (error) console.error("Supabase sync error for", key, error);
+          });
+      }
+    }
+
     const DEFAULT_PIN = "1234";
     let currentPin = DEFAULT_PIN;
     let stationName = "STASIUN GARUT";
@@ -510,14 +513,37 @@
     let sigCache = {}; 
     let currentSignaturesObj = {};
 
-    window.addEventListener('DOMContentLoaded', () => {
-      // Muat data dari localStorage
+    window.addEventListener('DOMContentLoaded', async () => {
       currentPin = localStorage.getItem('garut_app_pin_v6') || DEFAULT_PIN;
       stationName = localStorage.getItem('garut_station_name_v6') || "STASIUN GARUT";
       kegiatanList = JSON.parse(localStorage.getItem('garut_kegiatan_list_v6') || JSON.stringify(defaultKegiatanList));
       orang = JSON.parse(localStorage.getItem('garut_orang_list_v6') || JSON.stringify(defaultOrang));
       dashboardFullNames = JSON.parse(localStorage.getItem('garut_fullnames_v6') || JSON.stringify(defaultFullNames));
       state = JSON.parse(localStorage.getItem('garut_unified_db_notes_v6') || '{}');
+
+      if (isSupabaseConnected && supabaseClient) {
+        try {
+          const pinCloud = await cloudGetAsync('garut_app_pin_v6', null);
+          if (pinCloud) currentPin = pinCloud;
+
+          const stationCloud = await cloudGetAsync('garut_station_name_v6', null);
+          if (stationCloud) stationName = stationCloud;
+
+          const kegCloud = await cloudGetAsync('garut_kegiatan_list_v6', null);
+          if (kegCloud) kegiatanList = kegCloud;
+
+          const orangCloud = await cloudGetAsync('garut_orang_list_v6', null);
+          if (orangCloud) orang = orangCloud;
+
+          const fullNamesCloud = await cloudGetAsync('garut_fullnames_v6', null);
+          if (fullNamesCloud) dashboardFullNames = fullNamesCloud;
+
+          const stateCloud = await cloudGetAsync('garut_unified_db_notes_v6', null);
+          if (stateCloud) state = stateCloud;
+        } catch (e) {
+          console.error("Gagal sinkronisasi awal dengan Supabase:", e);
+        }
+      }
 
       const now = new Date();
       document.getElementById('filter-bulan').value = now.getMonth();
@@ -539,8 +565,18 @@
     function updateCloudStatusUI() {
       const indicatorDot = document.getElementById('indicator-dot');
       const indicatorText = document.getElementById('indicator-text');
-      if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-slate-500 flex-shrink-0";
-      if (indicatorText) indicatorText.innerText = isSystemUnlocked ? "Mode Lokal (Unlocked)" : "Mode Lokal (Terkunci)";
+      if (indicatorDot) {
+        indicatorDot.className = isSupabaseConnected 
+          ? "inline-block w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse flex-shrink-0" 
+          : "inline-block w-2.5 h-2.5 rounded-full bg-slate-500 flex-shrink-0";
+      }
+      if (indicatorText) {
+        if (isSupabaseConnected) {
+          indicatorText.innerText = isSystemUnlocked ? "Supabase Terhubung (Unlocked)" : "Supabase Terhubung (Terkunci)";
+        } else {
+          indicatorText.innerText = isSystemUnlocked ? "Mode Lokal (Unlocked)" : "Mode Lokal (Terkunci)";
+        }
+      }
     }
 
     function updateStationHeaderUI() {
@@ -624,13 +660,13 @@
         if (label) label.innerText = "Sistem Terbuka";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔓";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse flex-shrink-0";
-        if (indicatorText) indicatorText.innerText = "Mode Lokal (Unlocked)";
+        if (indicatorText) indicatorText.innerText = isSupabaseConnected ? "Supabase Terhubung (Unlocked)" : "Mode Lokal (Unlocked)";
       } else {
         btn.className = "w-full sm:w-auto px-3 py-1 rounded-xl bg-rose-950/80 text-rose-400 text-[11px] font-bold border border-rose-800/50 shadow-inner flex items-center justify-center gap-1.5 hover:scale-105 active:scale-95 transition-all cursor-pointer";
         if (label) label.innerText = "Sistem Terkunci";
         if (btn.querySelector('span')) btn.querySelector('span').innerText = "🔒";
         if (indicatorDot) indicatorDot.className = "inline-block w-2.5 h-2.5 rounded-full bg-rose-500 flex-shrink-0";
-        if (indicatorText) indicatorText.innerText = "Mode Lokal (Terkunci)";
+        if (indicatorText) indicatorText.innerText = isSupabaseConnected ? "Supabase Terhubung (Terkunci)" : "Mode Lokal (Terkunci)";
       }
       initView();
     }
@@ -648,9 +684,6 @@
       renderDashboard();
     }
 
-    // ---------------------------------------------------------
-    // DROPDOWN & TANDA TANGAN DINAMIS PER PETUGAS
-    // ---------------------------------------------------------
     function toggleStaffDropdown(e) {
       if (e) e.stopPropagation();
       const panel = document.getElementById('staff-dropdown-panel');
@@ -690,7 +723,6 @@
     function updateStaffSelectionUI() {
       const checkedBoxes = document.querySelectorAll('.modal-person-cb:checked');
       const selected = Array.from(checkedBoxes).map(cb => cb.value);
-      
       const labelEl = document.getElementById('staff-dropdown-label');
       const badgesEl = document.getElementById('selected-staff-badges');
 
@@ -773,38 +805,23 @@
         };
       }
 
-      canvas.onmousedown = (e) => {
-        isLocalDrawing = true;
-        const pos = getPos(e);
-        [lastX, lastY] = [pos.x, pos.y];
-      };
+      canvas.onmousedown = (e) => { isLocalDrawing = true; const pos = getPos(e); [lastX, lastY] = [pos.x, pos.y]; };
       canvas.onmousemove = (e) => {
         if (!isLocalDrawing) return;
         const pos = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke();
         [lastX, lastY] = [pos.x, pos.y];
         currentSignaturesObj[memberName] = canvas.toDataURL('image/png');
       };
       canvas.onmouseup = () => isLocalDrawing = false;
       canvas.onmouseout = () => isLocalDrawing = false;
 
-      canvas.ontouchstart = (e) => {
-        e.preventDefault();
-        isLocalDrawing = true;
-        const pos = getPos(e);
-        [lastX, lastY] = [pos.x, pos.y];
-      };
+      canvas.ontouchstart = (e) => { e.preventDefault(); isLocalDrawing = true; const pos = getPos(e); [lastX, lastY] = [pos.x, pos.y]; };
       canvas.ontouchmove = (e) => {
         e.preventDefault();
         if (!isLocalDrawing) return;
         const pos = getPos(e);
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(pos.x, pos.y);
-        ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(lastX, lastY); ctx.lineTo(pos.x, pos.y); ctx.stroke();
         [lastX, lastY] = [pos.x, pos.y];
         currentSignaturesObj[memberName] = canvas.toDataURL('image/png');
       };
@@ -818,37 +835,23 @@
 
     function processSignatureBase64(base64Src) {
       return new Promise((resolve) => {
-        if (!base64Src) {
-          resolve('');
-          return;
-        }
-        if (sigCache[base64Src]) {
-          resolve(sigCache[base64Src]);
-          return;
-        }
+        if (!base64Src) { resolve(''); return; }
+        if (sigCache[base64Src]) { resolve(sigCache[base64Src]); return; }
 
         let img = new Image();
         img.onload = () => {
           let canvas = document.createElement('canvas');
-          canvas.width = 200;
-          canvas.height = 100;
+          canvas.width = 200; canvas.height = 100;
           let ctx = canvas.getContext('2d');
-          
           ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
           let imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           let data = imgData.data;
           for (let i = 0; i < data.length; i += 4) {
-            let r = data[i], g = data[i+1], b = data[i+2];
-            let avg = (r + g + b) / 3;
-            if (avg > 80) {
-              data[i] = 0; data[i+1] = 0; data[i+2] = 0;
-            } else {
-              data[i] = 255; data[i+1] = 255; data[i+2] = 255;
-            }
+            let avg = (data[i] + data[i+1] + data[i+2]) / 3;
+            if (avg > 80) { data[i] = 0; data[i+1] = 0; data[i+2] = 0; }
+            else { data[i] = 255; data[i+1] = 255; data[i+2] = 255; }
           }
           ctx.putImageData(imgData, 0, 0);
-          
           let result = canvas.toDataURL('image/png');
           sigCache[base64Src] = result;
           resolve(result);
@@ -868,22 +871,16 @@
           const img = new Image();
           img.onload = function() {
             const canvas = document.createElement('canvas');
-            const MAX_WIDTH = 500;
-            const MAX_HEIGHT = 500;
-            let width = img.width;
-            let height = img.height;
-
+            const MAX_WIDTH = 500, MAX_HEIGHT = 500;
+            let width = img.width, height = img.height;
             if (width > height) {
               if (width > MAX_WIDTH) { height *= MAX_WIDTH / width; width = MAX_WIDTH; }
             } else {
               if (height > MAX_HEIGHT) { width *= MAX_HEIGHT / height; height = MAX_HEIGHT; }
             }
-
-            canvas.width = width;
-            canvas.height = height;
+            canvas.width = width; canvas.height = height;
             const ctx = canvas.getContext('2d');
             ctx.drawImage(img, 0, 0, width, height);
-
             const compressedBase64 = canvas.toDataURL('image/jpeg', 0.7);
             currentUploadedPhotosBase64.push(compressedBase64);
             renderPhotoPreviews();
@@ -898,17 +895,11 @@
     function renderPhotoPreviews() {
       const previewBox = document.getElementById('modal-photo-preview-box');
       previewBox.innerHTML = '';
-      
       const textEl = document.getElementById('file-chosen-text');
       const count = currentUploadedPhotosBase64.length;
-      if (textEl) {
-        textEl.innerText = (count === 0) ? "Tidak ada file yang dipilih" : `${count} file`;
-      }
+      if (textEl) textEl.innerText = (count === 0) ? "Tidak ada file yang dipilih" : `${count} file`;
 
-      if (count === 0) {
-        previewBox.classList.add('hidden');
-        return;
-      }
+      if (count === 0) { previewBox.classList.add('hidden'); return; }
       previewBox.classList.remove('hidden');
       currentUploadedPhotosBase64.forEach((photoSrc, idx) => {
         previewBox.innerHTML += `
@@ -934,9 +925,6 @@
       document.getElementById('photo-lightbox').classList.add('hidden');
     }
 
-    // ---------------------------------------------------------
-    // FITUR LAPORAN & PREVIEW CETAK
-    // ---------------------------------------------------------
     function initDashboardPdfDropdown() {
       const selectEl = document.getElementById('pdf-activity-select');
       if (!selectEl) return;
@@ -957,11 +945,10 @@
       const selectedKegId = document.getElementById('pdf-activity-select') ? document.getElementById('pdf-activity-select').value : 'all';
 
       let filteredKegList = (selectedKegId === 'all') ? kegiatanList : kegiatanList.filter(k => k.id === selectedKegId);
-      
       let validActivities = [];
+
       for (let keg of filteredKegList) {
         let sessions = [...(state[keg.id] || [])];
-
         sessions = sessions.filter(sess => {
           if (!sess.date) return false;
           if (startDate && sess.date < startDate) return false;
@@ -973,12 +960,8 @@
           sessions.sort((a, b) => {
             let dateA = new Date(a.date || '1970-01-01');
             let dateB = new Date(b.date || '1970-01-01');
-            if (dateA.getTime() !== dateB.getTime()) {
-              return dateA - dateB;
-            }
-            let timeA = a.createdAt || 0;
-            let timeB = b.createdAt || 0;
-            return timeA - timeB;
+            if (dateA.getTime() !== dateB.getTime()) return dateA - dateB;
+            return (a.createdAt || 0) - (b.createdAt || 0);
           });
           validActivities.push({ keg, sessions });
         }
@@ -990,14 +973,13 @@
       }
 
       let allActivitiesHtml = '';
-
       for (let i = 0; i < validActivities.length; i++) {
         let item = validActivities[i];
         let keg = item.keg;
         let sessions = item.sessions;
-
         let rowsHtml = '';
         let sessNo = 1;
+
         for (let sess of sessions) {
           let membersList = sess.members || [];
           let notePart = sess.note ? sess.note : '';
@@ -1029,12 +1011,8 @@
 
           let ketHtml = `<div class="text-[10px] text-black font-bold">Sesi terlaksana (${membersList.length} Petugas)</div>`;
           let photoHtmlItems = '';
-          photosList.forEach(pSrc => {
-            photoHtmlItems += `<img src="${pSrc}" class="w-16 h-16 object-cover rounded border border-slate-400">`;
-          });
-          if (photoHtmlItems) {
-            ketHtml += `<div class="mt-1"><span class="text-[9px] font-bold text-black block mb-0.5">Foto:</span><div class="flex flex-wrap gap-1">${photoHtmlItems}</div></div>`;
-          }
+          photosList.forEach(pSrc => { photoHtmlItems += `<img src="${pSrc}" class="w-16 h-16 object-cover rounded border border-slate-400">`; });
+          if (photoHtmlItems) ketHtml += `<div class="mt-1"><span class="text-[9px] font-bold text-black block mb-0.5">Foto:</span><div class="flex flex-wrap gap-1">${photoHtmlItems}</div></div>`;
 
           rowsHtml += `
             <tr class="border-b border-black">
@@ -1071,30 +1049,16 @@
                     <th class="border border-black p-1 w-[7%]">YA</th>
                     <th class="border border-black p-1 w-[7%]">TIDAK</th>
                   </tr>
-                  <tr style="background-color: #22c55e !important; color: black !important;" class="text-center font-bold text-[9px]">
-                    <th class="border border-black p-0.5">1</th>
-                    <th class="border border-black p-0.5">2</th>
-                    <th class="border border-black p-0.5">3</th>
-                    <th class="border border-black p-0.5">4</th>
-                    <th class="border border-black p-0.5">5</th>
-                    <th class="border border-black p-0.5">6</th>
-                  </tr>
                 </thead>
-                <tbody>
-                  ${rowsHtml}
-                </tbody>
+                <tbody>${rowsHtml}</tbody>
               </table>
             </div>
           </div>
         `;
       }
-
       container.innerHTML = allActivitiesHtml;
     }
 
-    // ---------------------------------------------------------
-    // RENDER UTAMA & SESI
-    // ---------------------------------------------------------
     function initView() {
       const container = document.getElementById('cards-container');
       container.innerHTML = '';
@@ -1104,8 +1068,8 @@
       kegiatanList.forEach((keg, index) => {
         let sessions = state[keg.id] || [];
         let sessionsForCard = [...sessions].reverse();
-
         let sessionsHtml = '';
+
         if (sessionsForCard.length > 0) {
           sessionsForCard.forEach((sess, sIndex) => {
             const currentSessionId = sess.id || sIndex;
@@ -1117,27 +1081,18 @@
             let photosList = sess.photos || (sess.photo ? [sess.photo] : []);
             let photoThumbs = photosList.length > 0 ? `
               <div class="mt-2">
-                <span class="text-[9px] text-slate-400 font-bold block mb-1">Foto Dokumentasi (${photosList.length}):</span>
+                <span class="text-[9px] text-slate-400 font-bold block mb-1">Foto (${photosList.length}):</span>
                 <div class="flex flex-wrap gap-1.5">
-                  ${photosList.map(pSrc => `<img src="${pSrc}" onclick="openLightbox('${pSrc}')" class="w-12 h-12 object-cover rounded-lg border border-slate-700 cursor-pointer hover:scale-105 transition-transform" title="Klik untuk memperbesar foto">`).join('')}
+                  ${photosList.map(pSrc => `<img src="${pSrc}" onclick="openLightbox('${pSrc}')" class="w-12 h-12 object-cover rounded-lg border border-slate-700 cursor-pointer hover:scale-105 transition-transform">`).join('')}
                 </div>
               </div>
             ` : '';
 
-            let noteAndPhotoSection = '';
-            if (sess.note || photosList.length > 0) {
-              noteAndPhotoSection = `
-                <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 space-y-1">
-                  ${noteText}
-                  ${photoThumbs}
-                </div>
-              `;
-            }
-
-            let actionButtonsHtml = `
-              <button onclick="openEditModal('${keg.id}', '${currentSessionId}')" class="px-2 py-0.5 rounded-lg bg-slate-800/60 text-slate-400 hover:bg-slate-700 hover:text-white font-bold text-[10px] transition border border-slate-700 cursor-pointer" title="Ubah sesi ini (Perlu PIN)">Edit</button>
-              <button onclick="deleteSession('${keg.id}', '${currentSessionId}')" class="w-5 h-5 rounded-lg bg-slate-800/60 text-slate-400 hover:bg-slate-700 hover:text-white flex items-center justify-center font-bold text-xs transition border border-slate-700 cursor-pointer" title="Hapus sesi ini (Perlu PIN)">✕</button>
-            `;
+            let noteAndPhotoSection = (sess.note || photosList.length > 0) ? `
+              <div class="bg-slate-900/90 p-2.5 rounded-xl border border-slate-800 space-y-1">
+                ${noteText} ${photoThumbs}
+              </div>
+            ` : '';
 
             sessionsHtml += `
               <div class="bg-slate-950/70 border border-slate-800/80 p-2.5 sm:p-3 rounded-2xl space-y-2">
@@ -1146,7 +1101,8 @@
                     <span>📅</span> <span>${sess.date || 'Tanggal Tidak Diatur'}</span>
                   </div>
                   <div class="flex items-center gap-1">
-                    ${actionButtonsHtml}
+                    <button onclick="openEditModal('${keg.id}', '${currentSessionId}')" class="px-2 py-0.5 rounded-lg bg-slate-800 text-slate-400 hover:text-white font-bold text-[10px] cursor-pointer">Edit</button>
+                    <button onclick="deleteSession('${keg.id}', '${currentSessionId}')" class="w-5 h-5 rounded-lg bg-slate-800 text-slate-400 hover:text-white flex items-center justify-center font-bold text-xs cursor-pointer">✕</button>
                   </div>
                 </div>
                 ${noteAndPhotoSection}
@@ -1159,24 +1115,21 @@
         }
 
         const nomorUrut = (index + 1 < 10) ? `0${index + 1}` : `${index + 1}`;
-
         container.innerHTML += `
-          <div class="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col justify-between space-y-3 hover:border-slate-700 transition-all">
+          <div class="bg-slate-900/90 rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-xl flex flex-col justify-between space-y-3">
             <div class="space-y-2">
               <div class="flex justify-between items-start">
-                <span class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 font-black text-[11px] flex items-center justify-center border border-slate-700/50">${nomorUrut}</span>
-                <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 border border-slate-700/50">${sessions.length} Sesi Aktif</span>
+                <span class="w-6 h-6 rounded-lg bg-slate-800 text-slate-400 font-black text-[11px] flex items-center justify-center">${nomorUrut}</span>
+                <span class="text-[9px] sm:text-[10px] font-bold px-2 py-0.5 rounded-full bg-slate-800 text-slate-300">${sessions.length} Sesi Aktif</span>
               </div>
-              <h3 class="font-extrabold text-white text-sm sm:text-base tracking-wide">${keg.title}</h3>
+              <h3 class="font-extrabold text-white text-sm sm:text-base">${keg.title}</h3>
               <p class="text-[11px] sm:text-xs text-slate-400 leading-relaxed">${keg.desc}</p>
             </div>
-            <div class="space-y-2 pt-2 border-t border-slate-800/80">
-              <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-wider block">Riwayat Sesi:</span>
-              <div class="space-y-2 max-h-44 sm:max-h-52 overflow-y-auto custom-scrollbar pr-3.5">
-                ${sessionsHtml}
-              </div>
+            <div class="space-y-2 pt-2 border-t border-slate-800">
+              <span class="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase block">Riwayat Sesi:</span>
+              <div class="space-y-2 max-h-44 sm:max-h-52 overflow-y-auto custom-scrollbar pr-3.5">${sessionsHtml}</div>
             </div>
-            <button onclick="openModal('${keg.id}', '${keg.title.replace(/'/g, "\'")}')" class="w-full mt-1 py-2 px-3 rounded-2xl bg-slate-800 hover:bg-orange-600 text-slate-200 hover:text-white text-[11px] sm:text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-sm border border-slate-700/60 hover:border-orange-500 cursor-pointer">
+            <button onclick="openModal('${keg.id}', '${keg.title.replace(/'/g, "\'")}')" class="w-full mt-1 py-2 px-3 rounded-2xl bg-slate-800 hover:bg-orange-600 text-slate-200 hover:text-white text-[11px] font-bold transition flex items-center justify-center gap-2 cursor-pointer">
               <span>+ Tambah Sesi & Catatan</span>
             </button>
           </div>
@@ -1191,18 +1144,14 @@
         editSessionId = null;
         currentUploadedPhotosBase64 = [];
         currentSignaturesObj = {};
-        
         document.getElementById('modal-subtitle').innerText = "Form Pelaksanaan";
         document.getElementById('modal-title').innerText = kegTitle;
         document.getElementById('modal-save-btn').innerText = "+ Simpan Sesi";
         document.getElementById('modal-input-photo').value = '';
         renderPhotoPreviews();
         renderCheckboxes([], kegId);
-        
-        const now = new Date();
-        document.getElementById('modal-input-date').value = now.toISOString().split('T')[0];
+        document.getElementById('modal-input-date').value = new Date().toISOString().split('T')[0];
         document.getElementById('modal-input-note').value = '';
-        
         document.getElementById('input-modal').classList.remove('hidden');
         updateSignaturePads();
       });
@@ -1214,7 +1163,6 @@
         editSessionId = sessionId;
         currentUploadedPhotosBase64 = [];
         currentSignaturesObj = {};
-
         const kegData = kegiatanList.find(k => k.id === kegId);
         document.getElementById('modal-subtitle').innerText = "Edit Pelaksanaan";
         document.getElementById('modal-title').innerText = kegData ? kegData.title : "Ubah Sesi";
@@ -1226,15 +1174,12 @@
         if (targetSession) {
           document.getElementById('modal-input-date').value = targetSession.date || '';
           document.getElementById('modal-input-note').value = targetSession.note || '';
-          
           currentUploadedPhotosBase64 = targetSession.photos || (targetSession.photo ? [targetSession.photo] : []);
           currentSignaturesObj = targetSession.signatures || (targetSession.signature ? { [targetSession.members[0]]: targetSession.signature } : {});
-          
           document.getElementById('modal-input-photo').value = '';
           renderPhotoPreviews();
           renderCheckboxes(targetSession.members || [], kegId);
         }
-        
         document.getElementById('input-modal').classList.remove('hidden');
         updateSignaturePads();
       });
@@ -1242,10 +1187,7 @@
 
     function closeModal() {
       document.getElementById('input-modal').classList.add('hidden');
-      activeKegId = null;
-      editSessionId = null;
-      currentUploadedPhotosBase64 = [];
-      currentSignaturesObj = {};
+      activeKegId = null; editSessionId = null; currentUploadedPhotosBase64 = []; currentSignaturesObj = {};
     }
 
     function saveNewSession() {
@@ -1255,16 +1197,11 @@
       const selectedDate = document.getElementById('modal-input-date').value;
       const sessionNote = document.getElementById('modal-input-note').value.trim();
 
-      if (selectedMembers.length === 0) {
-        alert("Harap pilih minimal 1 petugas untuk sesi ini.");
-        return;
-      }
+      if (selectedMembers.length === 0) { alert("Harap pilih minimal 1 petugas."); return; }
 
       document.querySelectorAll('.sig-canvas').forEach(canvas => {
         const member = canvas.dataset.member;
-        if (canvas.width > 0 && canvas.height > 0) {
-          currentSignaturesObj[member] = canvas.toDataURL('image/png');
-        }
+        if (canvas.width > 0 && canvas.height > 0) currentSignaturesObj[member] = canvas.toDataURL('image/png');
       });
 
       if (!state[activeKegId]) state[activeKegId] = [];
@@ -1313,9 +1250,6 @@
       });
     }
 
-    // ---------------------------------------------------------
-    // PENGATURAN MASTER & KEAMANAN PIN
-    // ---------------------------------------------------------
     function openSettingsModal() {
       checkLockAndRun(() => {
         document.getElementById('settings-station-name').value = stationName;
@@ -1324,27 +1258,18 @@
       });
     }
 
-    function closeSettingsModal() {
-      document.getElementById('settings-modal').classList.add('hidden');
-    }
+    function closeSettingsModal() { document.getElementById('settings-modal').classList.add('hidden'); }
 
     function changePinCode() {
-      const oldInput = prompt("Masukkan PIN Lama Anda:");
-      if (oldInput === null) return;
-      if (oldInput !== currentPin) {
-        alert("PIN Lama salah! Perubahan dibatalkan.");
-        return;
-      }
+      const oldInput = prompt("Masukkan PIN Lama:");
+      if (oldInput === null || oldInput !== currentPin) { alert("PIN Lama salah!"); return; }
       const newInput = prompt("Masukkan PIN Baru:");
-      if (newInput === null || !newInput.trim()) return;
+      if (!newInput || newInput.trim() === '') return;
       const confirmInput = prompt("Konfirmasi PIN Baru:");
-      if (newInput !== confirmInput) {
-        alert("PIN baru tidak cocok!");
-        return;
-      }
+      if (newInput !== confirmInput) { alert("PIN tidak cocok!"); return; }
       currentPin = newInput.trim();
       cloudSet('garut_app_pin_v6', currentPin);
-      alert("PIN Keamanan berhasil diperbarui!");
+      alert("PIN berhasil diperbarui!");
     }
 
     function renderSettingsData() {
@@ -1352,132 +1277,92 @@
       let kegHtml = '';
       kegiatanList.forEach(k => {
         kegHtml += `
-          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50">
-            <div class="w-2/3 pr-2">
-              <p class="text-[11px] sm:text-xs font-bold text-white truncate">${k.title}</p>
-              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">${k.desc}</p>
-            </div>
-            <div class="flex gap-1.5 flex-shrink-0">
-              <button onclick="editActivity('${k.id}')" class="px-2.5 py-1.5 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded-lg hover:bg-blue-800 hover:text-white transition cursor-pointer border border-blue-800/50">Edit</button>
-              <button onclick="deleteActivity('${k.id}')" class="px-2.5 py-1.5 bg-rose-900/50 text-rose-400 text-[10px] font-bold rounded-lg hover:bg-rose-800 hover:text-white transition cursor-pointer border border-rose-800/50">Hapus</button>
-            </div>
+          <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+            <div class="w-2/3 pr-2"><p class="text-xs font-bold text-white truncate">${k.title}</p><p class="text-[10px] text-slate-400 truncate">${k.desc}</p></div>
+            <div class="flex gap-1.5"><button onclick="editActivity('${k.id}')" class="px-2 py-1 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded cursor-pointer">Edit</button><button onclick="deleteActivity('${k.id}')" class="px-2 py-1 bg-rose-900/50 text-rose-400 text-[10px] font-bold rounded cursor-pointer">Hapus</button></div>
           </div>
         `;
       });
-      kegContainer.innerHTML = kegHtml || '<p class="text-[11px] text-slate-500 italic p-2">Belum ada kegiatan.</p>';
+      kegContainer.innerHTML = kegHtml || '<p class="text-xs text-slate-500 italic">Belum ada kegiatan.</p>';
 
       const orangContainer = document.getElementById('settings-orang-list');
       let orangHtml = '';
       orang.forEach(o => {
         const full = dashboardFullNames[o] || o;
         orangHtml += `
-          <div class="flex justify-between items-center bg-slate-900 p-2.5 sm:p-3 rounded-xl border border-slate-700/50">
-            <div class="w-3/5 pr-2">
-              <p class="text-[11px] sm:text-xs font-bold text-white truncate">${o}</p>
-              <p class="text-[9px] sm:text-[10px] text-slate-400 truncate">${full}</p>
-            </div>
-            <div class="flex gap-1.5 flex-shrink-0">
-              <button onclick="editMember('${o}')" class="px-2.5 py-1.5 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded-lg hover:bg-blue-800 hover:text-white transition cursor-pointer border border-blue-800/50">Edit</button>
-              <button onclick="deleteMember('${o}')" class="px-2.5 py-1.5 bg-rose-900/50 text-rose-400 text-[10px] font-bold rounded-lg hover:bg-rose-800 hover:text-white transition cursor-pointer border border-rose-800/50">Hapus</button>
-            </div>
+          <div class="flex justify-between items-center bg-slate-900 p-2.5 rounded-xl border border-slate-800">
+            <div class="w-3/5 pr-2"><p class="text-xs font-bold text-white truncate">${o}</p><p class="text-[10px] text-slate-400 truncate">${full}</p></div>
+            <div class="flex gap-1.5"><button onclick="editMember('${o}')" class="px-2 py-1 bg-blue-900/50 text-blue-400 text-[10px] font-bold rounded cursor-pointer">Edit</button><button onclick="deleteMember('${o}')" class="px-2 py-1 bg-rose-900/50 text-rose-400 text-[10px] font-bold rounded cursor-pointer">Hapus</button></div>
           </div>
         `;
       });
-      orangContainer.innerHTML = orangHtml || '<p class="text-[11px] text-slate-500 italic p-2 col-span-2">Belum ada anggota.</p>';
+      orangContainer.innerHTML = orangHtml || '<p class="text-xs text-slate-500 italic">Belum ada anggota.</p>';
     }
 
     function addNewActivity() {
       const title = document.getElementById('new-keg-title').value.trim();
       const desc = document.getElementById('new-keg-desc').value.trim();
-      if (!title) return alert("Nama kegiatan tidak boleh kosong!");
-
-      const newId = "keg_" + Date.now();
-      kegiatanList.push({ id: newId, title: title, desc: desc || "-" });
+      if (!title) return alert("Nama kegiatan kosong!");
+      kegiatanList.push({ id: "keg_" + Date.now(), title, desc: desc || "-" });
       cloudSet('garut_kegiatan_list_v6', kegiatanList);
-      
       document.getElementById('new-keg-title').value = '';
       document.getElementById('new-keg-desc').value = '';
-      renderSettingsData();
-      initView();
-      initDashboardPdfDropdown();
+      renderSettingsData(); initView(); initDashboardPdfDropdown();
     }
 
     function editActivity(kegId) {
       const keg = kegiatanList.find(k => k.id === kegId);
-      if(!keg) return;
-
-      const newTitle = prompt("Ubah Nama Kegiatan:", keg.title);
-      if(!newTitle) return; 
-      const newDesc = prompt("Ubah Deskripsi Kegiatan:", keg.desc);
-      if(newDesc === null) return; 
-
+      if (!keg) return;
+      const newTitle = prompt("Nama Kegiatan Baru:", keg.title);
+      if (!newTitle) return;
+      const newDesc = prompt("Deskripsi Baru:", keg.desc);
+      if (newDesc === null) return;
       keg.title = newTitle.trim();
       keg.desc = newDesc.trim() || "-";
-
       cloudSet('garut_kegiatan_list_v6', kegiatanList);
-      renderSettingsData();
-      initView();
-      initDashboardPdfDropdown();
+      renderSettingsData(); initView(); initDashboardPdfDropdown();
     }
 
     function deleteActivity(kegId) {
-      if(confirm("Yakin ingin menghapus kegiatan ini? Seluruh riwayat sesi juga akan terhapus!")) {
+      if (confirm("Hapus kegiatan ini?")) {
         kegiatanList = kegiatanList.filter(k => k.id !== kegId);
-        if(state[kegId]) {
-          delete state[kegId];
-          cloudSet('garut_unified_db_notes_v6', state);
-        }
+        delete state[kegId];
         cloudSet('garut_kegiatan_list_v6', kegiatanList);
-        renderSettingsData();
-        initView();
-        initDashboardPdfDropdown();
+        cloudSet('garut_unified_db_notes_v6', state);
+        renderSettingsData(); initView(); initDashboardPdfDropdown();
       }
     }
 
     function addNewMember() {
       const shortName = document.getElementById('new-member-name').value.trim();
       const fullName = document.getElementById('new-member-fullname').value.trim();
-      if (!shortName) return alert("Nama panggilan tidak boleh kosong!");
-      if (orang.includes(shortName)) return alert("Nama sudah terdaftar!");
-
+      if (!shortName) return alert("Nama panggilan kosong!");
+      if (orang.includes(shortName)) return alert("Nama sudah ada!");
       orang.push(shortName);
       dashboardFullNames[shortName] = fullName ? fullName.toUpperCase() : shortName.toUpperCase();
-
       cloudSet('garut_orang_list_v6', orang);
       cloudSet('garut_fullnames_v6', dashboardFullNames);
-
       document.getElementById('new-member-name').value = '';
       document.getElementById('new-member-fullname').value = '';
-      renderSettingsData();
-      initView();
+      renderSettingsData(); initView();
     }
 
     function editMember(oldShortName) {
-      const newShort = prompt("Ubah Nama Panggilan:", oldShortName);
-      if (!newShort) return; 
-      const oldFull = dashboardFullNames[oldShortName] || oldShortName;
-      const newFull = prompt("Ubah Nama Lengkap:", oldFull);
+      const newShort = prompt("Nama Panggilan:", oldShortName);
+      if (!newShort) return;
+      const newFull = prompt("Nama Lengkap:", dashboardFullNames[oldShortName] || oldShortName);
       if (newFull === null) return;
-
       const finalShort = newShort.trim();
       const finalFull = newFull.trim().toUpperCase();
 
-      if (finalShort !== oldShortName && orang.includes(finalShort)) {
-        alert("Nama panggilan sudah dipakai anggota lain!");
-        return;
-      }
-
       if (finalShort !== oldShortName) {
-        const idx = orang.indexOf(oldShortName);
-        if (idx > -1) orang[idx] = finalShort;
+        orang[orang.indexOf(oldShortName)] = finalShort;
         dashboardFullNames[finalShort] = finalFull;
         delete dashboardFullNames[oldShortName];
-
         for (let kId in state) {
           state[kId].forEach(sess => {
             if (sess.members && sess.members.includes(oldShortName)) {
-              let mIdx = sess.members.indexOf(oldShortName);
-              sess.members[mIdx] = finalShort;
+              sess.members[sess.members.indexOf(oldShortName)] = finalShort;
             }
           });
         }
@@ -1485,60 +1370,47 @@
       } else {
         dashboardFullNames[oldShortName] = finalFull;
       }
-
       cloudSet('garut_orang_list_v6', orang);
       cloudSet('garut_fullnames_v6', dashboardFullNames);
-      renderSettingsData();
-      initView();
+      renderSettingsData(); initView();
     }
 
     function deleteMember(shortName) {
-      if(confirm(`Yakin ingin menghapus "${shortName}"?`)) {
+      if (confirm(`Hapus ${shortName}?`)) {
         orang = orang.filter(o => o !== shortName);
         delete dashboardFullNames[shortName];
         cloudSet('garut_orang_list_v6', orang);
         cloudSet('garut_fullnames_v6', dashboardFullNames);
-        renderSettingsData();
-        initView();
+        renderSettingsData(); initView();
       }
     }
 
     function resetData() {
-      if (confirm('Konfirmasi: Reset seluruh data sesi kegiatan?')) {
+      if (confirm('Reset seluruh data sesi?')) {
         state = {};
         cloudSet('garut_unified_db_notes_v6', state);
-        initView();
-        initDashboardPdfDropdown();
-        alert("Data sesi berhasil direset.");
+        initView(); initDashboardPdfDropdown();
+        alert("Data direset.");
         closeSettingsModal();
       }
     }
 
-    // ---------------------------------------------------------
-    // DASHBOARD & CHART RENDER (DIPERHALUS TANPA FLICKER)
-    // ---------------------------------------------------------
     function renderDashboard() {
       const containerStats = document.getElementById('kegiatan-stats-container');
       containerStats.innerHTML = '';
-
       const filterBulan = parseInt(document.getElementById('filter-bulan').value);
       const filterTahun = parseInt(document.getElementById('filter-tahun').value);
-      const namaBulanStr = namaBulan[filterBulan];
+      document.getElementById('table-title-stats').innerText = `Rekapitulasi Kepatuhan Target Kegiatan (${namaBulan[filterBulan]} ${filterTahun})`;
 
-      document.getElementById('table-title-stats').innerText = `Rekapitulasi Kepatuhan Target Kegiatan (${namaBulanStr} ${filterTahun})`;
-
-      let totalSessionsAll = 0;
-      let totalPersonAll = 0;
+      let totalSessionsAll = 0, totalPersonAll = 0;
 
       kegiatanList.forEach(keg => {
-        let sessions = state[keg.id] || [];
-        let filteredSessions = sessions.filter(sess => {
+        let sessions = (state[keg.id] || []).filter(sess => {
           if (!sess.date) return false;
           let d = new Date(sess.date);
           return d.getMonth() === filterBulan && d.getFullYear() === filterTahun;
         });
-
-        totalSessionsAll += filteredSessions.length;
+        totalSessionsAll += sessions.length;
 
         const isWeeklyKeg = !["keg_5", "keg_6", "keg_7"].includes(keg.id);
         let tableRowsHtml = '';
@@ -1546,143 +1418,58 @@
         if (isWeeklyKeg) {
           if (activeWeeksPerKeg[keg.id] === undefined) activeWeeksPerKeg[keg.id] = 1;
           let currentWeek = activeWeeksPerKeg[keg.id];
+          let weeklyFiltered = sessions.filter(s => getWeekOfMonth(new Date(s.date)) === currentWeek);
 
-          let weeklyFilteredSessions = filteredSessions.filter(sess => {
-            let d = new Date(sess.date);
-            return getWeekOfMonth(d) === currentWeek;
-          });
-
-          let weeklyMemberCounts = {};
-          orang.forEach(o => weeklyMemberCounts[o] = 0);
-          weeklyFilteredSessions.forEach(sess => {
-            if (sess.members) sess.members.forEach(mName => {
-              if (weeklyMemberCounts[mName] !== undefined) weeklyMemberCounts[mName]++;
-            });
-          });
-
-          let monthlyMemberCounts = {};
-          orang.forEach(o => monthlyMemberCounts[o] = 0);
-          filteredSessions.forEach(sess => {
-            if (sess.members) sess.members.forEach(mName => {
-              if (monthlyMemberCounts[mName] !== undefined) {
-                monthlyMemberCounts[mName]++;
-                totalPersonAll++;
-              }
-            });
-          });
+          let weeklyCounts = {}, monthlyCounts = {};
+          orang.forEach(o => { weeklyCounts[o] = 0; monthlyCounts[o] = 0; });
+          weeklyFiltered.forEach(s => s.members?.forEach(m => { if (weeklyCounts[m] !== undefined) weeklyCounts[m]++; }));
+          sessions.forEach(s => s.members?.forEach(m => { if (monthlyCounts[m] !== undefined) { monthlyCounts[m]++; totalPersonAll++; } }));
 
           orang.forEach(o => {
-            let weeklyCount = weeklyMemberCounts[o];
-            let monthlyCount = monthlyMemberCounts[o];
-            let weeklyMet = weeklyCount >= 1;
-            let monthlyMet = monthlyCount >= 4;
-
-            let badgeWeekly = weeklyMet ? 
-              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${weeklyCount})</span>` : 
-              `<span class="px-2 py-0.5 rounded-md bg-slate-800 text-slate-400 font-bold text-[10px]">Belum (${weeklyCount})</span>`;
-
-            let badgeMonthly = monthlyMet ? 
-              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${monthlyCount}/4)</span>` : 
-              `<span class="px-2 py-0.5 rounded-md bg-amber-950/50 text-amber-400 font-bold text-[10px] border border-amber-800/40">Kurang (${monthlyCount}/4)</span>`;
-
+            let wMet = weeklyCounts[o] >= 1;
+            let mMet = monthlyCounts[o] >= 4;
             tableRowsHtml += `
               <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
                 <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o] || o}</td>
-                <td class="p-2.5 text-center">${badgeWeekly}</td>
-                <td class="p-2.5 text-center">${badgeMonthly}</td>
+                <td class="p-2.5 text-center">${wMet ? `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold text-[10px]">Tercapai (${weeklyCounts[o]})</span>` : `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold text-[10px]">Belum (${weeklyCounts[o]})</span>`}</td>
+                <td class="p-2.5 text-center">${mMet ? `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold text-[10px]">Tercapai (${monthlyCounts[o]}/4)</span>` : `<span class="px-2 py-0.5 rounded bg-amber-950/50 text-amber-400 font-bold text-[10px]">Kurang (${monthlyCounts[o]}/4)</span>`}</td>
               </tr>
             `;
           });
 
           let weekButtons = [1, 2, 3, 4].map(wNum => {
-            let activeClass = currentWeek === wNum ? 'bg-orange-600 text-white shadow-md' : 'bg-slate-800 text-slate-400 hover:text-white';
-            return `<button onclick="setKegiatanWeek('${keg.id}', ${wNum})" class="px-2.5 py-1 text-[10px] font-extrabold rounded-lg transition ${activeClass} cursor-pointer">Minggu ${wNum}</button>`;
+            let activeClass = (currentWeek === wNum) ? 'bg-orange-600 text-white font-bold shadow-md' : 'bg-slate-950 text-slate-400 hover:text-white font-bold';
+            return `<button onclick="setKegiatanWeek('${keg.id}', ${wNum})" class="px-3 py-1 rounded-lg text-xs transition cursor-pointer ${activeClass}">Pekan ${wNum}</button>`;
           }).join('');
 
           containerStats.innerHTML += `
-            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 space-y-3">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div>
-                  <span class="text-[10px] text-orange-400 font-bold uppercase tracking-wider">Target Mingguan & Bulanan</span>
-                  <h4 class="font-extrabold text-white text-xs sm:text-sm">${keg.title}</h4>
-                </div>
-                <div class="flex items-center gap-1.5 bg-slate-900 p-1 rounded-xl border border-slate-800">
-                  <span class="text-[10px] text-slate-400 font-bold px-1.5">Pilih Pekan:</span>
-                  ${weekButtons}
-                </div>
+            <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <div><h4 class="font-black text-xs sm:text-sm text-white">${keg.title}</h4><p class="text-[10px] text-slate-400">${keg.desc}</p></div>
+                <div class="flex bg-slate-900 p-1 rounded-xl border border-slate-800 gap-1">${weekButtons}</div>
               </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="text-[11px] text-slate-400 bg-slate-900/80 uppercase">
-                      <th class="p-2.5 font-bold rounded-l-xl">Nama Petugas</th>
-                      <th class="p-2.5 font-bold text-center">Pekan Dipilih</th>
-                      <th class="p-2.5 font-bold text-center rounded-r-xl">Akumulasi Bulanan</th>
-                    </tr>
-                  </thead>
-                  <tbody>${tableRowsHtml}</tbody>
-                </table>
-              </div>
+              <div class="overflow-x-auto"><table class="w-full text-left border-collapse"><thead><tr class="border-b border-slate-800 text-[11px] text-slate-400"><th class="p-2">Petugas</th><th class="p-2 text-center">Pekan ${currentWeek}</th><th class="p-2 text-center">Akumulasi Bulan Ini</th></tr></thead><tbody>${tableRowsHtml}</tbody></table></div>
             </div>
           `;
-
         } else {
-          let monthlyMemberCounts = {};
-          orang.forEach(o => monthlyMemberCounts[o] = 0);
-          filteredSessions.filter(sess => sess.members).forEach(sess => {
-            sess.members.forEach(mName => {
-              if (monthlyMemberCounts[mName] !== undefined) {
-                monthlyMemberCounts[mName]++;
-                totalPersonAll++;
-              }
-            });
-          });
+          let monthlyCounts = {};
+          orang.forEach(o => monthlyCounts[o] = 0);
+          sessions.forEach(s => s.members?.forEach(m => { if (monthlyCounts[m] !== undefined) { monthlyCounts[m]++; totalPersonAll++; } }));
 
           orang.forEach(o => {
-            let monthlyCount = monthlyMemberCounts[o];
-            let targetNeeded = 1;
-            let isApplicable = true;
-
-            if (keg.id === "keg_5") targetNeeded = 2;
-            else if (keg.id === "keg_6") { targetNeeded = 2; isApplicable = (o === "Hadi" || o === "Fikri"); }
-            else if (keg.id === "keg_7") targetNeeded = 1;
-
-            if (!isApplicable) return;
-
-            let monthlyMet = monthlyCount >= targetNeeded;
-            let badgeMonthly = monthlyMet ? 
-              `<span class="px-2 py-0.5 rounded-md bg-emerald-950/80 text-emerald-400 font-bold text-[10px] border border-emerald-800/50">Tercapai (${monthlyCount}/${targetNeeded})</span>` : 
-              `<span class="px-2 py-0.5 rounded-md bg-amber-950/50 text-amber-400 font-bold text-[10px] border border-amber-800/40">Kurang (${monthlyCount}/${targetNeeded})</span>`;
-
+            let mMet = monthlyCounts[o] >= 1;
             tableRowsHtml += `
               <tr class="border-b border-slate-800/60 hover:bg-slate-950/40 transition">
                 <td class="p-2.5 text-xs font-bold text-slate-200">${dashboardFullNames[o] || o}</td>
-                <td class="p-2.5 text-center text-slate-500 font-bold text-[11px]">-</td>
-                <td class="p-2.5 text-center">${badgeMonthly}</td>
+                <td class="p-2.5 text-center" colspan="2">${mMet ? `<span class="px-2 py-0.5 rounded bg-emerald-950 text-emerald-400 font-bold text-[10px]">Tercapai (${monthlyCounts[o]} Sesi)</span>` : `<span class="px-2 py-0.5 rounded bg-slate-800 text-slate-400 font-bold text-[10px]">Belum (0)</span>`}</td>
               </tr>
             `;
           });
 
           containerStats.innerHTML += `
-            <div class="bg-slate-950/70 border border-slate-800/80 rounded-2xl p-4 space-y-3">
-              <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-800 pb-2.5">
-                <div>
-                  <span class="text-[10px] text-blue-400 font-bold uppercase tracking-wider">Target Bulanan Khusus</span>
-                  <h4 class="font-extrabold text-white text-xs sm:text-sm">${keg.title}</h4>
-                </div>
-              </div>
-              <div class="overflow-x-auto">
-                <table class="w-full text-left border-collapse">
-                  <thead>
-                    <tr class="text-[11px] text-slate-400 bg-slate-900/80 uppercase">
-                      <th class="p-2.5 font-bold rounded-l-xl">Nama Petugas</th>
-                      <th class="p-2.5 font-bold text-center">Pekan Dipilih</th>
-                      <th class="p-2.5 font-bold text-center rounded-r-xl">Akumulasi Bulanan</th>
-                    </tr>
-                  </thead>
-                  <tbody>${tableRowsHtml}</tbody>
-                </table>
-              </div>
+            <div class="bg-slate-950/60 p-4 rounded-2xl border border-slate-800 space-y-3">
+              <div><h4 class="font-black text-xs sm:text-sm text-orange-400">${keg.title}</h4><p class="text-[10px] text-slate-400">${keg.desc} (Target Bulanan)</p></div>
+              <div class="overflow-x-auto"><table class="w-full text-left border-collapse"><thead><tr class="border-b border-slate-800 text-[11px] text-slate-400"><th class="p-2">Petugas</th><th class="p-2 text-center" colspan="2">Realisasi Bulanan</th></tr></thead><tbody>${tableRowsHtml}</tbody></table></div>
             </div>
           `;
         }
@@ -1690,90 +1477,57 @@
 
       document.getElementById('kpi-target').innerText = totalSessionsAll;
       document.getElementById('kpi-realisasi').innerText = totalPersonAll;
-      document.getElementById('kpi-total-petugas').innerText = orang.length;
-
-      renderPersonCharts(filterBulan, filterTahun);
+      renderPetugasCompactCharts(filterBulan, filterTahun);
     }
 
-    function renderPersonCharts(filterBulan, filterTahun) {
-      const container = document.getElementById('petugas-charts-container');
-      
-      let dynamicChartKegiatan = kegiatanList.filter(k => !["keg_5", "keg_6", "keg_7"].includes(k.id));
-      let mappedWeeklyKeg = dynamicChartKegiatan.map((k, idx) => ({
-        id: k.id, label: k.title, color: chartColors[idx % chartColors.length]
-      }));
+    function renderPetugasCompactCharts(filterBulan, filterTahun) {
+      const chartsContainer = document.getElementById('petugas-charts-container');
+      chartsContainer.innerHTML = '';
+      Object.values(personChartInstances).forEach(chart => chart.destroy());
+      personChartInstances = {};
 
-      if (container.children.length === 0) {
-        orang.forEach(o => {
-          const canvasId = `canvas-chart-${o}`;
-          container.innerHTML += `
-            <div class="bg-slate-950/60 border border-slate-800/80 p-3 rounded-2xl space-y-2 shadow-inner">
-              <div class="flex justify-between items-center px-1">
-                <h4 class="font-extrabold text-white text-xs tracking-wide truncate max-w-[170px]">${dashboardFullNames[o] || o}</h4>
-                <span class="text-[9px] text-orange-400 bg-orange-950/60 border border-orange-800/40 px-2 py-0.5 rounded font-bold">4 Pekan</span>
-              </div>
-              <div class="relative h-36 w-full">
-                <canvas id="${canvasId}"></canvas>
-              </div>
-            </div>
-          `;
-        });
-      }
-
-      orang.forEach(o => {
-        const canvasId = `canvas-chart-${o}`;
-        const canvasEl = document.getElementById(canvasId);
-        if (!canvasEl) return;
-        const ctx = canvasEl.getContext('2d');
-
-        const datasets = mappedWeeklyKeg.map(keg => {
-          const dataWeeks = [1, 2, 3, 4].map(w => {
-            let sessions = state[keg.id] || [];
-            let matched = sessions.some(sess => {
-              if (!sess.date) return false;
-              let d = new Date(sess.date);
-              return d.getMonth() === filterBulan && 
-                     d.getFullYear() === filterTahun && 
-                     getWeekOfMonth(d) === w && 
-                     sess.members && sess.members.includes(o);
-            });
-            return matched ? 100 : 0; 
+      orang.forEach((personName, idx) => {
+        let weeklyAchieved = [0, 0, 0, 0];
+        kegiatanList.forEach(keg => {
+          let sessions = (state[keg.id] || []).filter(s => {
+            if (!s.date) return false;
+            let d = new Date(s.date);
+            return d.getMonth() === filterBulan && d.getFullYear() === filterTahun && s.members && s.members.includes(personName);
           });
-
-          return { label: keg.label, data: dataWeeks, backgroundColor: keg.color, borderRadius: 3, borderSkipped: false };
+          sessions.forEach(s => {
+            let w = getWeekOfMonth(new Date(s.date));
+            if (w >= 1 && w <= 4) weeklyAchieved[w - 1]++;
+          });
         });
 
-        if (personChartInstances[o]) {
-          personChartInstances[o].data.datasets = datasets;
-          personChartInstances[o].update('none');
-        } else {
-          personChartInstances[o] = new Chart(ctx, {
-            type: 'bar',
-            data: { labels: ['M1', 'M2', 'M3', 'M4'], datasets: datasets },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              plugins: {
-                legend: {
-                  position: 'bottom',
-                  labels: { color: '#94a3b8', boxWidth: 6, boxHeight: 6, font: { size: 8, weight: 'bold' }, padding: 4 }
-                }
+        const canvasId = `chart-person-${idx}`;
+        chartsContainer.innerHTML += `
+          <div class="bg-slate-950/80 p-3.5 rounded-2xl border border-slate-800 space-y-2 shadow-inner">
+            <div class="flex justify-between items-center"><span class="text-xs font-bold text-white">${dashboardFullNames[personName] || personName}</span><span class="text-[10px] text-orange-400 font-semibold">Total: ${weeklyAchieved.reduce((a,b)=>a+b,0)} Sesi</span></div>
+            <div class="h-28 relative"><canvas id="${canvasId}"></canvas></div>
+          </div>
+        `;
+
+        setTimeout(() => {
+          const ctx = document.getElementById(canvasId);
+          if (ctx) {
+            personChartInstances[personName] = new Chart(ctx, {
+              type: 'bar',
+              data: {
+                labels: ['Pekan 1', 'Pekan 2', 'Pekan 3', 'Pekan 4'],
+                datasets: [{ label: 'Aktivitas', data: weeklyAchieved, backgroundColor: chartColors[idx % chartColors.length], borderRadius: 6 }]
               },
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  max: 100,
-                  ticks: { callback: function(value) { return value + '%'; }, color: '#94a3b8', font: { size: 8, weight: 'bold' }, stepSize: 50 },
-                  grid: { color: '#1e293b' }
-                },
-                x: {
-                  ticks: { color: '#94a3b8', font: { size: 9, weight: 'bold' } },
-                  grid: { display: false }
+              options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                  y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 9 }, color: '#94a3b8' }, grid: { color: '#334155' } },
+                  x: { ticks: { font: { size: 9 }, color: '#94a3b8' }, grid: { display: false } }
                 }
               }
-            }
-          });
-        }
+            });
+          }
+        }, 50);
       });
     }
   </script>
